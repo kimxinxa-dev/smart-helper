@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Telephony
-import android.util.Patterns
 
 /**
  * 문자가 오면 휴대폰 안에서만 검사하고, 위험하면 경고한다. 문자는 밖으로 보내지 않는다.
@@ -25,8 +24,7 @@ class SmishingReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
-        RuleDetector.urlFinder = ::extractUrls
-        ModelDetector.install(context)
+        Guard.init(context)
         // 긴 문자는 여러 조각으로 오므로 보낸 사람별로 합쳐서 검사한다
         Telephony.Sms.Intents.getMessagesFromIntent(intent)
             .groupBy { it.originatingAddress ?: "알 수 없음" }
@@ -37,14 +35,6 @@ class SmishingReceiver : BroadcastReceiver() {
         val verdict = SmishingEngine.check(body, isContactSaved(context, sender))
         val id = GuardStore.add(context, sender, body, verdict)
         if (verdict.level == Level.MID || verdict.level == Level.HIGH) triggerSmishingAlert(context, id, sender, verdict)
-    }
-
-    /** 안드로이드 공식 링크 인식기로 URL 추출 */
-    private fun extractUrls(text: String): List<String> {
-        val urls = mutableListOf<String>()
-        val matcher = Patterns.WEB_URL.matcher(text)
-        while (matcher.find()) urls.add(matcher.group())
-        return urls
     }
 
     /** 연락처에 저장된 번호인지 확인. 권한이 없으면 저장 안 된 번호로 보고 검사한다. */

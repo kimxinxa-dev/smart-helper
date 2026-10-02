@@ -168,9 +168,9 @@ window.appBack=()=>{if($('#modal').style.display=='flex'){$('#modal').style.disp
 function render(){
  if(view=='home'){main.innerHTML=`<div style="text-align:center" class="big">🤝</div><h1>스마트 헬퍼</h1><div class="sub">천천히, 한 단계씩 알려 드려요</div>
  <button class="card" data-v="ask"><span class="big">🎤</span><b>말로 물어보기</b><span>말씀하시면 눌러야 할 곳을 알려 드려요</span></button>
- <button class="card" data-v="scam"><span class="big">🕵️</span><b>수상한 문자 확인</b><span>받은 문자가 사기인지 살펴봐 드려요</span></button>
+ ${window.Android?'':'<button class="card" data-v="scam"><span class="big">🕵️</span><b>수상한 문자 확인</b><span>받은 문자가 사기인지 살펴봐 드려요</span></button>'}
  <button class="card" data-v="kiosk"><span class="big">🍽️</span><b>키오스크 연습</b><span>실수해도 괜찮은 연습용 주문기예요</span></button>
- ${window.Android?'<button class="card" data-v="assist"><span class="big">🗣️</span><b>말로 시키기</b><span>전화, 문자, 알람, 소리 크기를 말로 시켜요</span></button><button class="card" data-v="guard"><span class="big">🛡️</span><b>문자 지킴이</b><span>모르는 번호로 온 문자를 자동으로 살펴봐요</span></button>':''}`;
+ ${window.Android?'<button class="card" data-v="assist"><span class="big">🗣️</span><b>말로 시키기</b><span>전화, 문자, 알람, 소리 크기를 말로 시켜요</span></button><button class="card" data-v="guard"><span class="big">🛡️</span><b>문자 지킴이</b><span>받은 문자가 사기인지 자동으로, 직접 살펴봐요</span></button>':''}`;
   main.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{b.dataset.v=='ask'&&(dev={scr:'home',stack:[],scale:1,vol:5});go(b.dataset.v)});lastMsg='스마트 헬퍼입니다. 하고 싶은 것을 눌러 주세요.'}
  else if(view=='ask')askRender();else if(view=='scam')scamRender();else if(view=='kiosk')kioskRender();else if(view=='guard')guardRender();else if(view=='assist')assistRender();else playRender()}
 /* ---------- 5. 말로 시키기 (안드로이드 앱 전용: 실제 휴대폰 기능 실행) ---------- */
@@ -191,10 +191,19 @@ function assist(t){$('#mx').innerHTML=`<div style="font-size:.8em;margin-bottom:
 window.onAssist=r=>{if(view!='assist')return;bub(r.say);
  if(r.confirm){$('#mx').insertAdjacentHTML('beforeend','<div class="ask"><button class="btn" id="ayes">네, 해 주세요</button><button class="btn g" id="ano">아니요</button></div>');
   $('#ayes').onclick=()=>{$('#mx .ask').remove();Android.assistAnswer(true)};$('#ano').onclick=()=>{$('#mx .ask').remove();Android.assistAnswer(false)}}};
-/* ---------- 4. 문자 지킴이 (안드로이드 앱 전용: 수신 문자 자동 검사) ---------- */
+/* ---------- 4. 문자 지킴이 (안드로이드 앱 전용: 수신 문자 자동 검사 + 직접 검사하기) ----------
+   앱에서는 '수상한 문자 확인'(2번)을 이 화면의 '직접 검사하기'로 합쳤다. 검사는 안드로이드 엔진(규칙 + AI 모델). */
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GLV={HIGH:['var(--bad)','🚨 위험'],MID:['var(--hl)','⚠️ 주의'],LOW:['var(--ok)','✅ 낮음'],SKIP:['var(--ok)','👤 저장된 번호']};
-let guardAsked=false;
+let guardAsked=false,gText='',gRes='',gEx=-1;
+/* 직접 검사 결과 → [화면 HTML, 읽어 줄 말] */
+function verdictView(r){const link=r.links>0,lv={
+ HIGH:['hi','🚨 매우 위험해요',link?'답장하거나 링크를 누르지 마세요. 사기일 가능성이 높아요.':'답장하지 말고, 돈이나 개인정보를 보내지 마세요. 사기일 가능성이 높아요.'],
+ MID:['mid','⚠️ 조심하세요',link?'링크를 누르기 전에 가족에게 먼저 물어보세요.':'시키는 대로 하기 전에 가족에게 먼저 물어보세요.']}[r.level]||['lo','✅ 위험이 낮아 보여요','그래도 모르는 링크는 누르지 마세요.'];
+ return [`<div class="res ${lv[0]}"><h3>${lv[1]}</h3><b>${lv[2]}</b><div style="font-size:.7em;color:var(--mut);margin:6px 0">가린 문자: ${esc(r.masked)}</div>
+<b style="font-size:.85em">왜 그런가요?</b><ul>${r.reasons.map(w=>`<li>${esc(w)}</li>`).join('')||'<li>눈에 띄는 위험 신호는 없어요.</li>'}</ul>
+${lv[0]=='lo'?'':`<b style="font-size:.85em">이렇게 하세요</b><ul><li>${link?'링크는 누르지 않기':'가족이나 기관이라고 해도, 알고 있는 번호로 직접 전화해서 확인하기'}</li><li>답장하지 말고 문자는 지우거나 신고하기</li><li>이미 돈을 보냈다면 바로 112, 불안하면 118(인터넷 상담)이나 1332(금융감독원)</li></ul>`}</div>`,
+ lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]+' '+(r.reasons[0]||'')]}
 window.onGuardChanged=()=>{if(view=='guard')guardRender();
  else if(view=='assist'){const s=JSON.parse(Android.assistStatus()),p=$('#aperm');p&&s.contacts&&s.call&&p.remove()}};
 function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms;
@@ -204,6 +213,11 @@ ${on&&!st.notif?'<div style="font-size:.75em;color:var(--bad);margin-top:6px">�
 ${on&&!st.contacts?'<div style="font-size:.75em;color:var(--mut);margin-top:6px">연락처 권한이 없어서 저장된 번호도 검사해요.</div>':''}</div>
 ${!on||!st.notif?`<button class="btn" id="gon" style="margin-top:10px">${on?'🔔 알림 켜기':'🛡️ 문자 지킴이 켜기'}</button>`:''}
 ${guardAsked&&(!on||!st.notif)?'<button class="btn g" id="gset">⚙️ 설정에서 직접 켜기</button>':''}
+<h2 style="margin-top:16px">✍️ 직접 검사하기</h2>
+<div style="font-size:.75em;color:var(--mut);margin-bottom:6px;line-height:1.5">카카오톡 등으로 받은 수상한 글을 <b>꾹 눌러 복사</b>한 뒤, 아래 칸에 붙여 넣어 주세요. 휴대폰 안에서만 살펴보고 저장하지 않아요.</div>
+<textarea id="gtx" placeholder="여기에 문자 내용을 붙여 넣으세요">${esc(gText)}</textarea>
+<button class="chip" id="gex">📋 예시 문자 넣기</button>
+<button class="btn" id="gchk" style="margin-top:8px">🔍 검사하기</button><div id="gres">${gRes}</div>
 <h2 style="margin-top:16px">최근 받은 문자</h2>
 ${h.length?h.map(x=>{const l=GLV[x.level]||GLV.LOW,t=new Date(x.time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
  return `<button class="card" data-g="${x.id}" style="border-color:${l[0]}"><b>${l[1]} · ${esc(x.sender)}</b><span>${t}<br>${esc(x.text.slice(0,50))}${x.text.length>50?'…':''}</span></button>`}).join(''):'<div class="sub">아직 검사한 문자가 없어요.</div>'}
@@ -212,6 +226,10 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
  const g=$('#gon');g&&(g.onclick=()=>on?(guardAsked=true,Android.enableGuard()):consent('문자가 오면 <b>휴대폰 안에서만</b> 내용을 살펴보고 사기인지 알려 드려요. 문자는 밖으로 보내지 않고, 긴 숫자는 가려서 기록해요. 켜 드릴까요?',()=>{guardAsked=true;Android.enableGuard()}));
  const s=$('#gset');s&&(s.onclick=()=>Android.openAppSettings());
  const c=$('#gclr');c&&(c.onclick=()=>Android.clearGuard());
+ $('#gtx').oninput=e=>gText=e.target.value;
+ $('#gex').onclick=()=>{gEx=(gEx+1)%SHOTS.length;gText=$('#gtx').value=SHOTS[gEx][2]};
+ $('#gchk').onclick=()=>{const t=gText.trim();if(!t){say('문자 내용을 먼저 붙여 넣어 주세요.');return}
+  const v=verdictView(JSON.parse(Android.checkText(t)));gRes=v[0];$('#gres').innerHTML=gRes;say(v[1]);$('#gres').scrollIntoView({behavior:'smooth',block:'start'})};
  main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g))}
 /* ---------- 1. 말로 물어보기 ---------- */
 const EX=['메신저로 사진 보내고 싶어요','앱을 설치하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','연락처를 추가하고 싶어요','은행 앱으로 송금하고 싶어요'];

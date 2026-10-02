@@ -18,7 +18,10 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.window.OnBackInvokedDispatcher
 import com.smarthelper.app.assist.Assistant
+import com.smarthelper.app.guard.Guard
 import com.smarthelper.app.guard.GuardStore
+import com.smarthelper.app.guard.SmishingEngine
+import org.json.JSONArray
 import com.smarthelper.app.guard.WarningActivity
 import org.json.JSONObject
 import java.util.Locale
@@ -191,6 +194,20 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         @JavascriptInterface
         fun openAppSettings() = runOnUiThread {
             startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        }
+
+        /** 직접 검사하기: 붙여 넣은 문자를 자동 검사와 같은 엔진(규칙 + AI 모델)으로 검사. 기록에는 남기지 않는다. */
+        @JavascriptInterface
+        fun checkText(text: String): String {
+            Guard.init(this@MainActivity)
+            val v = SmishingEngine.check(text, savedContact = false)
+            return JSONObject()
+                .put("level", v.level.name)
+                .put("score", v.score)
+                .put("reasons", JSONArray(v.reasons))
+                .put("links", v.urls.size)
+                .put("masked", SmishingEngine.mask(text).take(300))
+                .toString()
         }
 
         @JavascriptInterface
