@@ -11,7 +11,7 @@ import java.util.Locale
 
 /**
  * 화면 안내 서비스(접근성 서비스).
- * 안내 중일 때만 문자 앱 화면에서 버튼 위치를 찾아 테두리·화살표로 표시한다. 화면 내용은 저장하지 않는다.
+ * 안내 중일 때만 문자·설정 앱 화면에서 버튼 위치를 찾아 테두리·화살표로 표시한다. 화면 내용은 저장하지 않는다.
  * 사용자가 설정 > 접근성에서 직접 켜야 한다.
  */
 class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
@@ -26,7 +26,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var overlay: GuideOverlay
     private var tts: TextToSpeech? = null
-    private var steps: List<Step>? = null
+    private var guide: Guide? = null
     /** 받는 사람 이름과 번호(숫자만). 엉뚱한 사람에게 보내지 않도록 대화창에서 확인한다. */
     private var toName = ""
     private var toDigits = ""
@@ -37,7 +37,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     private val scanTask = Runnable { scan() }
     private val tick = object : Runnable {
-        override fun run() { if (steps != null) { scan(); handler.postDelayed(this, 1000) } }
+        override fun run() { if (guide != null) { scan(); handler.postDelayed(this, 1000) } }
     }
     private val timeout = Runnable { stop("안내 시간이 지나서 화면 보기를 멈췄어요. 필요하면 다시 불러 주세요.") }
 
@@ -54,11 +54,12 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     }
 
     /**
-     * 안내 시작. 문자 앱은 호출하는 쪽에서 연다.
+     * 안내 시작. 안내할 앱(문자·설정)은 호출하는 쪽에서 연다.
      * 서비스 연결이 잠시 끊긴 상태면(다른 접근성 도구가 끼어든 경우 등) false.
      */
-    fun begin(guide: List<Step>, name: String, number: String): Boolean {
-        toName = name; toDigits = number.filter { it.isDigit() }; recipientChecked = false
+    fun begin(g: Guide): Boolean {
+        toName = g.recipient?.first.orEmpty(); toDigits = g.recipient?.second.orEmpty().filter { it.isDigit() }
+        recipientChecked = g.recipient == null
         try {
             overlay.show()
         } catch (e: WindowManager.BadTokenException) {
@@ -66,8 +67,8 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             if (instance === this) instance = null
             return false
         }
-        steps = guide; current = -1; spoken = -1; misses = 0
-        overlay.point(null, "문자 화면을 여는 중이에요...", 1, guide.size)
+        guide = g; current = -1; spoken = -1; misses = 0
+        overlay.point(null, "화면을 여는 중이에요...", 1, g.steps.size)
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed(tick, 1500)
         handler.postDelayed(timeout, TIMEOUT_MS)
@@ -75,17 +76,17 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     }
 
     fun stop(message: String?) {
-        steps = null
+        guide = null
         handler.removeCallbacksAndMessages(null)
         overlay.hide()
         message?.let { say(it) }
     }
 
     override fun onAccessibilityEvent(e: AccessibilityEvent) {
-        val s = steps ?: return
-        // 마지막 단계에서 보내기 버튼을 누르면 완료
-        if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == s.lastIndex && PhotoGuide.isSend(e.source)) {
-            stop("🎉 사진을 보냈어요! 잘 하셨어요. 화면 보기도 끝냈어요.")
+        val g = guide ?: return
+        // 마지막 단계에서 완료 버튼(보내기, 확대, 와이파이 이름 등)을 누르면 끝
+        if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == g.steps.lastIndex && g.isDone(e.source)) {
+            stop(g.doneMsg)
             return
         }
         handler.removeCallbacks(scanTask)
@@ -94,12 +95,10 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     /** 지금 화면에서 "찾을 수 있는 가장 뒤 단계"를 찾아 표시한다 */
     private fun scan() {
-        val s = steps ?: return
+        val g = guide ?: return
+        val s = g.steps
         val root = rootInActiveWindow ?: return
-        if (PhotoGuide.unsupported(root)) {
-            stop("이 휴대폰은 사진 문자를 보낼 수 없게 설정되어 있어요. '확인'을 누르고, 통신사에 사진 문자(MMS)를 물어보세요.")
-            return
-        }
+        g.unsupported(root)?.let { stop(it); return }
         for (i in s.indices.reversed()) {
             val node = s[i].find(root) ?: continue
             // 대화창이 처음 보이면, 받는 사람이 맞는지부터 확인한다 (사기 번호 대화창이 열려 있을 수도 있다)
@@ -110,16 +109,18 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
                 }
                 recipientChecked = true
             }
+            // 보내기 단계였는데 첫 단계(빈 입력 칸)로 돌아왔다면 보낸 것이다
+            if (g.doneWhenBackToStart && current == s.lastIndex && i == 0) { stop(g.doneMsg); return }
             val r = Rect().also { node.getBoundsInScreen(it) }
             current = i; misses = 0
             // 첫 단계에서는 받는 사람을 다시 알려 준다 (위쪽 이름이 안내 띠에 가려질 수 있다)
-            val msg = if (i == 0) "받는 사람: $toName 님\n${s[i].say}" else s[i].say
-            overlay.point(r, msg, i + 1, s.size)
-            if (spoken != i) { spoken = i; say(if (i == 0) "$toName 님께 보낼 거예요. ${s[i].say}" else s[i].say) }
+            val who = i == 0 && g.recipient != null
+            overlay.point(r, if (who) "받는 사람: $toName 님\n${s[i].say}" else s[i].say, i + 1, s.size)
+            if (spoken != i) { spoken = i; say(if (who) "$toName 님께 보낼 거예요. ${s[i].say}" else s[i].say) }
             return
         }
         // 눌러야 할 곳을 못 찾으면(다른 화면으로 감) 몇 번 기다렸다가 말풍선으로만 알려 준다
-        if (++misses == 3) overlay.point(null, "문자 보내는 화면으로 돌아가 주세요. 뒤로 가기를 누르면 돼요.", maxOf(current, 0) + 1, s.size)
+        if (++misses == 3) { overlay.point(null, g.lost, maxOf(current, 0) + 1, s.size); say(g.lost) }
     }
 
     /** 화면 어딘가(보통 맨 위 제목)에 받는 사람 이름이나 번호가 있는지 */
@@ -147,7 +148,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
-        if (steps != null) stop(null)
+        if (guide != null) stop(null)
         if (instance === this) instance = null
         tts?.shutdown()
         return super.onUnbind(intent)

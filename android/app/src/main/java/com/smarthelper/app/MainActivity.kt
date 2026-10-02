@@ -218,8 +218,8 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
         /** 말로 물어보기 "📱 내 휴대폰으로 해 보기": 확인이 필요하면 물어본다. 결과는 onReal() 로 */
         @JavascriptInterface
-        fun realGuide(text: String) = runOnUiThread {
-            val p = try { real.plan(text) } catch (e: Exception) { RealGuide.Plan("죄송해요, 잘 이해하지 못했어요.") }
+        fun realGuide(text: String, kind: String) = runOnUiThread {
+            val p = try { real.plan(text, kind) } catch (e: Exception) { RealGuide.Plan("죄송해요, 잘 이해하지 못했어요.") }
             pendingPlan = if (p.confirm) p else null
             sendReal(p.say, p.confirm, p.perm)
         }

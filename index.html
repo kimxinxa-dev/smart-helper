@@ -161,7 +161,7 @@ textarea{width:100%;height:130px;padding:10px;border:2px solid var(--bd);border-
 </div>
 <script>
 const $=s=>document.querySelector(s),main=$('#main');
-let view='home',lastMsg='',lastAsk='',sharing=false,goal=null,dev,k,live=null;
+let view='home',lastMsg='',lastAsk='',lastReal='',sharing=false,goal=null,dev,k,live=null;
 const sb=(c='#111')=>`<div class="sb" style="color:${c}"><span>9:41</span><span>📶 🔋 82%</span></div>`;
 const hd=(t,r='')=>`<div class="hd"><button data-id="back">◀</button>${t}<span class="r">${r}</span></div>`;
 const rw=(id,ic,bg,t,s)=>`<button class="rw" data-id="${id}"><span class="sq" style="background:${bg}">${ic}</span><span>${t}<small>${s||''}</small></span></button>`;
@@ -198,17 +198,17 @@ transfer:{g:{},h:()=>sb()+hd('송금')+`<div style="padding:12px"><input data-id
 };
 const val=id=>(($('#dev [data-id="'+id+'"]')||{}).value||'').trim();
 const G={
-photo:()=>({n:'사진 보내기',real:1,st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat','attach','왼쪽 아래 "＋" 버튼을 눌러 주세요.'],['attach','gallery','"앨범"을 눌러 주세요.'],['gallery','pic','보낼 사진을 눌러 주세요.'],['confirm','send','"보내기"를 눌러 주세요.']]}),
-font:b=>({n:'글자 크기',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','font','"디스플레이"를 눌러 주세요. 글자 크기가 여기 있어요.'],['font',b?'big':'small',b?'오른쪽 큰 "가"를 눌러 주세요.':'왼쪽 작은 "가"를 눌러 주세요.']]}),
+photo:()=>({n:'사진 보내기',real:'photo',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat','attach','왼쪽 아래 "＋" 버튼을 눌러 주세요.'],['attach','gallery','"앨범"을 눌러 주세요.'],['gallery','pic','보낼 사진을 눌러 주세요.'],['confirm','send','"보내기"를 눌러 주세요.']]}),
+font:b=>({n:'글자 크기',real:b?'font_up':'font_down',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','font','"디스플레이"를 눌러 주세요. 글자 크기가 여기 있어요.'],['font',b?'big':'small',b?'오른쪽 큰 "가"를 눌러 주세요.':'왼쪽 작은 "가"를 눌러 주세요.']]}),
 sound:u=>({n:'음량 조절',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','sound','"소리 및 진동"을 눌러 주세요.'],['sound',u?'vup':'vdn',u?'오른쪽 "＋"를 눌러 주세요.':'왼쪽 "－"를 눌러 주세요.']]}),
 inst:()=>({n:'앱 설치',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','install','"건강 도우미" 옆 "설치"를 눌러 주세요. 공식 스토어 앱만 설치해요.']]}),
 uninst:()=>({n:'앱 삭제',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','uninstall','"퍼즐 게임" 옆 "삭제"를 눌러 주세요.']]}),
 addc:()=>({n:'연락처 추가',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','add','오른쪽 위 "＋ 추가"를 눌러 주세요.'],['add',()=>val('name')?'save':'name',id=>id=='name'?'저장할 분의 이름을 써 주세요.':'"저장"을 눌러 주세요.']]}),
 delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','del','오른쪽 위 "🗑 삭제"를 눌러 주세요.']]}),
 call:()=>({n:'전화 걸기',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
-text:()=>({n:'메시지 보내기',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 "전송"을 눌러 주세요.']]}),
+text:()=>({n:'메시지 보내기',real:'text',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 "전송"을 눌러 주세요.']]}),
 alarm:()=>({n:'알람 맞추기',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 "저장"을 눌러 주세요.']]}),
-wifi:()=>({n:'와이파이 연결',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]}),
+wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]}),
 bank:()=>({n:'은행 송금',secure:1,st:[['home','bank','은행(🏦)을 눌러 주세요.'],['bank','send','파란 "송금" 버튼을 눌러 주세요.']]})
 };
 function parse(t){const h=r=>r.test(t);
@@ -264,7 +264,7 @@ function verdictView(r){const link=r.links>0,lv={
 ${lv[0]=='lo'?'':`<b style="font-size:.85em">이렇게 하세요</b><ul><li>${link?'링크는 누르지 않기':'가족이나 기관이라고 해도, 알고 있는 번호로 직접 전화해서 확인하기'}</li><li>답장하지 말고 문자는 지우거나 신고하기</li><li>이미 돈을 보냈다면 바로 112, 불안하면 118(인터넷 상담)이나 1332(금융감독원)</li></ul>`}</div>`,
  lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]+' '+(r.reasons[0]||'')]}
 window.onGuardChanged=()=>{if(view=='guard')guardRender();
- else if(view=='ask'){const p=$('#cperm');if(p&&JSON.parse(Android.guardStatus()).contacts){p.remove();bub('허락해 주셔서 고마워요. 이제 "내 휴대폰으로 해 보기"를 다시 해 볼게요.',0);Android.realGuide(lastAsk)}}};
+ else if(view=='ask'){const p=$('#cperm');if(p&&JSON.parse(Android.guardStatus()).contacts){p.remove();bub('허락해 주셔서 고마워요. 이제 "내 휴대폰으로 해 보기"를 다시 해 볼게요.',0);Android.realGuide(lastAsk,lastReal)}}};
 function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms;
  main.innerHTML=`<h2>🛡️ 문자 지킴이</h2>
 <div class="res ${on?'lo':'mid'}" style="margin-top:0"><h3>${on?'🟢 지키고 있어요':'⚪ 꺼져 있어요'}</h3><div style="font-size:.8em;line-height:1.5">${on?'모르는 번호로 문자가 오면 바로 살펴보고, 위험하면 알려 드려요.':'켜 두시면 사기 문자가 왔을 때 바로 알려 드려요.'} 문자 내용은 <b>휴대폰 밖으로 나가지 않아요.</b></div>
@@ -325,7 +325,7 @@ function handle(t){lastAsk=t;stopSession();dev={scr:'home',stack:[],scale:1,vol:
  if(window.Android&&g.real){bub(`"${g.n}"을(를) 어떻게 해 볼까요? 화면 속 휴대폰으로 연습하거나, 내 휴대폰에서 바로 해 볼 수 있어요.`);
   $('#mx').insertAdjacentHTML('beforeend','<div class="ask"><button class="btn" id="mpr">🎓 화면 속 휴대폰으로 연습하기</button><button class="btn g" id="mreal">📱 내 휴대폰으로 해 보기</button></div>');
   $('#mpr').onclick=()=>{$('#mx .ask').remove();practice(g)};
-  $('#mreal').onclick=()=>{$('#mx .ask').remove();bub('잠시만요...',0);Android.realGuide(t)};return}
+  $('#mreal').onclick=()=>{$('#mx .ask').remove();bub('잠시만요...',0);lastReal=g.real;Android.realGuide(t,g.real)};return}
  practice(g)}
 /* 실제 휴대폰 안내의 답 (안드로이드 → 웹) */
 window.onReal=r=>{if(view!='ask')return;bub(r.say);$('#mx .ask')&&$('#mx .ask').remove();
