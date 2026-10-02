@@ -74,6 +74,43 @@ class RealGuide(private val act: Activity) {
                     start(service, Guides.uninstall(app, installed), Intent(Settings.ACTION_SETTINGS), "설정을 열었어요. 노란 테두리를 따라 눌러 보세요.")
                 }
             }
+            "alarm" -> {
+                val a = CommandParser.parse(text) as? Command.Alarm
+                val (h, m) = when {
+                    a == null -> -1 to 0
+                    a.afterMinutes != null -> java.util.Calendar.getInstance().apply { add(java.util.Calendar.MINUTE, a.afterMinutes) }
+                        .let { it.get(java.util.Calendar.HOUR_OF_DAY) to it.get(java.util.Calendar.MINUTE) }
+                    else -> a.hour to a.minute
+                }
+                val clock = launch("com.google.android.deskclock", "com.sec.android.app.clockpackage", "com.android.deskclock")
+                    ?: return Plan("이 휴대폰에서 시계 앱을 찾지 못했어요.")
+                val time = if (h >= 0) "${if (h < 12) "오전" else "오후"} ${if (h % 12 == 0) 12 else h % 12}시${if (m > 0) " ${m}분" else ""}에 " else ""
+                // 완료 확인: 휴대폰의 '다음 알람'이 말한 시각이 되었는지(시각을 모르면 바뀌었는지)
+                val am = act.getSystemService(android.app.AlarmManager::class.java)
+                val before = am.nextAlarmClock?.triggerTime
+                val alarmSet = {
+                    val t = am.nextAlarmClock?.triggerTime
+                    if (t == null) false
+                    else if (h < 0) t != before
+                    else java.util.Calendar.getInstance().apply { timeInMillis = t }.let {
+                        it.get(java.util.Calendar.HOUR_OF_DAY) == h && it.get(java.util.Calendar.MINUTE) == m
+                    } || t != before
+                }
+                Plan("시계 앱에서 ${time}알람을 맞추는 방법을 화면에 표시하며 알려 드릴까요? $note", confirm = true) {
+                    start(service, Guides.alarm(h, m, alarmSet), clock, "시계를 열었어요. 노란 테두리를 따라 눌러 보세요.")
+                }
+            }
+            "call" -> {
+                val c = CommandParser.parse(text)
+                val who = (c as? Command.Call)?.who ?: (c as? Command.Sms)?.who
+                val p = person(who, (c as? Command.Call)?.number)
+                    ?: return if (who == null) Plan("누구에게 전화할까요? '영희한테 전화 거는 법 알려 줘'처럼 이름을 함께 말씀해 주세요.") else notFound(who)
+                val phone = launch("com.google.android.dialer", "com.samsung.android.dialer", "com.android.dialer")
+                    ?: return Plan("이 휴대폰에서 전화 앱을 찾지 못했어요.")
+                Plan("전화 앱에서 ${p.name} 님께 전화 거는 방법을 화면에 표시하며 알려 드릴까요? 통화 버튼은 직접 누르시면 돼요. 안내하는 동안 화면을 보지만 저장하지는 않아요.", confirm = true) {
+                    start(service, Guides.call(p.name, p.number), phone, "전화 앱을 열었어요. 노란 테두리를 따라 눌러 보세요.")
+                }
+            }
             "wifi" -> Plan("설정 앱에서 와이파이에 연결하는 방법을 화면에 표시하며 알려 드릴까요? $note", confirm = true) {
                 start(service, Guides.wifi(), Intent(Settings.ACTION_SETTINGS), "설정을 열었어요. 노란 테두리를 따라 눌러 보세요.")
             }
@@ -87,6 +124,10 @@ class RealGuide(private val act: Activity) {
         act.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         return ok
     }
+
+    /** 여러 휴대폰 회사의 같은 앱(시계, 전화 등) 중 이 휴대폰에 있는 것을 연다 */
+    private fun launch(vararg packages: String): Intent? =
+        packages.firstNotNullOfOrNull { act.packageManager.getLaunchIntentForPackage(it) }
 
     /** 홈 화면 앱 중 이름이 같은(없으면 이름이 들어간) 앱 → (화면에 보이는 이름, 패키지 이름) */
     private fun launcherApp(name: String): Pair<String, String>? {

@@ -21,6 +21,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         var instance: GuideService? = null
             private set
         private const val TIMEOUT_MS = 3 * 60 * 1000L
+        private const val DUMP_ACTION = "com.smarthelper.app.DUMP_SCREEN"
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -32,8 +33,9 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     private var toDigits = ""
     private var recipientChecked = false
     private var current = -1
-    private var spoken = -1
+    private var spoken = ""
     private var misses = 0
+    private var leaveTries = 0
 
     private val scanTask = Runnable { scan() }
     private val tick = object : Runnable {
@@ -47,6 +49,40 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         overlay = GuideOverlay(this, wm) { stop("화면 안내를 멈췄어요.") }
         tts = TextToSpeech(this, this)
+        // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.
+        //   adb shell am broadcast -a com.smarthelper.app.DUMP_SCREEN
+        // 화면이 계속 움직여 uiautomator 로 못 읽는 앱(시계 등)이나 새 휴대폰의 버튼 이름을 조사할 때 쓴다.
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            val filter = android.content.IntentFilter(DUMP_ACTION)
+            if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(dumpReceiver, filter, RECEIVER_EXPORTED)
+            else @Suppress("UnspecifiedRegisterReceiverFlag") registerReceiver(dumpReceiver, filter)
+        }
+    }
+
+    /**
+     * 지금 사용자가 보는 앱 화면의 뿌리.
+     * 앱이 띄운 말풍선·팝업 때문에 '앞 창'을 못 받을 때는, 화면에 떠 있는 앱 창 중 맨 위 것을 쓴다.
+     */
+    private fun screenRoot(): android.view.accessibility.AccessibilityNodeInfo? =
+        rootInActiveWindow ?: windows
+            .filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION }
+            .maxByOrNull { it.layer }?.root
+
+    private val dumpReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: android.content.Context, i: android.content.Intent) {
+            windows.forEach { w -> android.util.Log.d("SmartDump", "창: 종류=${w.type} 층=${w.layer} 제목=${w.title} 앱=${w.root?.packageName}") }
+            val root = screenRoot() ?: return android.util.Log.d("SmartDump", "화면 없음").let { }
+            android.util.Log.d("SmartDump", "=== ${root.packageName}")
+            fun walk(n: android.view.accessibility.AccessibilityNodeInfo, depth: Int) {
+                val t = n.text?.toString().orEmpty(); val d = n.contentDescription?.toString().orEmpty(); val id = n.viewIdResourceName.orEmpty()
+                if (t.isNotEmpty() || d.isNotEmpty() || (id.isNotEmpty() && n.isClickable) || n.isEditable || n.isCheckable) {
+                    val r = Rect().also { n.getBoundsInScreen(it) }
+                    android.util.Log.d("SmartDump", "${" ".repeat(depth)}$id | t=$t | d=$d | c=${n.isClickable} e=${n.isEditable} chk=${if (n.isCheckable) n.isChecked else "-"} | $r")
+                }
+                for (k in 0 until n.childCount) n.getChild(k)?.let { walk(it, depth + 1) }
+            }
+            walk(root, 0)
+        }
     }
 
     override fun onInit(status: Int) {
@@ -63,11 +99,11 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         try {
             overlay.show()
         } catch (e: WindowManager.BadTokenException) {
+            // 잠깐 끊긴 것일 수 있으니 서비스를 잊지는 않는다 (다시 연결되면 onServiceConnected 가 새로 불린다)
             android.util.Log.w("SmartHelper", "화면 안내 연결이 끊긴 상태", e)
-            if (instance === this) instance = null
             return false
         }
-        guide = g; current = -1; spoken = -1; misses = 0
+        guide = g; current = -1; spoken = ""; misses = 0; leaveTries = 0
         overlay.point(null, "화면을 여는 중이에요...", 1, g.steps.size)
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed(tick, 1500)
@@ -85,7 +121,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     override fun onAccessibilityEvent(e: AccessibilityEvent) {
         val g = guide ?: return
         // 마지막 단계에서 완료 버튼(보내기, 확대, 와이파이 이름 등)을 누르면 끝
-        if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == g.steps.lastIndex && g.isDone(e.source)) {
+        if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == g.steps.lastIndex && (g.isDone(e.source) || clickedText(e) in g.doneTexts)) {
             stop(g.doneMsg)
             return
         }
@@ -93,19 +129,31 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         handler.postDelayed(scanTask, 250)
     }
 
+    /** 누름 신호에 실려 온 버튼 글자 (창이 닫혀 버튼을 다시 읽을 수 없을 때 쓴다) */
+    private fun clickedText(e: AccessibilityEvent): String =
+        (e.text.joinToString(" ").ifBlank { e.contentDescription?.toString().orEmpty() }).trim()
+
     /** 지금 화면에서 "찾을 수 있는 가장 뒤 단계"를 찾아 표시한다 */
     private fun scan() {
         val g = guide ?: return
         val s = g.steps
         if (g.finished?.invoke() == true) { stop(g.doneMsg); return }
-        val root = rootInActiveWindow ?: return
+        val root = screenRoot() ?: return
         g.unsupported(root)?.let { stop(it); return }
+        // 마지막 단계의 창이 닫혔으면(시간 선택 창 등) 정말 끝났는지 직접 확인한다
+        val leave = g.leftLast
+        if (leave != null && current == s.lastIndex && s.last().locate(root) == null) {
+            if (leave(root)) { stop(g.doneMsg); return }
+            // 창이 닫히는 중이면 목록이 아직 안 바뀌었을 수 있어 몇 번 더 본다
+            if (++leaveTries < 4) return
+            leaveTries = 0; current = -1; say(g.leftLastFail)
+        }
         for (i in s.indices.reversed()) {
-            val node = s[i].find(root) ?: continue
-            // 대화창이 처음 보이면, 받는 사람이 맞는지부터 확인한다 (사기 번호 대화창이 열려 있을 수도 있다)
-            if (!recipientChecked) {
+            val (node, text) = s[i].locate(root) ?: continue
+            // 받는 사람이 보이는 단계가 처음 나오면, 맞는 사람인지부터 확인한다 (사기 번호 대화창이 열려 있을 수도 있다)
+            if (!recipientChecked && i >= g.checkRecipientFrom) {
                 if (!isRecipient(root)) {
-                    stop("지금 열린 대화는 $toName 님이 아니에요. 잘못 보내지 않도록 안내를 멈췄어요. 다시 말씀해 주시면 처음부터 열어 드릴게요.")
+                    stop(g.wrongRecipient ?: "지금 열린 대화는 $toName 님이 아니에요. 잘못 보내지 않도록 안내를 멈췄어요. 다시 말씀해 주시면 처음부터 열어 드릴게요.")
                     return
                 }
                 recipientChecked = true
@@ -114,10 +162,10 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             if (g.doneWhenBackToStart && current == s.lastIndex && i == 0) { stop(g.doneMsg); return }
             val r = Rect().also { node.getBoundsInScreen(it) }
             current = i; misses = 0
-            // 첫 단계에서는 받는 사람을 다시 알려 준다 (위쪽 이름이 안내 띠에 가려질 수 있다)
-            val who = i == 0 && g.recipient != null
-            overlay.point(r, if (who) "받는 사람: $toName 님\n${s[i].say}" else s[i].say, i + 1, s.size)
-            if (spoken != i) { spoken = i; say(if (who) "$toName 님께 보낼 거예요. ${s[i].say}" else s[i].say) }
+            // 받는 사람을 확인한 단계에서는 이름을 다시 알려 준다 (위쪽 이름이 안내 띠에 가려질 수 있다)
+            val who = i == g.checkRecipientFrom && g.recipient != null
+            overlay.point(r, if (who) "받는 사람: $toName 님\n$text" else text, i + 1, s.size)
+            if (spoken != text) { spoken = text; say(if (who) "$toName 님이 맞아요. $text" else text) }
             return
         }
         // 눌러야 할 곳을 못 찾으면(다른 화면으로 감) 몇 번 기다렸다가 말풍선으로만 알려 준다
@@ -144,6 +192,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     override fun onInterrupt() {}
 
     override fun onDestroy() {
+        try { unregisterReceiver(dumpReceiver) } catch (e: IllegalArgumentException) { /* 등록 안 됨(배포용 앱) */ }
         if (instance === this) instance = null
         super.onDestroy()
     }

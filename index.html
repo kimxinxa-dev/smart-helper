@@ -205,9 +205,9 @@ inst:()=>({n:'앱 설치',real:'install',st:[['home','store','앱 스토어(🛍
 uninst:()=>({n:'앱 삭제',real:'uninstall',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','uninstall','"퍼즐 게임" 옆 "삭제"를 눌러 주세요.']]}),
 addc:()=>({n:'연락처 추가',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','add','오른쪽 위 "＋ 추가"를 눌러 주세요.'],['add',()=>val('name')?'save':'name',id=>id=='name'?'저장할 분의 이름을 써 주세요.':'"저장"을 눌러 주세요.']]}),
 delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','del','오른쪽 위 "🗑 삭제"를 눌러 주세요.']]}),
-call:()=>({n:'전화 걸기',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
+call:()=>({n:'전화 걸기',real:'call',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
 text:()=>({n:'메시지 보내기',real:'text',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 "전송"을 눌러 주세요.']]}),
-alarm:()=>({n:'알람 맞추기',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 "저장"을 눌러 주세요.']]}),
+alarm:()=>({n:'알람 맞추기',real:'alarm',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 "저장"을 눌러 주세요.']]}),
 wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]}),
 bank:()=>({n:'은행 송금',secure:1,st:[['home','bank','은행(🏦)을 눌러 주세요.'],['bank','send','파란 "송금" 버튼을 눌러 주세요.']]})
 };
@@ -291,7 +291,7 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
   const v=verdictView(JSON.parse(Android.checkText(t)));gRes=v[0];$('#gres').innerHTML=gRes;say(v[1]);$('#gres').scrollIntoView({behavior:'smooth',block:'start'})};
  main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g))}
 /* ---------- 1. 말로 물어보기 ---------- */
-const EX=['영희한테 사진 보내고 싶어요','전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연습용 퍼즐 앱을 지우고 싶어요','연락처를 추가하고 싶어요'];
+const EX=['영희한테 사진 보내고 싶어요','영희한테 전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연습용 퍼즐 앱을 지우고 싶어요','연락처를 추가하고 싶어요'];
 function askRender(){dev=dev||{scr:'home',stack:[],scale:1,vol:5};main.innerHTML=`<h2>🎤 말로 물어보기</h2><span class="badge" id="sh"></span>
 <div id="devwrap"><div id="dev"></div><div id="scan"></div><div id="hl"></div><div id="arr">👇</div><div id="lock"></div><div id="tst"></div></div>
 <div id="bub">마이크를 누르고 편하게 말씀해 보세요. 천천히, 사투리로 말씀하셔도 괜찮아요.</div><div id="mx"></div>
