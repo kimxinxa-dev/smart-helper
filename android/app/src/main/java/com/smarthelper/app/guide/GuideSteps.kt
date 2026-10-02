@@ -22,6 +22,8 @@ class Guide(
     val recipient: Pair<String, String>? = null,
     /** 마지막 단계에서 첫 단계 화면으로 돌아오면 완료로 본다 (문자를 보내면 입력 칸이 다시 비는 경우) */
     val doneWhenBackToStart: Boolean = false,
+    /** 화면과 상관없이 일이 끝났는지 직접 확인하는 방법 (예: 지운 앱이 정말 사라졌는지) */
+    val finished: (() -> Boolean)? = null,
 )
 
 /** 화면 요소를 이름표(viewId)·설명(contentDescription)·글자(text)로 찾는 도우미 */
@@ -49,6 +51,16 @@ object Nodes {
         var p: AccessibilityNodeInfo? = n
         while (p != null && !p.isClickable) p = p.parent
         return p ?: n
+    }
+
+    /** n 에서 levels 단계까지 조상으로 올라가며, 그 안에서 pred 에 맞는 요소를 찾는다 */
+    fun near(n: AccessibilityNodeInfo, levels: Int, pred: (AccessibilityNodeInfo) -> Boolean): AccessibilityNodeInfo? {
+        var p = n
+        repeat(levels) {
+            p = p.parent ?: return null
+            first(p, pred)?.let { return it }
+        }
+        return null
     }
 
     fun any(n: AccessibilityNodeInfo, pred: (AccessibilityNodeInfo) -> Boolean): Boolean {
@@ -117,6 +129,65 @@ object Guides {
             doneMsg = if (up) "🎉 글자가 커졌어요! 더 키우고 싶으면 한 번 더 누르세요. 화면 보기는 끝낼게요." else "🎉 글자가 작아졌어요! 화면 보기는 끝낼게요.",
         )
     }
+
+    /**
+     * 앱 설치: Play 스토어 → 검색 → (이름 쓰기) → 앱 고르기 → 설치.
+     * 공식 스토어에서만 설치하도록 안내한다 (CLAUDE.md 안전 설계 4). 로그인 안 된 휴대폰이면 멈추고 알려 준다.
+     */
+    fun install(app: String?) = Guide(
+        steps = listOf(
+            Step("아래쪽 '검색'을 눌러 주세요.") { r ->
+                Nodes.first(r) { (Nodes.desc(it, "검색") || it.text?.toString() == "검색") && !it.isEditable }?.let(Nodes::clickable)
+            },
+            Step("위쪽 검색 칸을 눌러 주세요.") { r ->
+                Nodes.first(r) { Nodes.text(it, "앱 및 게임 검색", "Google Play 검색") || Nodes.desc(it, "앱 및 게임 검색", "Google Play 검색") }?.let(Nodes::clickable)
+            },
+            Step(if (app != null) "'$app'을 쓰고, 글자판의 돋보기(검색) 버튼을 눌러 주세요." else "설치할 앱 이름을 쓰고, 글자판의 돋보기(검색) 버튼을 눌러 주세요.") { r ->
+                Nodes.first(r) { it.isEditable && it.isFocused }
+            },
+            Step(if (app != null) "찾은 목록에서 '$app'을 눌러 주세요. 이름과 만든 회사를 꼭 확인해요." else "찾은 목록에서 설치할 앱을 눌러 주세요. 이름과 만든 회사를 꼭 확인해요.") { r ->
+                if (app == null) null else Nodes.first(r) { n -> n.isClickable && (Nodes.desc(n, app) || Nodes.any(n) { Nodes.text(it, app) }) && !n.isEditable }
+            },
+            Step("별점과 다운로드 수가 많은 공식 앱인지 확인하고, 초록색 '설치' 버튼을 눌러 주세요.") { r ->
+                val isInstall = { n: AccessibilityNodeInfo -> n.text?.toString()?.trim() == "설치" || n.contentDescription?.toString()?.trim() == "설치" }
+                // 검색 결과에는 앱마다 설치 버튼이 있으므로, 찾는 앱 이름 가까이에 있는 것만 고른다
+                val btn = if (app == null) Nodes.first(r, isInstall)
+                else Nodes.first(r) { Nodes.text(it, app) || Nodes.desc(it, app) }?.let { Nodes.near(it, 5, isInstall) }
+                btn?.let(Nodes::clickable)
+            },
+        ),
+        lost = "Play 스토어 화면으로 돌아가 주세요. 뒤로 가기를 누르면 돼요.",
+        isDone = { n -> n != null && (Nodes.text(n, "설치") || Nodes.desc(n, "설치") || Nodes.any(n) { it.text?.toString()?.trim() == "설치" }) },
+        doneMsg = "🎉 설치를 시작했어요! 다 되면 '열기' 버튼이 생겨요. 홈 화면에서도 새 앱을 찾을 수 있어요.",
+        unsupported = { r ->
+            if (Nodes.first(r) { Nodes.text(it, "로그인하고 최신 Android 앱") } != null)
+                "Play 스토어를 쓰려면 먼저 구글 계정으로 로그인해야 해요. 가족에게 도움을 받아 로그인한 뒤 다시 해 보세요." else null
+        },
+    )
+
+    /** 앱 지우기: 설정 → 앱 → (모두 보기) → 지울 앱 → 제거 → 확인. installed: 그 앱이 아직 깔려 있는지 */
+    fun uninstall(app: String, installed: () -> Boolean) = Guide(
+        finished = { !installed() },
+        steps = listOf(
+            Step("'앱'을 눌러 주세요.") { r -> Nodes.row(r, "앱", "애플리케이션") },
+            Step("'앱 모두 보기'를 눌러 주세요.") { r ->
+                Nodes.first(r) { n -> n.text?.toString()?.let { it.startsWith("앱 ") && it.endsWith("모두 보기") || it == "모든 앱 보기" } == true }?.let(Nodes::clickable)
+            },
+            Step("목록에서 '$app'을 찾아 눌러 주세요. 안 보이면 화면을 위로 밀어 보세요.") { r -> Nodes.row(r, app) },
+            Step("'제거' 버튼을 눌러 주세요. 지운 앱은 다시 설치해야 쓸 수 있어요.") { r ->
+                // 앱 정보 화면(제목에 앱 이름이 보일 때)의 제거 버튼만
+                if (Nodes.first(r) { it.text?.toString()?.trim() == app } == null) null
+                else Nodes.first(r) { n -> n.text?.toString()?.trim() in setOf("제거", "삭제") }?.let(Nodes::clickable)
+            },
+            Step("정말 지울지 물어봐요. '$app'이 맞으면 '확인'을 눌러 주세요.") { r ->
+                if (Nodes.first(r) { Nodes.text(it, "제거하시겠습니까", "삭제하시겠습니까", "삭제할까요", "제거할까요") } == null) null
+                else Nodes.first(r) { n -> n.text?.toString()?.trim() in setOf("확인", "제거", "삭제") && n.isClickable }
+            },
+        ),
+        lost = "찾는 메뉴가 안 보이면 화면을 위로 살짝 밀어 보세요. 다른 화면으로 갔다면 뒤로 가기를 눌러요.",
+        isDone = { n -> n != null && n.text?.toString()?.trim() in setOf("확인", "제거", "삭제") },
+        doneMsg = "🎉 '$app'을 지웠어요. 다시 쓰고 싶으면 Play 스토어에서 설치하면 돼요. 화면 보기는 끝낼게요.",
+    )
 
     /** 와이파이: 설정 → 네트워크 및 인터넷 → 인터넷 → (꺼져 있으면 켜기) → 와이파이 이름 */
     fun wifi() = Guide(

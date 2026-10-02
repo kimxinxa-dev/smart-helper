@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SmartHelper"
 include(":app")
+include(":testapp")

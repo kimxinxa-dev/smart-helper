@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="guide_label">스마트 헬퍼 화면 안내</string>
-    <string name="guide_desc">문자·사진 보내기, 글자 크기, 와이파이 연결을 할 때 눌러야 할 곳에 노란 테두리와 화살표를 표시해 드려요. 안내하는 동안에만 문자 앱과 설정 앱 화면을 보고, 화면 내용은 저장하지 않아요.</string>
+    <string name="guide_desc">문자·사진 보내기, 글자 크기, 와이파이 연결, 앱 설치·삭제를 할 때 눌러야 할 곳에 노란 테두리와 화살표를 표시해 드려요. 안내하는 동안에만 문자·설정·Play 스토어 화면을 보고, 화면 내용은 저장하지 않아요.</string>
 </resources>

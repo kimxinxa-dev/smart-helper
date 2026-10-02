@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 문자 앱과 설정 앱만 본다. 안내 중이 아닐 때 받은 화면 정보는 바로 버린다. -->
+<!-- 문자·설정·Play 스토어·앱 제거 확인 창만 본다. 안내 중이 아닐 때 받은 화면 정보는 바로 버린다. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/guide_desc"
     android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged|typeViewClicked"
@@ -7,4 +7,4 @@
     android:accessibilityFlags="flagReportViewIds|flagIncludeNotImportantViews"
     android:canRetrieveWindowContent="true"
     android:notificationTimeout="100"
-    android:packageNames="com.google.android.apps.messaging,com.samsung.android.messaging,com.android.mms,com.android.settings" />
+    android:packageNames="com.google.android.apps.messaging,com.samsung.android.messaging,com.android.mms,com.android.settings,com.android.vending,com.google.android.packageinstaller,com.android.packageinstaller" />

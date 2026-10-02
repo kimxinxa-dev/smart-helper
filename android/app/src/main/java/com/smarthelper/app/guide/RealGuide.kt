@@ -53,6 +53,27 @@ class RealGuide(private val act: Activity) {
                     start(service, Guides.font(up), Intent(Settings.ACTION_SETTINGS), "설정을 열었어요. 노란 테두리를 따라 눌러 보세요.")
                 }
             }
+            "install" -> {
+                val app = appName(text)
+                Plan("Play 스토어에서 ${app?.let { "'$it'을 " } ?: "앱을 "}찾아 설치하는 방법을 화면에 표시하며 알려 드릴까요? 공식 스토어에서만 설치해요. $note", confirm = true) {
+                    val store = act.packageManager.getLaunchIntentForPackage("com.android.vending")
+                        ?: return@Plan "이 휴대폰에서 Play 스토어를 찾지 못했어요."
+                    start(service, Guides.install(app), store, "Play 스토어를 열었어요. 노란 테두리를 따라 눌러 보세요.")
+                }
+            }
+            "uninstall" -> {
+                val said = appName(text)
+                    ?: return Plan("어떤 앱을 지울까요? '연습용 퍼즐 지워 줘'처럼 앱 이름을 함께 말씀해 주세요.")
+                // 홈 화면에 보이는 앱 이름으로 실제 앱을 찾는다 (없으면 안내를 시작하지 않는다)
+                val (app, pkg) = launcherApp(said)
+                    ?: return Plan("휴대폰에서 '$said' 앱을 찾지 못했어요. 홈 화면에 보이는 이름 그대로 말씀해 주세요.")
+                val installed = {
+                    try { act.packageManager.getPackageInfo(pkg, 0); true } catch (e: PackageManager.NameNotFoundException) { false }
+                }
+                Plan("설정에서 '$app'을 지우는 방법을 화면에 표시하며 알려 드릴까요? 지운 앱의 자료는 사라질 수 있어요. $note", confirm = true) {
+                    start(service, Guides.uninstall(app, installed), Intent(Settings.ACTION_SETTINGS), "설정을 열었어요. 노란 테두리를 따라 눌러 보세요.")
+                }
+            }
             "wifi" -> Plan("설정 앱에서 와이파이에 연결하는 방법을 화면에 표시하며 알려 드릴까요? $note", confirm = true) {
                 start(service, Guides.wifi(), Intent(Settings.ACTION_SETTINGS), "설정을 열었어요. 노란 테두리를 따라 눌러 보세요.")
             }
@@ -65,6 +86,23 @@ class RealGuide(private val act: Activity) {
         if (!service.begin(guide)) return "화면 안내가 잠시 꺼졌어요. 설정 > 접근성에서 '스마트 헬퍼 화면 안내'를 껐다가 다시 켜 주세요."
         act.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         return ok
+    }
+
+    /** 홈 화면 앱 중 이름이 같은(없으면 이름이 들어간) 앱 → (화면에 보이는 이름, 패키지 이름) */
+    private fun launcherApp(name: String): Pair<String, String>? {
+        val pm = act.packageManager
+        val apps = pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
+            .map { it.loadLabel(pm).toString() to it.activityInfo.packageName }
+            .filter { it.second != act.packageName }
+        val n = name.replace(" ", "")
+        return apps.firstOrNull { it.first.replace(" ", "") == n } ?: apps.firstOrNull { it.first.replace(" ", "").contains(n) }
+    }
+
+    /** "연습용 퍼즐 지워 줘", "카카오톡 앱을 설치하고 싶어요" → 앱 이름. "앱을 설치하고 싶어요"처럼 이름이 없으면 null */
+    private fun appName(text: String): String? {
+        val m = Regex("^(.*?)\\s*(?:앱|어플|어플리케이션)?\\s*(?:을|를)?\\s*(?:좀\\s*)?(?:설치|깔|다운|삭제|지우|지워|제거)").find(text.trim()) ?: return null
+        val name = m.groupValues[1].replace(Regex("^(?:안 ?쓰는|우리|내|그|이)\\s*"), "").replace(Regex("\\s*(?:앱|어플|을|를)$"), "").trim()
+        return name.ifEmpty { null }?.takeUnless { it in setOf("앱", "어플", "새", "새로운") }
     }
 
     private fun notFound(who: String?) = when {

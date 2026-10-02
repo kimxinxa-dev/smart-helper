@@ -97,6 +97,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     private fun scan() {
         val g = guide ?: return
         val s = g.steps
+        if (g.finished?.invoke() == true) { stop(g.doneMsg); return }
         val root = rootInActiveWindow ?: return
         g.unsupported(root)?.let { stop(it); return }
         for (i in s.indices.reversed()) {
@@ -120,7 +121,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             return
         }
         // 눌러야 할 곳을 못 찾으면(다른 화면으로 감) 몇 번 기다렸다가 말풍선으로만 알려 준다
-        if (++misses == 3) { overlay.point(null, g.lost, maxOf(current, 0) + 1, s.size); say(g.lost) }
+        if (++misses == 5) { overlay.point(null, g.lost, maxOf(current, 0) + 1, s.size); say(g.lost) }
     }
 
     /** 화면 어딘가(보통 맨 위 제목)에 받는 사람 이름이나 번호가 있는지 */

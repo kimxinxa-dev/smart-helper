@@ -201,8 +201,8 @@ const G={
 photo:()=>({n:'사진 보내기',real:'photo',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat','attach','왼쪽 아래 "＋" 버튼을 눌러 주세요.'],['attach','gallery','"앨범"을 눌러 주세요.'],['gallery','pic','보낼 사진을 눌러 주세요.'],['confirm','send','"보내기"를 눌러 주세요.']]}),
 font:b=>({n:'글자 크기',real:b?'font_up':'font_down',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','font','"디스플레이"를 눌러 주세요. 글자 크기가 여기 있어요.'],['font',b?'big':'small',b?'오른쪽 큰 "가"를 눌러 주세요.':'왼쪽 작은 "가"를 눌러 주세요.']]}),
 sound:u=>({n:'음량 조절',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','sound','"소리 및 진동"을 눌러 주세요.'],['sound',u?'vup':'vdn',u?'오른쪽 "＋"를 눌러 주세요.':'왼쪽 "－"를 눌러 주세요.']]}),
-inst:()=>({n:'앱 설치',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','install','"건강 도우미" 옆 "설치"를 눌러 주세요. 공식 스토어 앱만 설치해요.']]}),
-uninst:()=>({n:'앱 삭제',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','uninstall','"퍼즐 게임" 옆 "삭제"를 눌러 주세요.']]}),
+inst:()=>({n:'앱 설치',real:'install',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','install','"건강 도우미" 옆 "설치"를 눌러 주세요. 공식 스토어 앱만 설치해요.']]}),
+uninst:()=>({n:'앱 삭제',real:'uninstall',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','uninstall','"퍼즐 게임" 옆 "삭제"를 눌러 주세요.']]}),
 addc:()=>({n:'연락처 추가',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','add','오른쪽 위 "＋ 추가"를 눌러 주세요.'],['add',()=>val('name')?'save':'name',id=>id=='name'?'저장할 분의 이름을 써 주세요.':'"저장"을 눌러 주세요.']]}),
 delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','del','오른쪽 위 "🗑 삭제"를 눌러 주세요.']]}),
 call:()=>({n:'전화 걸기',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
@@ -216,7 +216,7 @@ function parse(t){const h=r=>r.test(t);
  if(h(/은행|송금|이체/))return G.bank();
  if(h(/와이파이|wifi|인터넷 ?연결/i))return G.wifi();
  if(h(/알람|깨워|모닝콜/))return G.alarm();
- if(h(/설치|깔|삭제|지우|지워|어플|앱/))return h(/삭제|지우|지워/)?G.uninst():G.inst();
+ if(h(/설치|깔|삭제|지우|지워|제거|어플|앱/))return h(/삭제|지우|지워|제거/)?G.uninst():G.inst();
  if(h(/글자|글씨/))return G.font(!h(/줄|작|적|쪼/));
  if(h(/음량|소리|볼륨|시끄|안 ?들/))return G.sound(!h(/줄|낮|작|시끄/));
  if(h(/사진/))return G.photo();
@@ -291,7 +291,7 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
   const v=verdictView(JSON.parse(Android.checkText(t)));gRes=v[0];$('#gres').innerHTML=gRes;say(v[1]);$('#gres').scrollIntoView({behavior:'smooth',block:'start'})};
  main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g))}
 /* ---------- 1. 말로 물어보기 ---------- */
-const EX=['영희한테 사진 보내고 싶어요','전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연락처를 추가하고 싶어요'];
+const EX=['영희한테 사진 보내고 싶어요','전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연습용 퍼즐 앱을 지우고 싶어요','연락처를 추가하고 싶어요'];
 function askRender(){dev=dev||{scr:'home',stack:[],scale:1,vol:5};main.innerHTML=`<h2>🎤 말로 물어보기</h2><span class="badge" id="sh"></span>
 <div id="devwrap"><div id="dev"></div><div id="scan"></div><div id="hl"></div><div id="arr">👇</div><div id="lock"></div><div id="tst"></div></div>
 <div id="bub">마이크를 누르고 편하게 말씀해 보세요. 천천히, 사투리로 말씀하셔도 괜찮아요.</div><div id="mx"></div>

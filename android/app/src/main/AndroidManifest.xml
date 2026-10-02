@@ -16,6 +16,11 @@
         </intent>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <!-- 앱 지우기 안내: 말한 이름의 앱이 홈 화면에 정말 있는지 확인한다 -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
         </intent>    </queries>
 
     <application
