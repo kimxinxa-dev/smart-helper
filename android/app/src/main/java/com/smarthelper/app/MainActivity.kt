@@ -17,7 +17,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.window.OnBackInvokedDispatcher
-import com.smarthelper.app.assist.Assistant
+import com.smarthelper.app.guide.RealGuide
 import com.smarthelper.app.guard.Guard
 import com.smarthelper.app.guard.GuardStore
 import com.smarthelper.app.guard.SmishingEngine
@@ -32,9 +32,9 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var fileCallback: ValueCallback<Array<Uri>>? = null
-    private val assistant by lazy { Assistant(this) }
-    /** 확인("네")을 기다리는 음성 비서 할 일 */
-    private var pendingPlan: Assistant.Plan? = null
+    private val real by lazy { RealGuide(this) }
+    /** 확인("네")을 기다리는 실제 휴대폰 안내 */
+    private var pendingPlan: RealGuide.Plan? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,14 +122,14 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     private fun guardChanged() = js("window.onGuardChanged&&onGuardChanged()")
 
-    /** 음성 비서 결과를 웹 화면에 보낸다 */
-    private fun sendAssist(say: String, confirm: Boolean) =
-        js("window.onAssist&&onAssist(${JSONObject().put("say", say).put("confirm", confirm)})")
+    /** 실제 휴대폰 안내 결과를 웹 화면에 보낸다 */
+    private fun sendReal(say: String, confirm: Boolean, perm: Boolean) =
+        js("window.onReal&&onReal(${JSONObject().put("say", say).put("confirm", confirm).put("perm", perm)})")
 
-    private fun runPlan(p: Assistant.Plan): String = try {
+    private fun runPlan(p: RealGuide.Plan): String = try {
         p.run?.invoke() ?: p.say
     } catch (e: Exception) {
-        android.util.Log.e("SmartHelper", "음성 비서 실행 실패", e)
+        android.util.Log.e("SmartHelper", "화면 안내 시작 실패", e)
         "죄송해요, 하지 못했어요. 다시 한 번 말씀해 주세요."
     }
 
@@ -216,32 +216,25 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         @JavascriptInterface
         fun clearGuard() = GuardStore.clear(this@MainActivity)
 
-        /** 음성 비서: 말을 이해해서 바로 하거나, 확인이 필요하면 물어본다. 결과는 onAssist() 로 */
+        /** 말로 물어보기 "📱 내 휴대폰으로 해 보기": 확인이 필요하면 물어본다. 결과는 onReal() 로 */
         @JavascriptInterface
-        fun assist(text: String) = runOnUiThread {
-            val p = try { assistant.plan(text) } catch (e: Exception) { Assistant.Plan("죄송해요, 잘 이해하지 못했어요.") }
-            pendingPlan = null
-            if (p.confirm) { pendingPlan = p; sendAssist(p.say, true) } else sendAssist(runPlan(p), false)
+        fun realGuide(text: String) = runOnUiThread {
+            val p = try { real.plan(text) } catch (e: Exception) { RealGuide.Plan("죄송해요, 잘 이해하지 못했어요.") }
+            pendingPlan = if (p.confirm) p else null
+            sendReal(p.say, p.confirm, p.perm)
         }
 
         @JavascriptInterface
-        fun assistAnswer(yes: Boolean) = runOnUiThread {
+        fun realAnswer(yes: Boolean) = runOnUiThread {
             val p = pendingPlan ?: return@runOnUiThread
             pendingPlan = null
-            sendAssist(if (yes) runPlan(p) else "알겠어요. 하지 않을게요.", false)
+            sendReal(if (yes) runPlan(p) else "알겠어요. 하지 않을게요.", false, false)
         }
 
-        /** 음성 비서 권한 상태 {contacts, call} */
         @JavascriptInterface
-        fun assistStatus(): String = JSONObject()
-            .put("contacts", granted(Manifest.permission.READ_CONTACTS))
-            .put("call", granted(Manifest.permission.CALL_PHONE))
-            .toString()
-
-        @JavascriptInterface
-        fun enableAssist() = runOnUiThread {
-            val missing = listOf(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE).filter { !granted(it) }
-            if (missing.isEmpty()) guardChanged() else requestPermissions(missing.toTypedArray(), REQ_PERM)
+        fun enableContacts() = runOnUiThread {
+            if (granted(Manifest.permission.READ_CONTACTS)) guardChanged()
+            else requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQ_PERM)
         }
 
         @JavascriptInterface

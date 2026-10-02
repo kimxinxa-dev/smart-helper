@@ -7,10 +7,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- 위험 문자 경고 알림 (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- 음성 비서: 확인 후 바로 전화 걸기, 알람 맞추기 -->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
-    <!-- 전화·문자 기능이 없는 기기(태블릿)에도 설치할 수 있게 -->
+    <!-- 문자 기능이 없는 기기(태블릿)에도 설치할 수 있게 -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <queries>
@@ -19,13 +16,7 @@
         </intent>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
-        </intent>
-        <!-- 음성 비서: "카카오톡 열어 줘" 할 때 설치된 앱 목록에서 찾는다 -->
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent>
-    </queries>
+        </intent>    </queries>
 
     <application
         android:label="스마트 헬퍼"
