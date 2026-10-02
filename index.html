@@ -174,7 +174,7 @@ function render(){
   main.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{b.dataset.v=='ask'&&(dev={scr:'home',stack:[],scale:1,vol:5});go(b.dataset.v)});lastMsg='스마트 헬퍼입니다. 하고 싶은 것을 눌러 주세요.'}
  else if(view=='ask')askRender();else if(view=='scam')scamRender();else if(view=='kiosk')kioskRender();else if(view=='guard')guardRender();else if(view=='assist')assistRender();else playRender()}
 /* ---------- 5. 말로 시키기 (안드로이드 앱 전용: 실제 휴대폰 기능 실행) ---------- */
-const AEX=['영희한테 전화해 줘','소리 좀 키워 줘','내일 아침 7시에 깨워 줘','카카오톡 열어 줘','손전등 켜 줘','지금 몇 시야?','배터리 얼마나 남았어?','민수한테 이따 간다고 문자 보내 줘'];
+const AEX=['영희한테 사진 보내 줘','영희한테 전화해 줘','소리 좀 키워 줘','내일 아침 7시에 깨워 줘','카카오톡 열어 줘','손전등 켜 줘','지금 몇 시야?','배터리 얼마나 남았어?','민수한테 이따 간다고 문자 보내 줘'];
 function assistRender(){const st=JSON.parse(Android.assistStatus());
  main.innerHTML=`<h2>🗣️ 말로 시키기</h2>
 <div id="bub" style="margin-top:0">무엇을 도와드릴까요? 마이크를 누르고 "영희한테 전화해 줘"처럼 말씀해 보세요.</div><div id="mx"></div>

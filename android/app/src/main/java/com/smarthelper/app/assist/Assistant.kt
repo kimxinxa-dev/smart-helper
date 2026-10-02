@@ -16,6 +16,8 @@ import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.MediaStore
 import android.provider.Settings
+import com.smarthelper.app.guide.GuideService
+import com.smarthelper.app.guide.PhotoGuide
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -36,6 +38,7 @@ class Assistant(private val act: Activity) {
     fun plan(text: String): Plan = when (val c = CommandParser.parse(text)) {
         is Command.Call -> call(c)
         is Command.Sms -> sms(c)
+        is Command.SendPhoto -> sendPhoto(c)
         is Command.Volume -> Plan("") { volume(c.up) }
         is Command.Alarm -> alarm(c)
         is Command.OpenApp -> openApp(c.name)
@@ -74,7 +77,7 @@ class Assistant(private val act: Activity) {
             Plan("배터리가 $pct% 남았어요." + if (pct in 0..20) " 충전기를 꽂아 주세요." else "")
         }
         Command.Banking -> Plan("송금은 안전을 위해 제가 대신하지 않아요. 은행 앱에서 천천히 직접 하시고, 누가 시킨 송금이라면 먼저 가족에게 물어보세요.")
-        Command.Help -> Plan("이런 걸 할 수 있어요. 전화 걸기, 문자 쓰기, 알람 맞추기, 소리 키우기, 손전등 켜기, 앱 열기, 지금 시간과 배터리 알려 드리기예요. '영희한테 전화해 줘'처럼 말씀해 보세요.")
+        Command.Help -> Plan("이런 걸 할 수 있어요. 전화 걸기, 문자 쓰기, 사진 보내기 안내, 알람 맞추기, 소리 키우기, 손전등 켜기, 앱 열기, 지금 시간과 배터리 알려 드리기예요. '영희한테 전화해 줘'처럼 말씀해 보세요.")
         is Command.Unknown -> Plan("죄송해요, 잘 이해하지 못했어요. '영희한테 전화해 줘'나 '소리 키워 줘'처럼 말씀해 주세요.")
     }
 
@@ -99,6 +102,24 @@ class Assistant(private val act: Activity) {
         return Plan("${p.name} 님께 ${what}문자를 쓸까요? 보내기 버튼은 직접 눌러 주세요.", confirm = true) {
             start(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${p.number}")).apply { c.body?.let { putExtra("sms_body", it) } })
             "문자 화면을 열었어요. 내용을 확인하고 보내기 버튼을 눌러 주세요."
+        }
+    }
+
+    /** 문자로 사진 보내기: 대화창을 열고, 화면 안내 서비스가 테두리·화살표로 한 단계씩 안내한다 */
+    private fun sendPhoto(c: Command.SendPhoto): Plan {
+        val p = person(c.who, c.number) ?: return notFound(c.who)
+        val kakao = if (c.kakao) "카카오톡은 아직 안내하지 못해서, 문자로 보내는 방법을 알려 드릴게요. " else ""
+        val guide = GuideService.instance
+            ?: return Plan("${kakao}화면에 표시하며 도와드리려면 '화면 안내' 기능을 한 번 켜야 해요. 설정을 열어 드릴까요?", confirm = true) {
+                start(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                "'설치된 앱' 또는 '다운로드한 앱'에서 '스마트 헬퍼 화면 안내'를 눌러 켜 주세요. '기기를 제어하도록 허용할까요?'라는 안내가 나오면 '허용'을 누르셔도 괜찮아요. 켠 다음 다시 말씀해 주세요."
+            }
+        return Plan("$kakao${p.name} 님께 문자로 사진 보내는 방법을, 화면에 표시하며 한 단계씩 알려 드릴까요? 안내하는 동안 문자 앱 화면을 봐요. 저장하지는 않아요.", confirm = true) {
+            if (!guide.begin(PhotoGuide.steps, p.name, p.number)) return@Plan "화면 안내가 잠시 꺼졌어요. 설정 > 접근성에서 '스마트 헬퍼 화면 안내'를 껐다가 다시 켜 주세요."
+            // 문자 앱이 마지막에 보던 대화를 다시 보여 주지 않도록 새로 연다
+            start(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${p.number}"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+            "문자 창을 열었어요."
         }
     }
 

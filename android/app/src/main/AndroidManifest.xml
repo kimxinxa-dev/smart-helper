@@ -46,6 +46,20 @@
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden|uiMode" />
 
+        <!-- 화면 안내: 사용자가 설정 > 접근성에서 직접 켠다. 시스템만 연결할 수 있다. -->
+        <service
+            android:name=".guide.GuideService"
+            android:label="@string/guide_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/guide_service" />
+        </service>
+
         <!-- BROADCAST_SMS: 시스템만 이 수신기를 부를 수 있다 (다른 앱의 가짜 문자 방지) -->
         <receiver
             android:name=".guard.SmishingReceiver"

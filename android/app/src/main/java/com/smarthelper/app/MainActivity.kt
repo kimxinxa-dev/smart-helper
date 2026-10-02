@@ -126,6 +126,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private fun runPlan(p: Assistant.Plan): String = try {
         p.run?.invoke() ?: p.say
     } catch (e: Exception) {
+        android.util.Log.e("SmartHelper", "음성 비서 실행 실패", e)
         "죄송해요, 하지 못했어요. 다시 한 번 말씀해 주세요."
     }
 

@@ -4,6 +4,8 @@ package com.smarthelper.app.assist
 sealed class Command {
     data class Call(val who: String?, val number: String?) : Command()
     data class Sms(val who: String?, val number: String?, val body: String?) : Command()
+    /** 문자로 사진 보내기 — 화면에 테두리·화살표로 한 단계씩 안내. kakao=true 면 카카오톡으로 요청함 */
+    data class SendPhoto(val who: String?, val number: String?, val kakao: Boolean = false) : Command()
     data class Volume(val up: Boolean) : Command()
     /** hour < 0 이면 시간을 못 알아들음. afterMinutes 가 있으면 "30분 뒤" 같은 상대 시간 */
     data class Alarm(val hour: Int, val minute: Int, val tomorrow: Boolean, val afterMinutes: Int? = null) : Command()
@@ -47,6 +49,8 @@ object CommandParser {
             has("뭘? ?할 ?수 ?있|뭐 ?해 ?줄 ?수|도움말|어떻게 (써|사용)") -> Command.Help
             has("(연락처|전화번호|번호).*(저장|추가|등록)|(저장|추가|등록).*(연락처|번호)") ->
                 Command.AddContact(who(t) ?: before(t, "(?:의\\s*)?(?:연락처|전화번호|번호)")?.takeIf { number == null || !it.contains(number) }, number)
+            has("사진|그림") && has("보내|전송|보낼") ->
+                Command.SendPhoto(if (number != null) null else who(t), number, has("카톡|카카오"))
             has("문자|메시지|메세지|카톡 ?보내") && has("보내|써|전해|해") ->
                 Command.Sms(if (number != null) null else who(t) ?: before(t, "(?:에게|한테)?\\s*(?:문자|메시지|메세지)"), number, smsBody(t))
             has("전화") -> Command.Call(if (number != null) null else who(t) ?: before(t, "(?:에게|한테)?\\s*전화"), number)
