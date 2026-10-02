@@ -169,9 +169,31 @@ function render(){
  if(view=='home'){main.innerHTML=`<div style="text-align:center" class="big">🤝</div><h1>스마트 헬퍼</h1><div class="sub">천천히, 한 단계씩 알려 드려요</div>
  <button class="card" data-v="ask"><span class="big">🎤</span><b>말로 물어보기</b><span>말씀하시면 눌러야 할 곳을 알려 드려요</span></button>
  <button class="card" data-v="scam"><span class="big">🕵️</span><b>수상한 문자 확인</b><span>받은 문자가 사기인지 살펴봐 드려요</span></button>
- <button class="card" data-v="kiosk"><span class="big">🍽️</span><b>키오스크 연습</b><span>실수해도 괜찮은 연습용 주문기예요</span></button>`;
+ <button class="card" data-v="kiosk"><span class="big">🍽️</span><b>키오스크 연습</b><span>실수해도 괜찮은 연습용 주문기예요</span></button>
+ ${window.Android?'<button class="card" data-v="guard"><span class="big">🛡️</span><b>문자 지킴이</b><span>모르는 번호로 온 문자를 자동으로 살펴봐요</span></button>':''}`;
   main.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{b.dataset.v=='ask'&&(dev={scr:'home',stack:[],scale:1,vol:5});go(b.dataset.v)});lastMsg='스마트 헬퍼입니다. 하고 싶은 것을 눌러 주세요.'}
- else if(view=='ask')askRender();else if(view=='scam')scamRender();else if(view=='kiosk')kioskRender();else playRender()}
+ else if(view=='ask')askRender();else if(view=='scam')scamRender();else if(view=='kiosk')kioskRender();else if(view=='guard')guardRender();else playRender()}
+/* ---------- 4. 문자 지킴이 (안드로이드 앱 전용: 수신 문자 자동 검사) ---------- */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GLV={HIGH:['var(--bad)','🚨 위험'],MID:['var(--hl)','⚠️ 주의'],LOW:['var(--ok)','✅ 낮음'],SKIP:['var(--ok)','👤 저장된 번호']};
+let guardAsked=false;
+window.onGuardChanged=()=>{view=='guard'&&guardRender()};
+function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms;
+ main.innerHTML=`<h2>🛡️ 문자 지킴이</h2>
+<div class="res ${on?'lo':'mid'}" style="margin-top:0"><h3>${on?'🟢 지키고 있어요':'⚪ 꺼져 있어요'}</h3><div style="font-size:.8em;line-height:1.5">${on?'모르는 번호로 문자가 오면 바로 살펴보고, 위험하면 알려 드려요.':'켜 두시면 사기 문자가 왔을 때 바로 알려 드려요.'} 문자 내용은 <b>휴대폰 밖으로 나가지 않아요.</b></div>
+${on&&!st.notif?'<div style="font-size:.75em;color:var(--bad);margin-top:6px">알림이 꺼져 있어서 경고를 띄울 수 없어요.</div>':''}
+${on&&!st.contacts?'<div style="font-size:.75em;color:var(--mut);margin-top:6px">연락처 권한이 없어서 저장된 번호도 검사해요.</div>':''}</div>
+${!on||!st.notif?`<button class="btn" id="gon" style="margin-top:10px">${on?'🔔 알림 켜기':'🛡️ 문자 지킴이 켜기'}</button>`:''}
+${guardAsked&&(!on||!st.notif)?'<button class="btn g" id="gset">⚙️ 설정에서 직접 켜기</button>':''}
+<h2 style="margin-top:16px">최근 받은 문자</h2>
+${h.length?h.map(x=>{const l=GLV[x.level]||GLV.LOW,t=new Date(x.time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+ return `<button class="card" data-g="${x.id}" style="border-color:${l[0]}"><b>${l[1]} · ${esc(x.sender)}</b><span>${t}<br>${esc(x.text.slice(0,50))}${x.text.length>50?'…':''}</span></button>`}).join(''):'<div class="sub">아직 검사한 문자가 없어요.</div>'}
+${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':''}`;
+ lastMsg=on?'문자 지킴이가 켜져 있어요. 위험한 문자가 오면 알려 드릴게요.':'문자 지킴이가 꺼져 있어요. 켜기 버튼을 눌러 주세요.';
+ const g=$('#gon');g&&(g.onclick=()=>on?(guardAsked=true,Android.enableGuard()):consent('문자가 오면 <b>휴대폰 안에서만</b> 내용을 살펴보고 사기인지 알려 드려요. 문자는 밖으로 보내지 않고, 긴 숫자는 가려서 기록해요. 켜 드릴까요?',()=>{guardAsked=true;Android.enableGuard()}));
+ const s=$('#gset');s&&(s.onclick=()=>Android.openAppSettings());
+ const c=$('#gclr');c&&(c.onclick=()=>Android.clearGuard());
+ main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g))}
 /* ---------- 1. 말로 물어보기 ---------- */
 const EX=['메신저로 사진 보내고 싶어요','앱을 설치하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','연락처를 추가하고 싶어요','은행 앱으로 송금하고 싶어요'];
 function askRender(){main.innerHTML=`<h2>🎤 말로 물어보기</h2><span class="badge" id="sh"></span>
@@ -237,7 +259,7 @@ function secure(){sharing=false;badge();clearHl();const l=$('#lock');l.style.dis
  bub(t);$('#mx').innerHTML='<button class="btn" id="done">다 했어요</button>';$('#done').onclick=()=>{goal=null;l.style.display='none';$('#mx').innerHTML='';bub('수고하셨어요! 도움을 마칠게요.')}}
 /* ---------- 2. 수상한 문자 ---------- */
 const SMP='[Web발신] 고객님 택배가 주소 불명으로 반송됩니다. 오늘까지 아래 주소에서 확인하세요. http://bit.ly/3xYz 계좌번호 123456789012 로 배송비 2,500원을 보내 주세요.';
-const RULES=[[/https?:\/\/|bit\.ly|me2\.do|\.xyz|\.top/i,3,'모르는 인터넷 주소(링크)가 들어 있어요. 누르면 가짜 사이트로 갈 수 있어요.'],[/택배|배송|반송|주소 ?불명/,2,'택배 문자를 흉내 낸 사기가 아주 많아요.'],[/검찰|경찰|금융감독원|수사|체포|안전계좌/,4,'공공기관을 사칭하고 있어요. 진짜 기관은 문자로 돈을 요구하지 않아요.'],[/(엄마|아빠|아들|딸).*(폰|휴대폰|고장|액정|급해|상품권)/,4,'자녀를 사칭하는 전형적인 수법이에요. 꼭 전화로 직접 확인하세요.'],[/계좌|송금|입금|이체|보내 ?주/,2,'돈을 보내라고 요구해요.'],[/인증번호|비밀번호|OTP|주민|카드번호|CVC/i,3,'비밀번호나 인증번호를 알려 달라고 해요. 절대 알려 주면 안 돼요.'],[/당첨|무료|지원금|환급|대출|저금리|고수익|투자/,2,'공짜 돈이나 큰 이익을 약속해요. 사기의 흔한 미끼예요.'],[/설치|apk|다운로드/i,3,'앱을 설치하라고 해요. 몰래 휴대폰을 조종하는 앱일 수 있어요.'],[/지금 ?바로|오늘까지|긴급|즉시|마감/,1,'서두르게 만들어요. 급하게 하라는 말은 사기의 신호예요.']];
+const RULES=[[/https?:\/\/|bit\.ly|me2\.do|\.xyz|\.top/i,3,'모르는 인터넷 주소(링크)가 들어 있어요. 누르면 가짜 사이트로 갈 수 있어요.'],[/택배|배송|반송|주소 ?불명/,2,'택배 문자를 흉내 낸 사기가 아주 많아요.'],[/검찰|경찰|금융감독원|수사|체포|안전계좌/,4,'공공기관을 사칭하고 있어요. 진짜 기관은 문자로 돈을 요구하지 않아요.'],[/(엄마|아빠|아들|딸).*(폰|휴대폰|고장|액정|급해|상품권)/,4,'자녀를 사칭하는 전형적인 수법이에요. 꼭 전화로 직접 확인하세요.'],[/계좌|송금|입금|이체|보내 ?[주줘]/,2,'돈을 보내라고 요구해요.'],[/인증번호|비밀번호|OTP|주민|카드번호|CVC/i,3,'비밀번호나 인증번호를 알려 달라고 해요. 절대 알려 주면 안 돼요.'],[/당첨|무료|지원금|환급|대출|저금리|고수익|투자/,2,'공짜 돈이나 큰 이익을 약속해요. 사기의 흔한 미끼예요.'],[/설치|apk|다운로드/i,3,'앱을 설치하라고 해요. 몰래 휴대폰을 조종하는 앱일 수 있어요.'],[/지금 ?바로|오늘까지|긴급|즉시|마감/,1,'서두르게 만들어요. 급하게 하라는 말은 사기의 신호예요.']];
 const SHOTS=[
 ['택배 반송','010-4821-7733','[Web발신]\n[한빛택배] 고객님의 택배가 주소 불명으로 반송 예정입니다. 오늘까지 주소를 확인해 주세요.\nhttp://han-bit.xyz/a8Kd2','오전 10:21'],
 ['자녀 사칭','010-5567-2041','엄마 나 폰이 고장나서 친구 폰으로 문자해. 지금 급해서 그런데 이 계좌로 50만원만 송금해줘. 3333-01-1234567','오후 2:03'],

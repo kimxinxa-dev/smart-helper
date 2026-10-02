@@ -8,13 +8,17 @@ import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
-import android.view.WindowInsets
+import android.Manifest
+import android.content.pm.PackageManager
+import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.window.OnBackInvokedDispatcher
+import com.smarthelper.app.guard.GuardStore
+import com.smarthelper.app.guard.WarningActivity
 import org.json.JSONObject
 import java.util.Locale
 
@@ -33,18 +37,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         root.addView(web)
         setContentView(root)
 
-        // 상태 표시줄·내비게이션 바에 화면이 가려지지 않게 여백을 준다.
-        root.setOnApplyWindowInsetsListener { v, insets ->
-            if (Build.VERSION.SDK_INT >= 30) {
-                val b = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.ime())
-                v.setPadding(b.left, b.top, b.right, b.bottom)
-            } else {
-                @Suppress("DEPRECATION")
-                v.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop,
-                    insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
-            }
-            insets
-        }
+        root.padForSystemBars()
 
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
@@ -65,6 +58,8 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         web.loadUrl("file:///android_asset/index.html")
 
         tts = TextToSpeech(this, this)
+        // 앱이 열려 있을 때 새 문자가 검사되면 화면을 바로 새로 그린다
+        GuardStore.onChange = { guardChanged() }
 
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
@@ -108,9 +103,30 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_PERM) guardChanged()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        guardChanged()
+    }
+
+    private fun guardChanged() = js("window.onGuardChanged&&onGuardChanged()")
+
+    private fun granted(p: String) = checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED
+
+    private fun guardPermissions() = listOfNotNull(
+        Manifest.permission.RECEIVE_SMS,
+        Manifest.permission.READ_CONTACTS,
+        if (Build.VERSION.SDK_INT >= 33) Manifest.permission.POST_NOTIFICATIONS else null,
+    )
+
     private fun js(code: String) = runOnUiThread { web.evaluateJavascript(code, null) }
 
     override fun onDestroy() {
+        GuardStore.onChange = null
         tts?.shutdown()
         web.destroy()
         super.onDestroy()
@@ -140,10 +156,43 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
                 js("window.onVoiceErr&&onVoiceErr('unsupported')")
             }
         }
+
+        /** 문자 지킴이 권한 상태 {sms, contacts, notif} */
+        @JavascriptInterface
+        fun guardStatus(): String = JSONObject()
+            .put("sms", granted(Manifest.permission.RECEIVE_SMS))
+            .put("contacts", granted(Manifest.permission.READ_CONTACTS))
+            .put("notif", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS))
+            .toString()
+
+        /** 빠진 권한을 요청한다. 결과는 onGuardChanged() 로 알린다. */
+        @JavascriptInterface
+        fun enableGuard() = runOnUiThread {
+            val missing = guardPermissions().filter { !granted(it) }
+            if (missing.isEmpty()) guardChanged() else requestPermissions(missing.toTypedArray(), REQ_PERM)
+        }
+
+        /** 권한을 거절해 다시 물을 수 없을 때 앱 설정 화면을 연다 */
+        @JavascriptInterface
+        fun openAppSettings() = runOnUiThread {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        }
+
+        @JavascriptInterface
+        fun guardHistory(): String = GuardStore.all(this@MainActivity).toString()
+
+        @JavascriptInterface
+        fun clearGuard() = GuardStore.clear(this@MainActivity)
+
+        @JavascriptInterface
+        fun openWarning(id: String) = runOnUiThread {
+            startActivity(Intent(this@MainActivity, WarningActivity::class.java).putExtra(WarningActivity.EXTRA_ID, id.toLong()))
+        }
     }
 
     companion object {
         private const val REQ_FILE = 1
         private const val REQ_VOICE = 2
+        private const val REQ_PERM = 3
     }
 }

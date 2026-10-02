@@ -15,6 +15,10 @@ android {
     }
 }
 
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+}
+
 // 웹 화면(../../index.html)을 그대로 앱의 assets로 복사해 웹과 앱이 같은 파일을 쓰게 한다.
 abstract class CopyWebTask : DefaultTask() {
     @get:InputFile abstract val source: RegularFileProperty

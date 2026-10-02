@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 새 문자 감지 (받은 문자함 전체를 읽는 READ_SMS 는 쓰지 않는다) -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <!-- 저장된 번호는 검사에서 제외 -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- 위험 문자 경고 알림 (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <queries>
         <intent>
             <action android:name="android.speech.RecognitionService" />
@@ -23,5 +30,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".guard.WarningActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode" />
+
+        <!-- BROADCAST_SMS: 시스템만 이 수신기를 부를 수 있다 (다른 앱의 가짜 문자 방지) -->
+        <receiver
+            android:name=".guard.SmishingReceiver"
+            android:permission="android.permission.BROADCAST_SMS"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
