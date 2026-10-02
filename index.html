@@ -43,10 +43,6 @@ h1{margin:6px 0 2px;font-size:1.5em;text-align:center}h2{margin:0 0 10px;font-si
 textarea{width:100%;height:130px;padding:10px;border:2px solid var(--bd);border-radius:14px;background:var(--bg);color:var(--tx);font:inherit;font-size:.8em;resize:none}
 .res{border-radius:16px;padding:14px;margin-top:10px;border:3px solid}.res.hi{border-color:var(--bad)}.res.mid{border-color:var(--hl)}.res.lo{border-color:var(--ok)}
 .res h3{margin:0 0 6px}.res ul{padding-left:20px;margin:6px 0;font-size:.85em}
-.kf{border:3px solid #374151;border-radius:16px;padding:12px;background:var(--bg)}
-.kh{background:#374151;color:#fff;border-radius:10px;padding:8px;text-align:center;font-weight:700;margin-bottom:10px;font-size:.85em}
-.ko{display:block;width:100%;padding:16px;margin-bottom:10px;border:3px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);font:inherit;font-weight:700;cursor:pointer;position:relative}
-.ko.h{border-color:var(--hl);box-shadow:0 0 0 5px rgba(245,158,11,.35);animation:p 1s infinite}.ko.h::after{content:"👈";position:absolute;right:12px}
 .pg{height:10px;border-radius:5px;background:var(--bd);margin-bottom:10px}.pg div{height:100%;border-radius:5px;background:var(--ok)}
 #devwrap{height:440px;background:#fff}#dev{padding:0;background:#fff;color:#111}
 #dev input{background:#fff;color:#111;border:1px solid #ccc;font-size:.75em;margin:0 0 8px}
@@ -77,19 +73,74 @@ textarea{width:100%;height:130px;padding:10px;border:2px solid var(--bd);border-
 .strip{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 10px}
 .stw{flex:none;border:0;background:none;padding:0;font:inherit;font-size:.65em;color:var(--tx);cursor:pointer}
 #pv:not(:empty){margin:10px 0}
-.kf{border:6px solid #1f2937;border-radius:14px;padding:0;overflow:hidden;background:#fff;color:#111}
-.kf .kh{margin:0;border-radius:0;padding:10px;font-size:.9em}
-.kc{display:flex;gap:4px;padding:6px 8px;background:#f3f4f6;font-size:.6em;flex-wrap:wrap}.kc span{padding:3px 8px;border-radius:10px;background:#e5e7eb}.kc .on{background:var(--kc);color:#fff;font-weight:700}.kc .dn{background:#bbf7d0}
-.kq{padding:10px 12px 4px;font-weight:700;font-size:.9em}.kw{padding:8px 10px}.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kf .ko{background:#fff;color:#111;border-color:#d1d5db;margin-bottom:8px;font-size:.85em}.kf .kgrid .ko{margin:0}
-.kb{display:flex;align-items:center;gap:12px;text-align:left}.ki{font-size:1.8em;min-width:1.5em;text-align:center}.kg{text-align:center}
-.kb small,.kg small{display:block;font-weight:400;color:#6b7280;font-size:.7em}.kg.h::after{top:6px}
-.kt{display:flex;gap:6px;padding:0 10px;font-size:.65em}.kt span{padding:4px 10px;border-radius:12px;background:#e5e7eb}.kt .on{background:#111;color:#fff}
-.kn{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#111827;color:#fff;font-size:.65em}.kn span{flex:1}.kn button{border:0;border-radius:8px;padding:8px 10px;font:inherit;background:#374151;color:#fff;cursor:pointer}
+/* ---------- 키오스크 (실제 기기 모양: 화면 + 아래 투입구·출력구) ---------- */
+.kxtop{display:flex;align-items:center;gap:6px;font-size:.65em;color:var(--mut);margin-bottom:8px}.kxtop span{flex:1}
+.kxtop button{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:4px 8px;font:inherit;cursor:pointer}
+.kx{--kc:#c2410c;background:linear-gradient(#2b3340,#1a1f29);border-radius:22px;padding:10px 10px 0;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.kxscr{position:relative;background:#fff;color:#111;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:430px;font-size:.8em}
+.kx.big .kxscr{font-size:.95em}
+.kxbar{display:flex;align-items:center;gap:6px;background:var(--kc);color:#fff;padding:8px 10px}.kxbar b{flex:1}
+.kxbar button{border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff;border-radius:8px;padding:3px 7px;font:inherit;font-size:.72em;cursor:pointer}
+.kxtime{font-size:.72em;background:rgba(0,0,0,.25);padding:3px 8px;border-radius:10px;white-space:nowrap}
+.kxsteps{display:flex;gap:3px;padding:6px 8px;background:#f3f4f6;font-size:.62em;overflow-x:auto;white-space:nowrap}
+.kxsteps span{padding:3px 7px;border-radius:9px;background:#e5e7eb;color:#6b7280}.kxsteps .on{background:var(--kc);color:#fff;font-weight:700}.kxsteps .dn{background:#dcfce7;color:#166534}
+.kxbody{flex:1;padding:10px 10px 22px}.kxbody.idle{padding:0;display:flex}
+.kxq{font-weight:800;font-size:1.15em;margin:2px 0 10px;text-align:center}
+.kxnote{font-size:.72em;color:#b45309;text-align:center;margin:-6px 0 8px}
+.kxfoot{display:flex;gap:6px;padding:8px;border-top:1px solid #e5e7eb;background:#f9fafb}
+.kxfoot button,.kxbtn{position:relative;border:0;border-radius:10px;padding:10px 12px;font:inherit;font-size:.82em;font-weight:700;cursor:pointer;background:#e5e7eb;color:#111}
+.kxfoot .go,.kxbtn.go{margin-left:auto;background:var(--kc);color:#fff;flex:1}.kxfoot .go:disabled{opacity:.35}
+.kxopts{display:grid;gap:8px}.kxopts.c2{grid-template-columns:1fr 1fr}.kxopts.c3{grid-template-columns:repeat(3,1fr)}
+.kxo{position:relative;border:2px solid #e5e7eb;border-radius:14px;background:#fff;color:#111;font:inherit;font-weight:700;padding:12px 10px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left}
+.kxo i{font-style:normal;font-size:1.7em}.kxo small{display:block;font-weight:400;color:#6b7280;font-size:.75em}
+.kxo.tile{flex-direction:column;justify-content:center;text-align:center;min-height:110px;gap:4px;padding:10px 4px}.kxo.tile i{font-size:2.4em}
+.kxo:disabled{opacity:.3;cursor:default}
+.kxopts.grid .kxo.tile{min-height:64px;padding:6px 2px}.kxopts.grid .kxo.tile i{font-size:1.3em}
+.kxidle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(160deg,var(--kc),#111827);color:#fff;cursor:pointer;padding:20px;position:relative;border:0}
+.kxidle .em{font-size:3.6em}.kxidle .t{margin-top:18px;font-size:1.05em;animation:blink 1.4s infinite}@keyframes blink{50%{opacity:.35}}
+.kxtabs{display:flex;border-bottom:2px solid #e5e7eb;margin:-10px -10px 10px}
+.kxtabs button{position:relative;flex:1;border:0;border-bottom:3px solid transparent;background:none;padding:10px 2px;font:inherit;font-size:.85em;font-weight:700;color:#6b7280;cursor:pointer}
+.kxtabs .on{color:var(--kc);border-bottom-color:var(--kc)}
+.kxmenu{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kxm{position:relative;border:2px solid #e5e7eb;border-radius:12px;background:#fff;padding:0 0 8px;font:inherit;color:#111;cursor:pointer;text-align:center}
+.kxm .kxph{display:block;font-size:2.4em;padding:10px 0;background:#fff7ed;border-radius:10px 10px 0 0;margin-bottom:4px}
+.kxm b{display:block;font-size:.88em}.kxm small{color:var(--kc);font-weight:700;font-size:.8em}
+.kxm .bdg{position:absolute;top:5px;left:5px;background:#ef4444;color:#fff;font-size:.62em;padding:1px 6px;border-radius:8px}
+.kxcart{border-top:2px solid #e5e7eb;padding:8px 10px;background:#fffbeb;font-size:.8em}
+.kxcart .row,.kxsum .row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0}
+.kxcart .row button{border:0;background:#fde68a;border-radius:6px;font:inherit;font-size:.8em;padding:1px 6px;cursor:pointer}
+.kxcart .tot,.kxsum .tot{font-weight:800;color:var(--kc);font-size:1.1em;border-top:1px dashed #d1d5db;margin-top:4px;padding-top:6px}
+.kxsum{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:.88em}
+.kxpop{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:14px;z-index:5}
+.kxpop>div{background:#fff;border-radius:16px;padding:16px;width:100%;text-align:center}
+.qty{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0;font-size:1.3em;font-weight:800}
+.qty button{position:relative;width:2em;height:2em;border-radius:50%;border:2px solid #d1d5db;background:#fff;font:inherit;cursor:pointer;color:#111}
+.kxcnt{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:4px 2px}.kxcnt small{display:block;color:#6b7280;font-size:.75em}.kxcnt .qty{margin:4px 0;font-size:1.1em}
+.kxdate{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.kxdate .kxo{min-height:70px;font-size:.85em}
+.kxroute{text-align:center;font-weight:700;color:var(--kc);margin:-4px 0 8px;font-size:.9em}
+.kxrow{position:relative;display:grid;grid-template-columns:1.35fr 1.4fr .9fr;align-items:center;gap:4px;width:100%;border:2px solid #e5e7eb;border-radius:10px;background:#fff;color:#111;font:inherit;font-size:.82em;padding:10px 8px;margin-bottom:6px;cursor:pointer;text-align:left}
+.kxrow small{text-align:right;font-weight:700;color:var(--kc)}.kxrow:disabled{opacity:.4}.kxrow:disabled small{color:#b91c1c}
+.kxcar{text-align:center;font-weight:700;margin-bottom:6px;font-size:.85em}.kxcar small{display:block;font-weight:400;color:#6b7280;font-size:.8em}
+.kxseat{display:grid;grid-template-columns:1fr 1fr .5fr 1fr 1fr;gap:5px;max-width:250px;margin:0 auto}
+.st{position:relative;border:2px solid #93c5fd;background:#eff6ff;border-radius:8px 8px 4px 4px;font:inherit;font-size:.7em;padding:6px 0;cursor:pointer;color:#1e3a8a}
+.st:disabled{background:#d1d5db;border-color:#d1d5db;color:#9ca3af}.st.sel{background:var(--kc);border-color:var(--kc);color:#fff}
+.kxseat .ai{font-size:.6em;color:#9ca3af;display:flex;align-items:center;justify-content:center}
+.kxamt{text-align:center;margin-bottom:10px}.kxamt b{display:block;font-size:1.6em;color:var(--kc)}
+.kxins{text-align:center;padding:12px;border:2px dashed #d1d5db;border-radius:14px;line-height:1.5}.kxins .em{font-size:3.2em}
+.kxins .arrow{font-size:1.4em;margin-top:8px;animation:b .7s infinite}.kxins small{display:block;color:#6b7280;font-size:.75em}
+.kxinsbtn{margin-top:10px;border:0;background:none;color:#2563eb;text-decoration:underline;font:inherit;font-size:.75em;cursor:pointer}
+.kxdone{text-align:center;padding:20px 8px;line-height:1.6}.kxdone .em{font-size:3.6em}.kxdone .no{font-size:1.9em;font-weight:800;color:var(--kc);margin:6px 0}
+.kxhw{display:flex;justify-content:center;gap:8px;padding:12px 6px 14px}
+.slot{position:relative;flex:1;max-width:25%;background:#0b0f16;color:#9ca3af;border:2px solid #374151;border-radius:8px;padding:5px 2px 6px;font:inherit;font-size:.5em;cursor:pointer}
+.slot::before{content:"";display:block;height:5px;margin:0 4px 5px;background:#000;border-radius:3px;box-shadow:inset 0 1px 2px #444}
+.slot i{font-style:normal;display:block;font-size:1.6em}.slot.act{color:#fff;border-color:#facc15;animation:p 1s infinite}
+.paper{margin:-6px auto 10px;width:88%;animation:print 1.8s ease-out;overflow:hidden}@keyframes print{from{max-height:0}to{max-height:700px}}
+.hint{border-color:var(--hl)!important;box-shadow:0 0 0 4px rgba(245,158,11,.6);animation:p 1s infinite;z-index:2}
+.hint::after{content:"👆";position:absolute;left:50%;bottom:-1.05em;margin-left:-.5em;font-size:1.5em;line-height:1;animation:b .7s infinite;pointer-events:none;z-index:6}
+#kmsg{margin-top:10px;font-size:.85em}
 .rc{background:#fff;color:#111;border:2px dashed #9ca3af;padding:14px;font-family:monospace;font-size:.8em;margin-bottom:10px}.rt{text-align:center;font-weight:700}.rn{text-align:center;font-size:2em;font-weight:700;margin:6px 0}.rr{display:flex;justify-content:space-between;border-top:1px dotted #ccc;padding:4px 0}
-.cart{background:#fef3c7;color:#111;border-radius:10px;padding:10px;margin:0 10px 6px;font-size:.75em}
 .pd{background:#f3f4f6;color:#111;border-radius:10px;padding:12px;text-align:center;font-size:1.1em;letter-spacing:4px;margin-bottom:8px;min-height:2.6em}
-.kp2{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.pk{padding:12px;border:2px solid #d1d5db;background:#fff;color:#111;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+.kp2{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.pk{position:relative;padding:12px;border:2px solid #d1d5db;background:#fff;color:#111;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
 /* 안드로이드 앱 안에서는 휴대폰 테두리 없이 화면 전체를 쓴다 */
 .app body{padding:0}.app #phone{width:100%;height:100vh;border:0;border-radius:0}
 </style><script>window.Android&&document.documentElement.classList.add('app')</script></head>
@@ -342,66 +393,179 @@ function analyze(t){const f=smish(t,$('#sv')&&$('#sv').checked);if(f.stop==1){$(
  const safe=t.replace(/\d{6,}/g,'●●●●●●').slice(0,120);
  $('#res').innerHTML=pipe(t)+`<div class="res ${lv[0]}"><h3>${lv[1]}</h3><b>${lv[2]}</b><div style="font-size:.7em;color:var(--mut);margin:6px 0">가린 문자: ${safe}</div><b style="font-size:.85em">왜 그런가요?</b><ul>${why.map(w=>`<li>${w}</li>`).join('')||'<li>눈에 띄는 위험 신호는 없어요.</li>'}</ul><b style="font-size:.85em">이렇게 하세요</b><ul><li>링크는 누르지 않기</li><li>문자는 지우거나 신고하기</li><li>이미 돈을 보냈다면 바로 112, 불안하면 118(인터넷 상담)이나 1332(금융감독원)</li></ul></div>`;
  say(lv[1].replace(/[^\uAC00-\uD7A3 ]/g,'')+'. '+lv[2]+' '+(why[0]||''))}
-/* ---------- 3. 키오스크 ---------- */
-const M={'매장에서 먹기':['🍽️'],'포장하기':['🥡'],'배달':['🛵'],'비빔밥':['🍚','9,000원',9000],'김치찌개':['🍲','8,000원',8000],'칼국수':['🍜','7,500원',7500],'돈까스':['🍛','9,500원',9500],'냉면':['🥶','8,500원',8500],'공기밥':['🍚','1,000원',1000],'1개':['1️⃣'],'2개':['2️⃣'],'3개':['3️⃣'],'카드':['💳','신용·체크카드'],'현금':['💵','지폐 넣기'],'쿠폰':['🎟️','바코드 읽기'],'수납':['💰','진료비 내기'],'진료 접수':['📋','오늘 진료 접수'],'증명서 발급':['📄','서류 출력'],'정형외과':['🦴'],'안과':['👁️'],'내과':['🩺'],'건강보험증 넣기':['🪪','보험증을 넣어요'],'생략':['⏭️','나중에 할게요'],'다음에 할게요':['🔙','처음으로 돌아가요'],'취소':['❌'],'접수하기':['✅'],'처음으로':['🏠'],'대전':['📍'],'서울':['📍'],'대구':['📍'],'광주':['📍'],'강릉':['📍'],'부산':['📍'],'낮 12시':['🚄','KTX · 2시간 40분 · 59,800원'],'오전 9시':['🚄','KTX · 2시간 35분 · 59,800원'],'오후 3시':['🚄','KTX · 2시간 45분 · 59,800원'],'된장찌개':['🥘','8,000원',8000],'콜라':['🥤','2,000원',2000],'4개':['4️⃣'],'5개':['5️⃣'],'소아과':['🧸'],'피부과':['🧴'],'울산':['📍'],'오전 7시':['🚄','KTX · 2시간 35분 · 59,800원'],'오후 6시':['🚄','KTX · 2시간 50분 · 59,800원'],'어린이 2명':['🧒'],'어른 2명':['👥'],'어린이 1명':['🧒'],'어른 1명':['🧑'],'주문하기':['✅'],'메뉴 다시 고르기':['↩️'],'멤버십 적립하기':['⭐','전화번호로 적립'],'쿠폰 사용':['🎟️','할인 쿠폰'],'적립 안 함':['⏭️'],'간편결제':['📱','QR·NFC'],'카드 꽂기':['💳','투입구에 넣어요'],'영수증 출력':['🧾'],'영수증 안 받음':['🙅'],'신분증 넣기':['🪪','신분증을 넣어요'],'모바일 신분증':['📱','QR로 확인'],'김하늘 과장':['👨‍⚕️','오늘 진료'],'박서준 과장':['👩‍⚕️','오늘 진료'],'상관없음':['🙂'],'문자 알림 받기':['📩','내 차례를 알려요'],'알림 안 받기':['🔕'],'접수표 출력':['🖨️'],'출력 안 함':['🙅'],'오늘':['📅'],'내일':['📅'],'모레':['📅'],'창가 좌석':['🪟'],'통로 좌석':['🚶'],'해당 없음':['🙂'],'경로 우대':['👴','만 65세 이상'],'어린이 할인':['🧒'],'종이 승차권 출력':['🎫'],'모바일 승차권 문자':['📱']};
-const K={food:{n:'🍜 음식점 주문',h:'🍜 맛나식당 주문기',c:'#c2410c',cr:['방법','메뉴','수량','확인','적립','번호','결제','카드','영수증'],no:'주문번호 A-127',fin:'음식이 나오면 번호를 불러 드려요 🔔',g:'매장에서 김치찌개 1개를 멤버십 적립하고 카드로 결제해 보세요.',s:[
-['어디서 드실까요?',['매장에서 먹기','포장하기','배달'],0,'b'],
-['메뉴를 골라요',['비빔밥','김치찌개','칼국수','돈까스','냉면','된장찌개','공기밥','콜라'],1,'g'],
-['몇 개 드릴까요?',['1개','2개','3개','4개','5개'],0,'b'],
-['주문 내용을 확인해 주세요',['주문하기','메뉴 다시 고르기','처음으로'],0,'b',0,1],
-['멤버십·쿠폰이 있으신가요?',['멤버십 적립하기','쿠폰 사용','적립 안 함'],0,'b'],
-['적립할 전화번호를 눌러 주세요 (연습이니 실제 번호는 누르지 마세요)',[],0,'p',x=>x[4]=='멤버십 적립하기'],
-['결제 방법을 골라요',['카드','현금','간편결제'],0,'b'],
-['카드를 투입구에 넣어 주세요',['카드 꽂기','취소'],0,'b'],
-['영수증이 필요하세요?',['영수증 출력','영수증 안 받음'],0,'b']]},
- hosp:{n:'🏥 병원 접수',h:'🏥 한마음병원 무인접수기',c:'#0f766e',cr:['업무','진료과','의사','본인확인','확인','알림','접수표'],no:'대기번호 12번',fin:'대기실에서 이름이 불리면 진료실로 가세요',g:'내과 진료를 건강보험증으로 접수하고 문자 알림을 받아 보세요.',s:[
-['무엇을 하실까요?',['수납','진료 접수','증명서 발급'],1,'b'],
-['진료과를 골라요',['정형외과','안과','내과','소아과','피부과'],2,'g'],
-['진료받을 의사를 골라요',['김하늘 과장','박서준 과장','상관없음'],2,'b'],
-['본인 확인 방법',['건강보험증 넣기','신분증 넣기','모바일 신분증'],0,'b'],
-['접수 내용을 확인해 주세요',['접수하기','취소','처음으로'],0,'b',0,1],
-['대기 알림을 받으시겠어요?',['문자 알림 받기','알림 안 받기'],0,'b'],
-['접수표를 출력할까요?',['접수표 출력','출력 안 함'],0,'b']]},
- train:{n:'🚆 기차표 예매',h:'🚆 승차권 자동발매기',c:'#1d4ed8',cr:['출발','도착','날짜','시간','인원','좌석','할인','결제','승차권'],no:'승차권 발권 완료',fin:'승차권과 카드를 꼭 챙기세요',g:'서울에서 부산, 내일 오전 9시, 어른 1명, 창가 좌석을 카드로 결제해 보세요.',s:[
-['출발역을 골라요',['대전','서울','대구','울산'],1,'g'],
-['도착역을 골라요',['광주','강릉','부산','울산'],2,'g'],
-['날짜를 골라요',['오늘','내일','모레'],1,'b'],
-['열차 시간을 골라요',['오전 7시','오전 9시','낮 12시','오후 3시','오후 6시'],1,'b'],
-['몇 분이 타실까요?',['어른 2명','어린이 1명','어른 1명','어린이 2명'],2,'b'],
-['좌석을 골라요',['창가 좌석','통로 좌석','상관없음'],0,'b'],
-['할인 대상이세요?',['해당 없음','경로 우대','어린이 할인'],0,'b'],
-['결제 내용을 확인하고 결제해 주세요',['카드','현금','간편결제'],0,'b',0,1],
-['승차권을 어떻게 받으시겠어요?',['종이 승차권 출력','모바일 승차권 문자'],0,'b']]}};
+/* ---------- 3. 키오스크 연습 ----------
+   실제 키오스크처럼: 대기 화면 → 단계별 화면(메뉴판·장바구니·좌석표 등) → 아래 카드·QR·지폐 투입구와 영수증 출력구.
+   어떤 선택을 해도 진행되고 '이전'으로 언제든 돌아갈 수 있다. 남은 시간은 보여 주기만 하고 처음으로 돌려보내지 않는다. */
+const M={'매장에서 먹기':['🍽️','매장에서 식사'],'포장하기':['🛍️','가져가기'],
+'비빔밥':['🍚',9000],'김치찌개':['🍲',8000],'된장찌개':['🥘',8000],'칼국수':['🍜',7500],'돈까스':['🍛',9500],'냉면':['🥢',8500],'공기밥':['🍚',1000],'계란말이':['🍳',5000],'콜라':['🥤',2000],'사이다':['🥤',2000],'식혜':['🧃',2500],
+'결제하기':['💳','다음으로'],'메뉴 더 담기':['➕','메뉴판으로'],'멤버십 적립하기':['⭐','전화번호로 적립'],'쿠폰 사용':['🎟️','할인 쿠폰'],'적립 안 함':['⏭️','건너뛰기'],
+'카드':['💳','신용·체크카드'],'간편결제':['📱','QR·바코드'],'현금':['💵','지폐'],'영수증 출력':['🧾','종이로 받기'],'영수증 안 받음':['🙅','받지 않기'],
+'진료 접수':['📋','오늘 진료'],'수납':['💰','진료비 내기'],'증명서 발급':['📄','서류 받기'],'내과':['🩺'],'정형외과':['🦴'],'안과':['👁️'],'소아과':['🧸'],'피부과':['🧴'],'이비인후과':['👂'],
+'김하늘 과장':['👨‍⚕️','오늘 진료'],'박서준 과장':['👩‍⚕️','오늘 진료'],'상관없음':['🙂','빨리 볼 수 있는 분'],'진료확인서':['📄',1000],'처방전':['💊',1000],'진단서':['📝',20000],
+'건강보험증 넣기':['🪪','아래 투입구에 넣어요'],'신분증 넣기':['🪪','아래 투입구에 넣어요'],'모바일 신분증':['📱','QR로 확인'],'접수하기':['✅','접수 마치기'],'처음으로':['🏠','처음부터'],
+'문자 알림 받기':['📩','내 차례를 알려요'],'알림 안 받기':['🔕','화면으로 볼게요'],'출력하기':['🖨️','종이로 받기'],'출력 안 함':['🙅','받지 않기'],'서류 출력':['🖨️','종이로 받기'],
+'종이 승차권 출력':['🎫','종이로 받기'],'모바일 승차권 문자':['📱','문자로 받기']};
+const won=n=>n.toLocaleString()+'원';
+const STN=['서울','용산','광명','수원','천안아산','대전','김천구미','동대구','신경주','울산','부산','광주송정'];
+const TRAINS=[['KTX 001','07:00','09:35',59800,1],['KTX 015','09:00','11:38',59800],['ITX-새마을 1003','09:20','14:10',42600],['KTX 023','12:00','14:40',59800],['KTX 037','15:00','17:45',59800],['KTX 051','18:00','20:50',59800]];
+const TAKEN=['1A','1B','2C','2D','3B','4A','4C','6B','6D','7A','8C','9B','9D','10A'];
+const DAYS=(()=>{const d=new Date(),w='일월화수목금토';return[...Array(8)].map((_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return`${x.getMonth()+1}/${x.getDate()}(${w[x.getDay()]})`})})();
+const SLOT={card:['💳','카드'],qr:['▣','QR 스캐너'],cash:['💵','지폐'],id:['🪪','신분증·보험증'],rcpt:['🧾','영수증']};
+const INS={card:['카드를 아래 투입구에 끝까지 꽂아 주세요','결제하고 있어요. 카드를 빼지 마세요...','결제가 끝났어요. 카드를 빼 주세요'],
+ qr:['휴대폰 화면의 QR 코드를 아래 스캐너에 대 주세요','확인하고 있어요...','확인되었어요'],
+ cash:['지폐를 아래 투입구에 넣어 주세요','돈을 세고 있어요...','받았어요. 거스름돈을 꼭 챙기세요'],
+ id:['건강보험증이나 신분증을 아래 투입구에 넣어 주세요','본인 확인 중이에요...','확인되었어요. 카드를 빼 주세요']};
+const job=()=>k.sel[1];
+const K={
+food:{n:'🍜 음식점 주문',brand:'🍜 맛나식당',c:'#c2410c',hw:['card','qr','cash','rcpt'],
+ g:'매장에서 김치찌개 1개를 고르고, 멤버십을 적립한 뒤 카드로 결제해 보세요.',
+ done:()=>['주문이 완료되었어요','A-127','음식이 나오면 번호를 불러 드려요 🔔'],
+ s:[{t:'idle',txt:'주문하시려면 화면을 눌러 주세요'},
+ {t:'pick',cr:'장소',q:'어디서 드시겠어요?',o:['매장에서 먹기','포장하기'],a:0,tile:1},
+ {t:'menu',cr:'메뉴',q:'메뉴를 골라 담아 주세요',cats:{'추천':['김치찌개','비빔밥','돈까스','냉면'],'식사':['비빔밥','김치찌개','된장찌개','칼국수','돈까스','냉면'],'사이드':['공기밥','계란말이'],'음료':['콜라','사이다','식혜']},best:['김치찌개','비빔밥'],a:{'김치찌개':1}},
+ {t:'pick',cr:'확인',q:'주문 내용을 확인해 주세요',o:['결제하기','메뉴 더 담기'],a:0,sum:1},
+ {t:'pick',cr:'적립',q:'멤버십 적립이나 쿠폰이 있으신가요?',o:['멤버십 적립하기','쿠폰 사용','적립 안 함'],a:0},
+ {t:'pad',cr:'번호',q:'적립할 전화번호를 눌러 주세요',note:'연습이니 실제 번호는 누르지 마세요',if:()=>k.sel[4]=='멤버십 적립하기'},
+ {t:'pick',cr:'결제',q:'결제 방법을 골라 주세요',o:['카드','간편결제','현금'],a:0,tile:1},
+ {t:'insert',cr:'결제',from:6,pay:1},
+ {t:'pick',cr:'영수증',q:'영수증을 출력할까요?',o:['영수증 출력','영수증 안 받음'],a:0,tile:1}]},
+hosp:{n:'🏥 병원 접수·수납',brand:'🏥 한마음병원',c:'#0f766e',hw:['id','card','qr','rcpt'],
+ g:'내과 진료를 건강보험증으로 접수하고 문자 알림을 받아 보세요.',
+ done:()=>job()=='진료 접수'?['접수가 완료되었어요','대기번호 12번','대기실에서 이름이 불리면 진료실로 가세요']:job()=='수납'?['수납이 완료되었어요','6,200원','처방전은 약국에 가져가세요']:['서류가 발급되었어요',k.sel[4]||'','서류를 꼭 챙기세요'],
+ s:[{t:'idle',txt:'접수·수납을 하시려면 화면을 눌러 주세요'},
+ {t:'pick',cr:'업무',q:'무엇을 하시겠어요?',o:['진료 접수','수납','증명서 발급'],a:0,tile:1},
+ {t:'grid',cr:'진료과',q:'진료과를 골라 주세요',o:['내과','정형외과','안과','소아과','피부과','이비인후과'],a:0,if:()=>job()=='진료 접수'},
+ {t:'pick',cr:'의사',q:'진료받을 의사 선생님을 골라 주세요',o:['김하늘 과장','박서준 과장','상관없음'],a:2,if:()=>job()=='진료 접수'},
+ {t:'pick',cr:'서류',q:'어떤 서류가 필요하세요?',o:['진료확인서','처방전','진단서'],a:0,if:()=>job()=='증명서 발급'},
+ {t:'pick',cr:'본인확인',q:'본인 확인 방법을 골라 주세요',o:['건강보험증 넣기','신분증 넣기','모바일 신분증'],a:0},
+ {t:'insert',cr:'본인확인',from:5},
+ {t:'pick',cr:'확인',q:'접수 내용을 확인해 주세요',o:['접수하기','처음으로'],a:0,sum:1,if:()=>job()=='진료 접수'},
+ {t:'pick',cr:'금액',q:'내실 금액을 확인해 주세요',o:['결제하기','처음으로'],a:0,sum:1,if:()=>job()&&job()!='진료 접수'},
+ {t:'pick',cr:'결제',q:'결제 방법을 골라 주세요',o:['카드','간편결제'],a:0,tile:1,if:()=>job()&&job()!='진료 접수'},
+ {t:'insert',cr:'결제',from:9,pay:1,if:()=>job()&&job()!='진료 접수'},
+ {t:'pick',cr:'알림',q:'진료 차례가 되면 문자로 알려 드릴까요?',o:['문자 알림 받기','알림 안 받기'],a:0,if:()=>job()=='진료 접수'},
+ {t:'pick',cr:'출력',q:()=>job()=='진료 접수'?'접수표를 출력할까요?':job()=='수납'?'영수증을 출력할까요?':'서류를 출력할게요',o:()=>job()=='증명서 발급'?['서류 출력']:['출력하기','출력 안 함'],a:0,tile:1}]},
+train:{n:'🚆 기차표 예매',brand:'🚆 승차권 자동발매기',c:'#1d4ed8',hw:['card','qr','cash','rcpt'],
+ g:'서울에서 부산까지, 내일 오전 9시 KTX, 어른 1명, 창가 좌석을 카드로 결제해 보세요.',
+ done:()=>['발권이 완료되었어요',`${k.sel[1]} → ${k.sel[2]}`,'승차권과 카드를 꼭 챙기세요'],
+ s:[{t:'idle',txt:'승차권을 사시려면 화면을 눌러 주세요'},
+ {t:'grid',cr:'출발',q:'출발역을 골라 주세요',o:STN,a:0},
+ {t:'grid',cr:'도착',q:'도착역을 골라 주세요',o:STN,a:10,no:()=>k.sel[1]},
+ {t:'date',cr:'날짜',q:'타실 날짜를 골라 주세요',a:1},
+ {t:'count',cr:'인원',q:'타실 분이 몇 명인가요?',rows:[['어른','만 13세 이상',1],['어린이','만 6~12세',.5],['경로','만 65세 이상',.7]],a:{'어른':1}},
+ {t:'table',cr:'열차',q:'타실 열차를 골라 주세요',a:1},
+ {t:'seat',cr:'좌석',q:'앉으실 자리를 골라 주세요',note:'창가 자리는 A줄과 D줄이에요',a:'5A'},
+ {t:'pick',cr:'결제',q:'결제 방법을 골라 주세요',o:['카드','간편결제','현금'],a:0,tile:1},
+ {t:'insert',cr:'결제',from:7,pay:1},
+ {t:'pick',cr:'발권',q:'승차권을 어떻게 받으시겠어요?',o:['종이 승차권 출력','모바일 승차권 문자'],a:0,tile:1}]}};
 const LV=['따라 하기','연습하기','혼자 하기','자유롭게'];
-function kioskRender(){k=k&&k.lv!=null?k:{lv:0};main.innerHTML=`<h2>🍽️ 키오스크 연습</h2><div style="font-size:.7em;color:var(--mut)">연습 단계</div><div class="chips">${LV.map((l,i)=>`<button class="chip ${i==k.lv?'s':''}" data-l="${i}">${l}</button>`).join('')}</div>
+let kT=null;
+const kv=x=>typeof x=='function'?x():x;
+/* 마지막에 종이를 받기로 했는지 ('출력 안 함'은 제외) */
+const kprinted=()=>{const v=k.sel[k.sel.length-1]||'';return/출력|종이/.test(v)&&!/안 /.test(v)};
+const kcount=()=>Object.values(k.cart).reduce((a,b)=>a+b,0);
+const kcartTotal=()=>Object.entries(k.cart).reduce((t,[n,q])=>t+M[n][1]*q,0);
+function kfare(){const r=TRAINS[k.row==null?1:k.row],c=K.train.s.find(x=>x.t=='count');return Math.round(c.rows.reduce((t,[n,,f])=>t+(k.cnt[n]||0)*r[3]*f,0)/100)*100}
+function kamt(){return k.id=='food'?kcartTotal():k.id=='train'?kfare():job()=='수납'?6200:(M[k.sel[4]]||[0,0])[1]}
+const kmode=s=>{const v=k.sel[s.from]||'';return/간편|모바일/.test(v)?'qr':/현금/.test(v)?'cash':/보험증|신분증/.test(v)?'id':'card'};
+function kioskRender(){clearInterval(kT);k=k&&k.lv!=null?k:{lv:0};main.innerHTML=`<h2>🍽️ 키오스크 연습</h2><div style="font-size:.7em;color:var(--mut)">연습 단계</div><div class="chips">${LV.map((l,i)=>`<button class="chip ${i==k.lv?'s':''}" data-l="${i}">${l}</button>`).join('')}</div>
 <div style="font-size:.7em;color:var(--mut);margin-bottom:8px">${['화살표가 알려 줘요','"다시 설명"을 누르면 힌트가 나와요','도움 없이 해 봐요','목표 없이 마음대로 눌러 봐요'][k.lv]} · 원하는 대로 골라도 괜찮아요</div>
 ${Object.keys(K).map(i=>`<button class="card" data-k="${i}"><b>${K[i].n}</b><span>${K[i].g}</span></button>`).join('')}`;
  main.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{k.lv=+b.dataset.l;kioskRender()});
- main.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{k={lv:k.lv,id:b.dataset.k,step:0,miss:0,sel:[],hint:k.lv==0};view='play';playRender()})}
-function kprev(){do{k.step--}while(k.step>0&&k.sel[k.step]=='—');k.sel.length=k.step;k.hint=k.lv==0;playRender()}
-function playRender(){const c=K[k.id],s=c.s[k.step];k.sel=k.sel||[];if(s&&s[4]&&!s[4](k.sel)){k.sel[k.step]='—';k.step++;return playRender()}
- const pad=()=>`<div class="pd">${k.pin?'●'.repeat(k.pin.length):'숫자를 눌러 주세요'}</div><div class="kp2">${[1,2,3,4,5,6,7,8,9,'지움',0,'확인'].map(n=>`<button class="pk" data-p="${n}">${n}</button>`).join('')}</div>`;
- if(!s){const hit=c.s.filter((t,i)=>t[1].length&&k.sel[i]==t[1][t[2]]).length,tn=c.s.filter(t=>t[1].length).length;main.innerHTML=`<div class="rc"><div class="rt">${c.h}</div><div class="rn">${c.no}</div>${k.sel.map((x,i)=>x=='—'?'':`<div class="rr"><span>${c.cr[i]}</span><b>${x}</b></div>`).join('')}${k.id=='food'?`<div class="rr"><span>합계</span><b>${(M[k.sel[1]][2]*(parseInt(k.sel[2])||1)).toLocaleString()}원</b></div>`:''}<div class="rt" style="font-size:.75em;margin-top:8px">${c.fin}</div></div><div class="res lo"><h3>🎉 잘 하셨어요!</h3>끝까지 해 보셨어요.<br>${k.lv<3?`추천 과제와 같게 고른 단계: ${hit}/${tn} (점수는 없어요)`:'마음대로 골라 보셨어요.'}</div><button class="btn" style="margin-top:12px" id="re">다시 해 보기</button><button class="btn g" id="ot">다른 연습 고르기</button>`;
-  $('#re').onclick=()=>{k.step=0;k.sel=[];k.hint=k.lv==0;playRender()};$('#ot').onclick=()=>go('kiosk');say('잘 하셨어요! 끝까지 해 보셨어요.');return}
- const ty=s[3],opt=o=>{const m=M[o]||['',''],h=k.hint&&k.lv<3&&o==s[1][s[2]]?' h':'';
-  return ty=='g'?`<button class="ko kg${h}" data-v="${o}"><span style="font-size:2em;display:block">${m[0]}</span>${o}<small>${m[1]||''}</small></button>`:`<button class="ko kb${h}" data-v="${o}"><span class="ki">${m[0]}</span><span>${o}<small>${m[1]||''}</small></span></button>`};
- const tot=k.id=='food'&&k.sel[1]?'합계 '+(M[k.sel[1]][2]*(parseInt(k.sel[2])||1)).toLocaleString()+'원':'';
- main.innerHTML=`<div style="font-size:.7em;color:var(--mut);margin-bottom:6px">${LV[k.lv]} · ${k.lv<3?'🎯 '+c.g:'🎈 마음대로 눌러 보세요'}</div>
-<div class="kf" style="--kc:${c.c}"><div class="kh" style="background:${c.c}">${c.h}</div>
-<div class="kc">${c.cr.map((x,i)=>`<span class="${i==k.step?'on':i<k.step?'dn':''}">${i+1}. ${x}</span>`).join('')}</div>
-${k.id=='food'&&ty=='g'?'<div class="kt" style="margin-top:8px"><span class="on">추천</span><span>식사</span><span>사이드</span><span>음료</span></div>':''}
-<div class="kq">${s[0]}</div>${s[5]?`<div class="cart">🧾 ${k.sel.filter(x=>x!='—').join(' › ')} <b>${tot}</b></div>`:''}<div class="kw">${ty=='p'?pad():`<div class="${ty=='g'?'kgrid':''}">${s[1].map(opt).join('')}</div>`}</div>
-<div class="kn"><button id="kp">◀ 이전</button><span>🛒 ${k.sel.join(' › ')||'고른 내용이 여기에 보여요'} <b>${tot}</b></span><button id="kx">🏠 처음</button></div></div>
-<div id="kmsg" style="margin-top:10px;font-size:.85em">${k.msg||''}</div>`;k.msg='';
- $('#kp').onclick=()=>{if(k.step>0)kprev();else go('kiosk')};$('#kx').onclick=()=>go('kiosk');
- main.querySelectorAll('.pk').forEach(b=>b.onclick=()=>{const v=b.dataset.p;k.pin=k.pin||'';let m='';if(v=='지움')k.pin=k.pin.slice(0,-1);else if(v=='확인'){if(k.pin.length<4)m='4자리 이상 눌러 주세요.';else{k.sel[k.step]='번호 입력 완료';k.step++;k.pin=''}}else if(k.pin.length<8)k.pin+=v;k.msg=m;playRender();m&&say(m)});
- main.querySelectorAll('.ko').forEach(b=>b.onclick=()=>{const v=b.dataset.v;let m='';
-  if(v=='취소'||v=='처음으로'){k.step=0;k.sel=[];k.hint=k.lv==0;m='처음 화면으로 돌아왔어요. 다시 골라 보세요.'}
-  else if(v=='메뉴 다시 고르기'){k.step=1;k.sel.length=1;m='메뉴를 다시 골라 주세요.'}
-  else if(k.id=='train'&&k.step==1&&v==k.sel[0])m='출발역과 같아요. 다른 도착역을 골라 주세요.';
-  else{k.sel[k.step]=v;k.step++;k.hint=k.lv==0}
-  k.msg=m;playRender();m&&say(m)});
- if(!k.msg)say(s[0]+(k.hint&&k.lv<3?' 표시된 곳을 눌러 보세요.':' 원하는 것을 눌러 보세요.'))}
+ main.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{k={lv:k.lv,big:k.big,id:b.dataset.k};kreset();view='play';playRender()})}
+function kreset(){Object.assign(k,{step:0,sel:[],ok:[],cart:{},cnt:{},seat:null,tab:null,pop:null,qty:1,phase:null,pin:'',row:null,said:'',msg:'',left:120,hint:k.lv==0})}
+function kprev(){if(k.pop){k.pop=null;return playRender()}k.phase=null;do{k.step--}while(k.step>0&&k.sel[k.step]=='—');k.sel.length=k.ok.length=k.step;k.hint=k.lv==0;playRender()}
+function knext(v,ok){k.sel[k.step]=v;k.ok[k.step]=ok;k.step++;k.hint=k.lv==0;k.phase=null;k.pop=null;playRender()}
+/* 화면 그리기 */
+function playRender(){const c=K[k.id];let s=c.s[k.step];
+ while(s&&s.if&&!s.if()){k.sel[k.step]='—';k.step++;s=c.s[k.step]}
+ const H=k.hint&&k.lv<3,hc=b=>H&&b?' hint':'',idle=s&&s.t=='idle',done=!s;
+ const opt=(o,h,tile,dis)=>{const m=M[o]||['📍'],sub=typeof m[1]=='number'?won(m[1]):(m[1]||'');return`<button class="kxo${tile?' tile':''}${hc(h)}" data-v="${o}"${dis?' disabled':''}><i>${m[0]}</i><span>${o}<small>${sub}</small></span></button>`};
+ let body='',go='',pop='',cart='',act=null,say1='';
+ if(done){const d=c.done();body=`<div class="kxdone"><div class="em">✅</div><b style="font-size:1.2em">${d[0]}</b><div class="no">${d[1]}</div><div>${d[2]}</div>${kprinted()?'<small style="color:#6b7280">⬇ 아래 출력구에서 종이를 가져가세요</small>':''}</div>`;say1='잘 하셨어요! 끝까지 해 보셨어요.'}
+ else if(idle){body=`<button class="kxidle${hc(1)}" data-a="idle"><div class="em">${c.brand.split(' ')[0]}</div><b style="font-size:1.4em;margin-top:8px">${c.brand.split(' ').slice(1).join(' ')}</b><div class="t">👆 ${s.txt}</div></button>`;say1=s.txt}
+ else{let inner='';say1=kv(s.q);
+  if(s.t=='pick'||s.t=='grid'){const o=kv(s.o),no=s.no&&s.no();
+   inner=(s.sum?ksum():'')+`<div class="kxopts ${s.t=='grid'?'c3 grid':s.tile?(o.length==3?'c3':'c2'):''}">${o.map((x,i)=>opt(x,i==s.a,s.tile||s.t=='grid',x==no)).join('')}</div>`}
+  else if(s.t=='menu'){const tab=k.tab||Object.keys(s.cats)[0],want=Object.keys(s.a)[0],wq=s.a[want],have=(k.cart[want]||0)>=wq,tgt=Object.keys(s.cats).find(t=>s.cats[t].includes(want)),inTab=s.cats[tab].includes(want);
+   inner=`<div class="kxtabs">${Object.keys(s.cats).map(t=>`<button class="${t==tab?'on':''}${hc(!k.pop&&!have&&!inTab&&t==tgt)}" data-tab="${t}">${t}</button>`).join('')}</div>
+<div class="kxmenu">${s.cats[tab].map(n=>`<button class="kxm${hc(!k.pop&&!have&&n==want)}" data-item="${n}">${s.best.includes(n)?'<span class="bdg">인기</span>':''}<span class="kxph">${M[n][0]}</span><b>${n}</b><small>${won(M[n][1])}</small></button>`).join('')}</div>`;
+   const n=kcount();cart=`<div class="kxcart">${n?Object.entries(k.cart).map(([m,q])=>`<div class="row"><span>${M[m][0]} ${m} × ${q}</span><span>${won(M[m][1]*q)} <button data-rm="${m}">✕</button></span></div>`).join('')+`<div class="row tot"><span>합계</span><span>${won(kcartTotal())}</span></div>`:'🛒 담은 메뉴가 여기에 보여요'}</div>`;
+   go=`<button class="go${hc(!k.pop&&have)}" id="kgo"${n?'':' disabled'}>주문하기${n?` (${n}개)`:''}</button>`;
+   if(k.pop){const p=k.pop;say1=`${p}을 몇 개 담을까요? 수량을 고르고 담기를 눌러 주세요.`;
+    pop=`<div class="kxpop"><div><div style="font-size:3em">${M[p][0]}</div><b style="font-size:1.2em">${p}</b><div style="color:var(--kc);font-weight:700">${won(M[p][1])}</div>
+<div class="qty"><button data-q="-1">－</button><span>${k.qty}</span><button data-q="1" class="${hc(p==want&&k.qty<wq)}">＋</button></div>
+<div style="display:flex;gap:6px"><button class="kxbtn" data-pop="x">취소</button><button class="kxbtn go${hc(p!=want||k.qty>=wq)}" data-pop="ok">장바구니 담기 · ${won(M[p][1]*k.qty)}</button></div></div></div>`}}
+  else if(s.t=='pad')inner=`<div class="pd">${k.pin?'●'.repeat(k.pin.length):'숫자를 눌러 주세요'}</div><div class="kp2">${[1,2,3,4,5,6,7,8,9,'지움',0,'확인'].map(n=>`<button class="pk${hc(n=='확인'&&k.pin.length>=4)}" data-p="${n}">${n}</button>`).join('')}</div>`;
+  else if(s.t=='date')inner=`<div class="kxroute">${k.sel[1]} → ${k.sel[2]}</div><div class="kxdate">${DAYS.map((d,i)=>`<button class="kxo tile${hc(i==s.a)}" data-v="${i}"><small>${['오늘','내일'][i]||'&nbsp;'}</small>${d}</button>`).join('')}</div>`;
+  else if(s.t=='count'){const tot=Object.values(k.cnt).reduce((a,b)=>a+b,0),fit=Object.keys(s.a).every(n=>(k.cnt[n]||0)>=s.a[n]);
+   inner=s.rows.map(([n,sub])=>{const v=k.cnt[n]||0;return`<div class="kxcnt"><span><b>${n}</b><small>${sub}</small></span><div class="qty"><button data-c="${n}" data-d="-1">－</button><span>${v}</span><button data-c="${n}" data-d="1" class="${hc((s.a[n]||0)>v)}">＋</button></div></div>`}).join('');
+   go=`<button class="go${hc(fit)}" id="kgo"${tot?'':' disabled'}>확인 (${tot}명)</button>`}
+  else if(s.t=='table')inner=`<div class="kxroute">${k.sel[1]} → ${k.sel[2]} · ${k.sel[3]}</div>${TRAINS.map((r,i)=>`<button class="kxrow${hc(i==s.a)}" data-row="${i}"${r[4]?' disabled':''}><b>${r[0]}</b><span>${r[1]} → ${r[2]}</span><small>${r[4]?'매진':won(r[3])}</small></button>`).join('')}`;
+  else if(s.t=='seat'){const st=id=>`<button class="st${k.seat==id?' sel':''}${hc(!k.seat&&id==s.a)}" data-seat="${id}"${TAKEN.includes(id)?' disabled':''}>${id}</button>`;
+   let g='';for(let r=1;r<=10;r++)g+=st(r+'A')+st(r+'B')+`<span class="ai">${r}</span>`+st(r+'C')+st(r+'D');
+   inner=`<div class="kxcar">3호차 · 일반실<small>회색은 이미 예약된 자리예요</small></div><div class="kxseat">${g}</div>`;
+   go=`<button class="go${hc(!!k.seat)}" id="kgo"${k.seat?'':' disabled'}>선택 완료${k.seat?' · '+k.seat:''}</button>`}
+  else if(s.t=='insert'){const m=kmode(s),t=INS[m],ph=k.phase;act=ph?null:m;say1=t[ph=='ok'?2:ph=='run'?1:0];
+   inner=`${s.pay?`<div class="kxamt">결제할 금액<b>${won(kamt())}</b></div>`:''}<div class="kxins"><div class="em">${ph=='ok'?'✅':ph=='run'?'⏳':SLOT[m][0]}</div><b>${say1}</b>${ph?'':`<div class="arrow">⬇️ ⬇️ ⬇️</div><small>연습: 화면 아래에서 노랗게 깜빡이는 '${SLOT[m][1]}' 칸을 눌러 주세요</small><button class="kxinsbtn" data-slot="${m}">(투입구 대신 여기를 눌러도 돼요)</button>`}</div>`}
+  body=`<div class="kxq">${say1&&s.t!='insert'?kv(s.q):s.pay?'결제':'본인 확인'}</div>${s.note?`<div class="kxnote">${s.note}</div>`:''}${inner}`}
+ /* 위쪽 단계 표시: 이번에 거치는 단계만, 같은 이름은 하나로 */
+ const crumbs=[];c.s.forEach((x,i)=>{if(x.t=='idle'||(x.if&&!x.if()))return;const st=i==k.step?'on':i<k.step?'dn':'',l=crumbs[crumbs.length-1];if(l&&l.cr==x.cr){if(st=='on'||!l.st)l.st=st}else crumbs.push({cr:x.cr,st})});
+ const paper=done&&kprinted()?`<div class="rc paper"><div class="rt">${c.brand}</div><div class="rn">${c.done()[1]}</div>${k.sel.map((x,i)=>x=='—'||i==k.sel.length-1||c.s[i].t=='insert'||/^(결제하기|접수하기)$/.test(x)?'':`<div class="rr"><span>${c.s[i].cr}</span><b>${x}</b></div>`).join('')}${k.id!='hosp'||job()!='진료 접수'?`<div class="rr"><span>합계</span><b>${won(kamt())}</b></div>`:''}<div class="rt" style="font-size:.75em;margin-top:8px">${new Date().toLocaleString('ko-KR')}</div></div>`:'';
+ const hit=k.ok.filter(x=>x===true).length,tn=k.ok.filter(x=>x!==undefined).length;
+ main.innerHTML=`<div class="kxtop"><span>${LV[k.lv]} · ${k.lv<3?'🎯 '+c.g:'🎈 마음대로 눌러 보세요'}</span><button id="kq">✕ 그만</button></div>
+<div class="kx${k.big?' big':''}" style="--kc:${c.c}"><div class="kxscr">
+<div class="kxbar"><b>${c.brand}</b>${idle||done?'':`<button id="kbig">${k.big?'기본 글씨':'가 큰 글씨'}</button><span class="kxtime">⏱ <span id="ktm">${k.left}</span>초</span>`}</div>
+${idle||done?'':`<div class="kxsteps">${crumbs.map(x=>`<span class="${x.st}">${x.cr}</span>`).join('')}</div>`}
+<div class="kxbody${idle?' idle':''}">${body}</div>${cart}
+${idle||done?'':`<div class="kxfoot"><button id="kp">◀ 이전</button><button id="kh">⌂ 처음으로</button>${go}</div>`}${pop}</div>
+<div class="kxhw">${c.hw.map(h=>`<button class="slot${act==h?' act'+hc(1):''}" data-slot="${h}"><i>${SLOT[h][0]}</i>${SLOT[h][1]}</button>`).join('')}</div>${paper}</div>
+<div id="kmsg">${k.msg}</div>
+${done?`<div class="res lo"><h3>🎉 잘 하셨어요!</h3>끝까지 해 보셨어요.<br>${k.lv<3?`추천 과제와 같게 고른 단계: ${hit}/${tn} (점수는 없어요)`:'마음대로 골라 보셨어요.'}</div><button class="btn" style="margin-top:12px" id="re">다시 해 보기</button><button class="btn g" id="ot">다른 연습 고르기</button>`:''}`;
+ /* 말하기: 단계가 바뀔 때만 (같은 화면을 다시 그릴 때는 조용히) */
+ lastMsg=say1;const key=k.step+'|'+(k.pop||'')+'|'+(k.phase||'');
+ if(k.msg)say(k.msg);else if(k.said!=key)say(say1+(H&&!done&&!idle?' 표시된 곳을 눌러 보세요.':''));
+ k.said=key;k.msg='';
+ if(done){$('#re').onclick=()=>{kreset();playRender()};$('#ot').onclick=()=>go('kiosk')}
+ $('#kq').onclick=()=>go('kiosk');
+ main.querySelector('.kx').onclick=e=>{k.left=120;const b=e.target.closest('button');if(b&&!b.disabled)ktap(b,s,c)};
+ /* 남은 시간: 0초가 돼도 처음으로 돌리지 않고 실제 키오스크라면 어떻게 되는지 알려 준다 */
+ clearInterval(kT);if(!idle&&!done)kT=setInterval(()=>{const t=$('#ktm');if(view!='play'||!t){clearInterval(kT);return}if(k.left>0&&!$('#kto')){k.left--;t.textContent=k.left;if(!k.left)ktimeout()}},1000)}
+function ksum(){const c=K[k.id];if(k.id=='food')return`<div class="kxsum">${Object.entries(k.cart).map(([m,q])=>`<div class="row"><span>${M[m][0]} ${m} × ${q}</span><span>${won(M[m][1]*q)}</span></div>`).join('')}<div class="row"><span>장소</span><span>${k.sel[1]}</span></div><div class="row tot"><span>합계</span><span>${won(kcartTotal())}</span></div></div>`;
+ if(job()=='진료 접수')return`<div class="kxsum">${[2,3,6].map(i=>k.sel[i]&&k.sel[i]!='—'?`<div class="row"><span>${c.s[i].cr}</span><b>${k.sel[i]}</b></div>`:'').join('')}</div>`;
+ return`<div class="kxsum">${job()=='수납'?'<div class="row"><span>진찰료</span><span>15,000원</span></div><div class="row"><span>검사료</span><span>9,800원</span></div><div class="row"><span>건강보험 부담</span><span>-18,600원</span></div>':`<div class="row"><span>${k.sel[4]} 1부</span><span>${won(kamt())}</span></div>`}<div class="row tot"><span>내실 금액</span><span>${won(kamt())}</span></div></div>`}
+function ktimeout(){const sc=main.querySelector('.kxscr');if(!sc)return;sc.insertAdjacentHTML('beforeend',`<div class="kxpop" id="kto"><div><div style="font-size:2.6em">⏰</div><b style="font-size:1.15em">시간이 다 됐어요</b><p style="font-size:.85em;line-height:1.5">실제 키오스크는 한동안 누르지 않으면 <b>처음 화면으로 돌아가요.</b> 연습에서는 이어서 할 수 있어요.</p><button class="kxbtn go" id="kcont" style="width:100%">계속하기</button></div></div>`);
+ say('시간이 다 됐어요. 실제 키오스크는 한동안 누르지 않으면 처음 화면으로 돌아가요. 연습에서는 계속하기를 누르면 이어서 할 수 있어요.')}
+/* 누르기 처리 */
+function ktap(b,s,c){const d=b.dataset,msg=m=>{k.msg=m;playRender()};
+ if(b.id=='kcont'){$('#kto').remove();return}
+ if(d.a=='idle')return knext('—');
+ if(b.id=='kp')return k.step>0?kprev():go('kiosk');
+ if(b.id=='kh'){kreset();return msg('처음 화면으로 돌아왔어요.')}
+ if(b.id=='kbig'){k.big=!k.big;return playRender()}
+ if(d.slot){if(!s||s.t!='insert'||k.phase)return msg(`${SLOT[d.slot][1]} ${d.slot=='rcpt'?'출력구':'투입구'}예요. 지금은 쓰지 않아요.`);
+  const m=kmode(s);if(d.slot!=m)return msg(`그곳은 ${SLOT[d.slot][1]} 투입구예요. 노랗게 깜빡이는 '${SLOT[m][1]}' 칸에 넣어 주세요.`);
+  const st=k.step,ok=()=>view=='play'&&k.step==st;k.phase='run';playRender();
+  setTimeout(()=>{if(!ok())return;k.phase='ok';playRender();setTimeout(()=>{if(ok())knext(s.pay?{card:'카드 결제 완료',qr:'간편결제 완료',cash:'현금 결제 완료'}[m]:'본인 확인 완료')},1300)},1500);return}
+ if(d.tab){k.tab=d.tab;return playRender()}
+ if(d.item){k.pop=d.item;k.qty=1;return playRender()}
+ if(d.q){k.qty=Math.max(1,Math.min(9,k.qty+ +d.q));return playRender()}
+ if(d.pop){const p=k.pop;k.pop=null;if(d.pop=='ok'){k.cart[p]=(k.cart[p]||0)+k.qty;return msg(`${p} ${k.qty}개를 담았어요. 다 고르셨으면 '주문하기'를 눌러 주세요.`)}return playRender()}
+ if(d.rm){delete k.cart[d.rm];return playRender()}
+ if(d.c){k.cnt[d.c]=Math.max(0,Math.min(9,(k.cnt[d.c]||0)+ +d.d));return playRender()}
+ if(d.seat){k.seat=d.seat;return playRender()}
+ if(d.row){k.row=+d.row;const r=TRAINS[k.row];return knext(`${r[0]} ${r[1]} 출발`,k.row==s.a)}
+ if(d.p){const v=d.p;if(v=='지움')k.pin=k.pin.slice(0,-1);else if(v=='확인'){if(k.pin.length<4)return msg('4자리 이상 눌러 주세요.');k.pin='';return knext('번호 입력 완료')}else if(k.pin.length<8)k.pin+=v;return playRender()}
+ if(b.id=='kgo'){
+  if(s.t=='menu')return knext(Object.entries(k.cart).map(([n,q])=>`${n} ${q}개`).join(', '),Object.entries(s.a).every(([n,q])=>k.cart[n]==q));
+  if(s.t=='count')return knext(Object.entries(k.cnt).filter(([,v])=>v).map(([n,v])=>`${n} ${v}명`).join(', '),s.rows.every(([n])=>(k.cnt[n]||0)==(s.a[n]||0)));
+  if(s.t=='seat')return knext(`3호차 ${k.seat}${/[AD]/.test(k.seat)?' (창가)':''}`,/[AD]/.test(k.seat));return}
+ if(d.v==null)return;const v=d.v;
+ if(s.t=='date')return knext(DAYS[v]+(['(오늘)','(내일)'][v]||''),+v==s.a);
+ if(v=='처음으로'){kreset();return msg('처음 화면으로 돌아왔어요. 다시 해 보세요.')}
+ if(v=='메뉴 더 담기'){k.step=c.s.findIndex(x=>x.t=='menu');k.sel.length=k.ok.length=k.step;return playRender()}
+ if(v=='쿠폰 사용')k.msg='연습에서는 쿠폰이 적용된 것으로 할게요.';
+ knext(v,v==kv(s.o)[s.a])}
 
 render();
 </script></body></html>
