@@ -38,12 +38,44 @@
 4. 출처 불분명한 앱 설치, 보안 해제는 차단한다.
 5. 연습용 입력창에는 "실제 번호/비밀번호를 넣지 마세요" 안내.
 
+## 목표
+**AI 경진대회 출품용 실제 안드로이드 앱.** API 키 없음 → AI는 휴대폰 안에서 동작:
+A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어모델, Gemma 계열 약 1B 4비트·0.5~0.6GB 예정).
+시연용 실제 휴대폰은 구하는 중(기종 미정, RAM 6GB 이상 권장).
+
 ## 현재 구현 상태
-- 단일 파일 `index.html` (HTML+CSS+JS, 외부 의존성·API·서버 없음)
-- 음성 인식: Web Speech API `SpeechRecognition` (ko-KR), 음성 안내: `speechSynthesis` (rate 0.85)
-- 말 이해: **키워드 매칭**(AI 아님) / 화면 인식: 가상 화면 요소(`data-id`) 읽기 / 위험도: 정규식 규칙
-- 가상 스마트폰 화면(홈·메신저·설정·스토어·연락처·은행)과 키오스크 화면은 실제 앱과 비슷하게 직접 그린 HTML
+### 웹 (`index.html`) — 브라우저에서는 시뮬레이션, 앱 안에서는 화면(UI) 역할
+- 단일 파일 (HTML+CSS+JS, 외부 의존성 없음). 앱이 이 파일을 빌드 때 assets 로 복사해 WebView 로 띄운다.
+- `window.Android` 가 있으면(앱 안) 안드로이드 기능 사용: 음성 안내/인식, 뒤로 가기(`appBack`), 아래 4·5번 메뉴
 - 상태: `view`, `dev`(가상 폰 상태), `goal`(안내 목표), `sharing`(화면 공유), `k`(키오스크)
+- 앱 전용 메뉴: **🗣️ 말로 시키기**(`assistRender`), **🛡️ 문자 지킴이**(`guardRender`)
+
+### 안드로이드 (`android/`, Kotlin, 패키지 `com.smarthelper.app`)
+- `MainActivity` — WebView + `Bridge`(JS ↔ 안드로이드: speak/listen/assist/guardStatus 등)
+- `guard/` 문자 지킴이 (수신 문자 자동 스미싱 감지, 문자는 휴대폰 밖으로 안 나감)
+  - `SmishingReceiver` 3단계: 저장된 연락처 통과 → 링크 없으면 무거운 AI 생략(말투 규칙은 항상) → 정밀 검사
+  - `SmishingEngine` 검사기 꽂기 구조: `RuleDetector`(규칙) + `ModelDetector`(A안 모델). `heavy=true` 검사기는 의심 후보에만
+  - `TextModel` 글자 n-gram 로지스틱 회귀(46KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
+- `assist/` 음성 비서
+  - `CommandParser` 규칙 기반 말 이해(순수 Kotlin) → `Assistant` 실제 실행(전화·문자·알람·음량·손전등·앱 열기·사진 보내기 안내 등)
+  - 전화·문자·알람·설치는 확인 후 실행, 문자는 보내기 직접, **송금은 거절**
+- `guide/` 화면 안내 (접근성 서비스, 사용자가 설정에서 직접 켬)
+  - `GuideService` 문자 앱 위에 `GuideOverlay`(노란 테두리·👇·큰 말풍선·🔴 띠+그만) 표시, 단계 자동 인식
+  - `PhotoGuide` 사진 보내기 3단계(구글 메시지 기준). **받는 사람 확인 후에만 안내**(번호 전체 비교)
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 9, `ModelDetectorTest` 4
+
+## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
+- SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`
+- JDK: `C:\Program Files\Android\Android Studio\jbr` (JAVA_HOME 으로 지정), AGP 9.4.1(내장 Kotlin), compileSdk 37 / targetSdk 36 / minSdk 26
+- 빌드·테스트: `android` 폴더에서 `gradle :app:testDebugUnitTest assembleDebug` (또는 `gradlew.bat`)
+- A안 재학습: `gradle :app:testDebugUnitTest --tests "*ModelTrainer*" -Ptrain=1` → `data/sms_real.tsv`(라벨<TAB>문자, 사기=1) 있으면 함께 학습
+- 설치: `C:\Android\Sdk\platform-tools\adb.exe install -r app\build\outputs\apk\debug\app-debug.apk`
+- 가짜 문자: `adb emu sms send 01048217733 "문자 내용"`
+- 주의
+  - `uiautomator dump` 를 실행하면 접근성 서비스가 잠시 끊긴다 → 화면 안내 시험 중에는 스크린샷+좌표로만 조작
+  - 앱 재설치 직후 접근성 서비스는 몇 초 뒤 다시 연결된다
+  - 에뮬레이터는 사진 문자(MMS) 불가("첨부파일이 지원되지 않습니다") → 사진 보내기 3단계는 실제 폰에서 확인
+  - 시험용 연락처 번호는 끝자리가 겹치지 않게(문자 앱이 끝자리만 비교해 다른 대화를 연 적 있음)
 
 ## 권장 폴더 구조 (분리 시)
 ```
@@ -66,15 +98,16 @@ smart-helper/
 - 동작을 바꾸지 않는 리팩터링과 기능 추가를 한 번에 섞지 않는다.
 - 클릭 가능한 요소는 `<button data-id="...">` (화면 인식·안내 로직이 `data-id`를 사용).
 
-## 다음 작업 후보 (우선순위 순)
-1. 파일을 모듈로 분리 (동작 변경 없이)
-2. 문자 분석에 AI API 연결 (서버리스 함수 경유, 동의 후 전송, 숫자 마스킹 유지)
-3. 링크 없는 사칭 규칙 보강, 단축 URL(bit.ly 등) 감지
-4. 음성: 속도 조절·목소리 선택, 사투리 대응(클라우드 STT 검토)
-5. 키오스크 종류 추가(카페, 영화관, 주민센터)
-6. 실제 앱(안드로이드) 전환 시 필요 기술: 접근성 서비스/MediaProjection, SMS 권한 정책 확인
+## 다음 작업 후보
+- 실제 폰 확보 후: 사진 보내기 3단계(보내기·완료) 확인, 삼성 메시지 앱 버튼 이름 맞추기, 마이크 음성 인식 확인
+- C안: 휴대폰 안 언어모델(Gemma 약 1B) — 위험 이유 쉬운 말 설명 + 규칙이 못 알아들은 말 해석
+- 반복 알림("약 먹을 시간 알려 줘"), 다른 화면 안내(글자 크기, 와이파이)
+- 실제 문자 데이터 수집 → A안 재학습 (지금 성능은 합성 데이터 기준: 학습에 안 쓴 틀로 정확도 92%, 재현율 100%)
+- 다듬기: "계좌 확인"에도 "돈을 보내라고 요구해요"가 나오는 문구, 웹 시뮬레이션의 작은 버그들
+  (음식점 현금 선택 후 카드 투입 화면, 병원 '수납' 선택 시 진료 접수 흐름, 무관한 아이콘의 '(연습) 완료' 알림, 스크롤 시 테두리 위치)
+- 대회 발표 자료(구조도, 동작 흐름, 성능 표)
 
-## 테스트 체크리스트
+## 테스트 체크리스트 (웹 시뮬레이션)
 - [ ] 말로 물어보기 6개 시나리오가 끝까지 안내되고 완료 시 화면 공유가 꺼진다
 - [ ] 송금 화면에서 화면 인식이 중단되고 가림 처리된다
 - [ ] 샘플 문자 5종 결과가 기대와 같다(위험 4 / 낮음 1)
