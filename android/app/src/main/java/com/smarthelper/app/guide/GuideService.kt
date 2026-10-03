@@ -154,15 +154,19 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         val bar = urlBar() ?: return
         if (bar.isFocused) return // 주소를 쓰는 중
         val url = bar.text?.toString()?.trim().orEmpty()
-        if (url.isEmpty() || url == lastUrl) return
-        lastUrl = url
-        val d = com.smarthelper.app.guard.LinkGuard.check(this, url) ?: return
+        if (url.isEmpty() || url == lastUrl || block.showing) return
+        val d = com.smarthelper.app.guard.LinkGuard.check(this, url)
+        if (d == null) { lastUrl = url; return }
         if (guide != null) stop(null)
         try {
             block.show(d)
-        } catch (e: WindowManager.BadTokenException) {
+        } catch (e: Exception) {
+            // 경고를 못 띄웠으면 이 주소를 '검사함'으로 표시하지 않고 다음 신호 때 다시 시도한다
+            android.util.Log.w("SmartHelper", "위험 링크 경고를 띄우지 못함: ${d.host}", e)
             return
         }
+        lastUrl = url
+        android.util.Log.i("SmartHelper", "위험 링크 차단: ${d.host}")
         say("위험한 사이트예요. ${d.reason} 안전하게 나가기를 눌러 주세요.")
     }
 
