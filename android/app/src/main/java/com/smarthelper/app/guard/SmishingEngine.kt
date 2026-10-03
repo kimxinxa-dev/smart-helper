@@ -69,6 +69,16 @@ object RuleDetector : Detector {
 
     fun urls(body: String) = urlFinder(body)
 
+    /** 링크 주소 모양만 보고 찾은 위험 이유. 브라우저 주소창처럼 http:// 가 없는 주소도 받는다 */
+    fun linkWarnings(url: String): List<String> {
+        val u = if (url.contains("://")) url else "http://$url"
+        return listOfNotNull(
+            "IP 주소로 바로 접속하는 링크예요.".takeIf { IP_URL.containsMatchIn(u) },
+            "앱(APK) 파일을 바로 내려받는 링크예요.".takeIf { APK.containsMatchIn(u) },
+            "수상한 주소 끝자리(.top, .xyz 등)예요.".takeIf { BAD_TLD.containsMatchIn(u) },
+        )
+    }
+
     override fun inspect(body: String): Finding {
         val reasons = mutableListOf<String>()
         var score = 0
@@ -78,11 +88,7 @@ object RuleDetector : Detector {
         val urls = urls(body)
         var flag = false
         if (urls.isNotEmpty()) {
-            for (u in urls) {
-                if (IP_URL.containsMatchIn(u)) { flag = true; reasons += "IP 주소로 바로 접속하는 링크예요." }
-                if (APK.containsMatchIn(u)) { flag = true; reasons += "앱(APK) 파일을 바로 내려받는 링크예요." }
-                if (BAD_TLD.containsMatchIn(u)) { flag = true; reasons += "수상한 주소 끝자리(.top, .xyz 등)예요." }
-            }
+            for (u in urls) linkWarnings(u).let { if (it.isNotEmpty()) { flag = true; reasons += it } }
             val hits = KEYWORDS.filter { body.contains(it) }
             if (hits.size >= 2) { flag = true; reasons += "위험 단어가 ${hits.size}개 있어요: ${hits.joinToString(", ")}" }
         }

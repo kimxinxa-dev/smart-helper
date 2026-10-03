@@ -181,6 +181,12 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             .put("sms", granted(Manifest.permission.RECEIVE_SMS))
             .put("contacts", granted(Manifest.permission.READ_CONTACTS))
             .put("notif", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS))
+            // 메신저 지킴이(알림 읽기)와 위험 링크 차단(화면 안내 서비스)이 켜져 있는지
+            .put("msg", Settings.Secure.getString(contentResolver, "enabled_notification_listeners").orEmpty()
+                .contains("$packageName/${com.smarthelper.app.guard.MessengerListener::class.java.name}"))
+            // 연결 상태가 아니라 사용자가 설정에서 켰는지를 본다 (앱을 막 다시 켜면 연결까지 몇 초 걸린다)
+            .put("link", Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
+                .contains("$packageName/${com.smarthelper.app.guide.GuideService::class.java.name}"))
             .toString()
 
         /** 빠진 권한을 요청한다. 결과는 onGuardChanged() 로 알린다. */
@@ -191,6 +197,12 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         }
 
         /** 권한을 거절해 다시 물을 수 없을 때 앱 설정 화면을 연다 */
+        @JavascriptInterface
+        fun openNotifAccess() = runOnUiThread { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+
+        @JavascriptInterface
+        fun openA11y() = runOnUiThread { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+
         @JavascriptInterface
         fun openAppSettings() = runOnUiThread {
             startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))

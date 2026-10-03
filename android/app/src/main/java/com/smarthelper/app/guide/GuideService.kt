@@ -22,7 +22,16 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             private set
         private const val TIMEOUT_MS = 3 * 60 * 1000L
         private const val DUMP_ACTION = "com.smarthelper.app.DUMP_SCREEN"
+        /** 위험 링크 차단: 이 브라우저들의 주소창만 본다 */
+        val BROWSERS = setOf("com.android.chrome", "com.sec.android.app.sbrowser", "com.naver.whale", "org.mozilla.firefox", "com.microsoft.emmx")
+        private val URL_BAR_IDS = arrayOf("url_bar", "location_bar_edit_text", "url_field", "mozac_browser_toolbar_url_view", "addressbarEdit")
     }
+
+    private lateinit var block: LinkBlockOverlay
+    /** 마지막으로 검사한 주소 (같은 주소를 계속 검사하지 않는다) */
+    private var lastUrl = ""
+    private var browserPending = false
+    private val browserTask = Runnable { browserPending = false; checkBrowser() }
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var overlay: GuideOverlay
@@ -48,6 +57,10 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         // 접근성 서비스 자신의 창 관리자여야 다른 앱 위에 그릴 수 있는 표식(token)이 붙는다
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         overlay = GuideOverlay(this, wm) { stop("화면 안내를 멈췄어요.") }
+        block = LinkBlockOverlay(this, wm, onExit = ::leaveRiskySite, onStay = { host ->
+            com.smarthelper.app.guard.LinkGuard.allow(host)
+            say("알겠어요. 개인정보나 돈을 요구하면 바로 나가세요.")
+        })
         tts = TextToSpeech(this, this)
         // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.
         //   adb shell am broadcast -a com.smarthelper.app.DUMP_SCREEN
@@ -105,7 +118,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         }
         guide = g; current = -1; spoken = ""; misses = 0; leaveTries = 0
         overlay.point(null, "화면을 여는 중이에요...", 1, g.steps.size)
-        handler.removeCallbacksAndMessages(null)
+        handler.removeCallbacksAndMessages(null); browserPending = false
         handler.postDelayed(tick, 1500)
         handler.postDelayed(timeout, TIMEOUT_MS)
         return true
@@ -113,12 +126,18 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     fun stop(message: String?) {
         guide = null
-        handler.removeCallbacksAndMessages(null)
+        handler.removeCallbacksAndMessages(null); browserPending = false
         overlay.hide()
         message?.let { say(it) }
     }
 
     override fun onAccessibilityEvent(e: AccessibilityEvent) {
+        // 위험 링크 차단: 안내 중이 아니어도 브라우저 주소가 바뀌면 검사한다
+        if (e.packageName?.toString() in BROWSERS && !browserPending) {
+            // 페이지가 바뀌는 동안 신호가 아주 많이 오므로, 0.7초에 한 번만 본다
+            browserPending = true
+            handler.postDelayed(browserTask, 700)
+        }
         val g = guide ?: return
         // 마지막 단계에서 완료 버튼(보내기, 확대, 와이파이 이름 등)을 누르면 끝
         if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == g.steps.lastIndex && (g.isDone(e.source) || clickedText(e) in g.doneTexts)) {
@@ -127,6 +146,47 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         }
         handler.removeCallbacks(scanTask)
         handler.postDelayed(scanTask, 250)
+    }
+
+    /** 브라우저 주소창의 주소가 위험하면 화면 전체를 가리는 경고를 띄운다. 주소는 저장하지 않는다. */
+    private fun checkBrowser() {
+        // 브라우저가 자기 안내 창(팝업)을 띄우면 그 창이 앞에 오므로, 화면의 모든 창에서 주소창을 찾는다
+        val bar = urlBar() ?: return
+        if (bar.isFocused) return // 주소를 쓰는 중
+        val url = bar.text?.toString()?.trim().orEmpty()
+        if (url.isEmpty() || url == lastUrl) return
+        lastUrl = url
+        val d = com.smarthelper.app.guard.LinkGuard.check(this, url) ?: return
+        if (guide != null) stop(null)
+        try {
+            block.show(d)
+        } catch (e: WindowManager.BadTokenException) {
+            return
+        }
+        say("위험한 사이트예요. ${d.reason} 안전하게 나가기를 눌러 주세요.")
+    }
+
+    /**
+     * 브라우저 주소창. 웹 페이지 전체를 훑으면 브라우저가 느려지므로, 이름표(id)로 바로 찾는다.
+     * 브라우저가 자기 팝업을 띄우면 그 창이 앞에 오므로 화면의 모든 브라우저 창에서 찾는다.
+     */
+    private fun urlBar(): android.view.accessibility.AccessibilityNodeInfo? =
+        windows.mapNotNull { it.root }.filter { it.packageName?.toString() in BROWSERS }.firstNotNullOfOrNull { r ->
+            val pkg = r.packageName.toString()
+            URL_BAR_IDS.firstNotNullOfOrNull { id -> r.findAccessibilityNodeInfosByViewId("$pkg:id/$id").firstOrNull() }
+        }
+
+    /** "안전하게 나가기": 뒤로 가고, 그래도 위험한 주소에 머물러 있으면 홈 화면으로 */
+    private fun leaveRiskySite() {
+        val risky = lastUrl
+        lastUrl = ""
+        performGlobalAction(GLOBAL_ACTION_BACK)
+        handler.postDelayed({
+            val url = urlBar()?.text?.toString().orEmpty()
+            val h = com.smarthelper.app.guard.LinkGuard.host(url)
+            if (h != null && h == com.smarthelper.app.guard.LinkGuard.host(risky)) performGlobalAction(GLOBAL_ACTION_HOME)
+            say("안전하게 나왔어요. 잘 하셨어요.")
+        }, 1200)
     }
 
     /** 누름 신호에 실려 온 버튼 글자 (창이 닫혀 버튼을 다시 읽을 수 없을 때 쓴다) */
@@ -199,6 +259,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         if (guide != null) stop(null)
+        if (::block.isInitialized) block.hide()
         if (instance === this) instance = null
         tts?.shutdown()
         return super.onUnbind(intent)

@@ -25,5 +25,11 @@ class SmishingEngineTest {
     // 다른 규칙에는 안 걸리고 자동 감시(수상한 주소 끝자리)에만 걸리는 경우
     @Test fun 링크_모양만으로도_주의() = assertEquals(Level.MID, level("사진 여기 있어요 kakao-photo.site/x"))
 
+    // 브라우저 주소창은 http:// 없이 보여 준다
+    @Test fun 주소창_IP주소() = assertEquals(1, RuleDetector.linkWarnings("10.0.0.1/pay").size)
+    @Test fun 주소창_수상한_끝자리() = assertEquals(1, RuleDetector.linkWarnings("han-bit.xyz/a8Kd2").size)
+    @Test fun 주소창_APK() = assertEquals(2, RuleDetector.linkWarnings("http://evil.top/app.apk").size)
+    @Test fun 주소창_정상_사이트() = assertEquals(0, RuleDetector.linkWarnings("m.naver.com/news").size)
+
     @Test fun 긴_숫자_가리기() = assertEquals("계좌 ●●●●●● 로", SmishingEngine.mask("계좌 123456789012 로"))
 }

@@ -30,15 +30,17 @@ class WarningActivity : Activity(), TextToSpeech.OnInitListener {
 
         val level = Level.valueOf(item.getString("level"))
         val hasLink = item.optInt("links", 1) > 0
+        val source = item.optString("source", "문자")
+        val what = if (source == "문자") "문자" else "메시지"
         val (color, title, lead) = when (level) {
-            Level.HIGH -> Triple(0xFFB91C1C.toInt(), "🚨 매우 위험한 문자예요",
+            Level.HIGH -> Triple(0xFFB91C1C.toInt(), "🚨 매우 위험한 ${what}예요",
                 if (hasLink) "답장하거나 링크를 누르지 마세요. 사기일 가능성이 높아요."
                 else "답장하지 말고, 돈이나 개인정보를 보내지 마세요. 사기일 가능성이 높아요.")
-            Level.MID -> Triple(0xFFB45309.toInt(), "⚠️ 조심해야 할 문자예요",
+            Level.MID -> Triple(0xFFB45309.toInt(), "⚠️ 조심해야 할 ${what}예요",
                 if (hasLink) "링크를 누르기 전에 가족에게 먼저 물어보세요."
                 else "시키는 대로 하기 전에 가족에게 먼저 물어보세요.")
             Level.LOW -> Triple(0xFF15803D.toInt(), "✅ 위험이 낮아 보여요", "그래도 모르는 링크는 누르지 마세요.")
-            Level.SKIP -> Triple(0xFF15803D.toInt(), "✅ 저장된 번호의 문자예요", "연락처에 저장된 번호라서 검사하지 않았어요.")
+            Level.SKIP -> Triple(0xFF15803D.toInt(), "✅ 저장된 번호의 ${what}예요", "연락처에 저장된 번호라서 검사하지 않았어요.")
         }
         val reasons = item.getJSONArray("reasons").let { a -> List(a.length()) { a.getString(it) } }
 
@@ -52,7 +54,7 @@ class WarningActivity : Activity(), TextToSpeech.OnInitListener {
             background = box(color, 0)
         })
         col.addView(text(lead, 24f, true, color).apply { setPadding(0, dp(16), 0, dp(8)) })
-        col.addView(text("보낸 사람: ${item.getString("sender")}", 20f, false, GRAY))
+        col.addView(text("보낸 사람: ${item.getString("sender")}" + if (source != "문자") " ($source)" else "", 20f, false, GRAY))
         col.addView(text(item.getString("text"), 19f, false, Color.BLACK).apply {
             setPadding(dp(14), dp(12), dp(14), dp(12))
             background = box(0xFFF3F4F6.toInt(), 0xFFD1D5DB.toInt())
