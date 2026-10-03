@@ -25,6 +25,16 @@ class SmishingEngineTest {
     // 다른 규칙에는 안 걸리고 자동 감시(수상한 주소 끝자리)에만 걸리는 경우
     @Test fun 링크_모양만으로도_주의() = assertEquals(Level.MID, level("사진 여기 있어요 kakao-photo.site/x"))
 
+    private fun reasons(body: String) = SmishingEngine.check(body, savedContact = false).reasons
+    private val MONEY = "돈을 보내라고 요구해요."
+
+    // 정상 은행 알림에는 '돈을 보내라' 이유가 붙지 않는다
+    @Test fun 입금_알림은_돈요구_아님() = assertEquals(false, MONEY in reasons("[국민은행] 입금 50,000원 잔액 1,250,000원 김영희"))
+    @Test fun 계좌_확인은_돈요구_아님() = assertEquals(false, MONEY in reasons("[신한은행] 고객님 계좌 개설이 완료되었습니다. 계좌 확인은 앱에서 하세요."))
+    @Test fun 송금해줘는_돈요구() = assertEquals(true, MONEY in reasons("엄마 이 계좌로 50만원만 송금해줘"))
+    @Test fun 안전계좌는_돈요구() = assertEquals(true, MONEY in reasons("수사 협조를 위해 안전계좌로 즉시 옮기세요"))
+    @Test fun 입금_바랍니다는_돈요구() = assertEquals(true, MONEY in reasons("배송비 2,500원 미납. 아래 계좌로 입금 바랍니다"))
+
     // 브라우저 주소창은 http:// 없이 보여 준다
     @Test fun 주소창_IP주소() = assertEquals(1, RuleDetector.linkWarnings("10.0.0.1/pay").size)
     @Test fun 주소창_수상한_끝자리() = assertEquals(1, RuleDetector.linkWarnings("han-bit.xyz/a8Kd2").size)

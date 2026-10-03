@@ -282,7 +282,7 @@ object Guides {
                     Nodes.first(r) { (Nodes.id(it, "tab_contacts") || it.contentDescription?.toString() == "연락처" || it.text?.toString() == "연락처") && it.isClickable }
                 },
                 Step("목록에서 '$name' 님을 찾아 눌러 주세요. 안 보이면 화면을 위로 밀어 보세요.") { r -> Nodes.row(r, name) },
-                Step("초록색 '통화' 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.") { r -> Nodes.first(r, callBtn) },
+                Step("전화기 모양의 '통화' 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.") { r -> Nodes.first(r, callBtn) },
             ),
             lost = "전화 앱으로 돌아가 주세요. 다른 화면으로 갔다면 뒤로 가기를 눌러요.",
             isDone = { n -> n != null && callBtn(n) }, doneTexts = setOf("통화"),
