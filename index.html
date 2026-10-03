@@ -31,7 +31,6 @@ h1{margin:6px 0 2px;font-size:1.5em;text-align:center}h2{margin:0 0 10px;font-si
 #hl{position:absolute;display:none;border:4px solid var(--hl);border-radius:14px;box-shadow:0 0 0 5px rgba(245,158,11,.35);pointer-events:none;animation:p 1s infinite;z-index:5}
 #arr{position:absolute;display:none;font-size:34px;pointer-events:none;z-index:6;animation:b .7s infinite}
 #scan{position:absolute;left:0;right:0;height:4px;background:var(--hl);box-shadow:0 0 14px var(--hl);display:none;z-index:7;animation:s 1s linear infinite}
-#lock{position:absolute;inset:0;display:none;z-index:9;backdrop-filter:blur(9px);background:rgba(20,24,34,.6);color:#fff;align-items:center;justify-content:center;text-align:center;padding:14px;font-size:.8em;font-weight:700}
 @keyframes p{50%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}@keyframes b{50%{transform:translateY(8px)}}@keyframes s{from{top:0}to{top:100%}}
 #bub{margin:12px 0;padding:14px;border-radius:16px;background:#111827;color:#fff;font-size:.9em;line-height:1.5}
 .btn{width:100%;padding:14px;border:0;border-radius:16px;background:var(--pri);color:#fff;font:inherit;font-weight:700;cursor:pointer;margin-bottom:8px}
@@ -169,7 +168,7 @@ const chat=(sheet,sent,txt)=>sb()+hd('김영희','🔍 ☰')+`<div style="backgr
 const slider=(m,p,mi,pl)=>`<div style="display:flex;align-items:center;gap:8px;margin-top:16px"><button class="ab" data-id="${mi}">${m}</button><div class="tr"><i style="width:${p}%"></i></div><button class="ab" data-id="${pl}">${m=='－'?'＋':'가'}</button></div>`;
 const app=(id,ic,bg,n,sub,b)=>`<div class="rw" style="cursor:default"><span class="sq" style="background:${bg}">${ic}</span><span>${n}<small>${sub}</small></span><button class="gb" data-id="${id}">${b}</button></div>`;
 const D={
-home:{g:{msg:'msg',set:'set',store:'store',con:'con',bank:'bank',phone:'phone',clock:'clock'},h:()=>`<div class="wall">${sb('#fff')}<div style="padding:14px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 2px">${[['msg','💬','메신저','#fbbf24'],['phone','📞','전화','#22c55e'],['set','⚙️','설정','#6b7280'],['store','🛍️','앱 스토어','#2563eb'],['con','👤','연락처','#16a34a'],['bank','🏦','은행','#0ea5e9'],['clock','⏰','시계','#f97316'],['x1','📷','카메라','#ef4444'],['x3','🌐','인터넷','#8b5cf6']].map(a=>`<button class="ic" data-id="${a[0]}"><span class="sq" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div></div>`},
+home:{g:{msg:'msg',set:'set',store:'store',con:'con',phone:'phone',clock:'clock'},h:()=>`<div class="wall">${sb('#fff')}<div style="padding:14px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 2px">${[['msg','💬','메신저','#fbbf24'],['phone','📞','전화','#22c55e'],['set','⚙️','설정','#6b7280'],['store','🛍️','앱 스토어','#2563eb'],['con','👤','연락처','#16a34a'],['x2','🎵','음악','#ec4899'],['clock','⏰','시계','#f97316'],['x1','📷','카메라','#ef4444'],['x3','🌐','인터넷','#8b5cf6']].map(a=>`<button class="ic" data-id="${a[0]}"><span class="sq" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div></div>`},
 msg:{g:{chat:'chat'},h:()=>sb()+hd('채팅','🔍 ✏️')+`<button class="rw" data-id="chat"><span class="av">🙂</span><span>김영희<small>오늘 손주 사진 보내 주세요~</small></span><small>오전 9:12</small></button><button class="rw" data-id="x1"><span class="av">🙂</span><span>박철수<small>내일 보자</small></span><small>어제</small></button><button class="rw" data-id="x2"><span class="av">👪</span><span>우리 가족방<small>저녁 뭐 먹을까요</small></span><small>어제</small></button><div class="tb"><span>👥<br>친구</span><span>💬<br><b>채팅</b></span><span>⋯<br>더보기</span></div>`},
 chat:{g:{attach:'attach',msend:'chatsent'},h:()=>chat(0,0)},attach:{g:{gallery:'gallery'},h:()=>chat(1,0)},sent:{g:{},h:()=>chat(0,1)},
 chatsent:{g:{attach:'attach',msend:'chatsent'},h:()=>chat(0,0,dev.msgText)},
@@ -193,8 +192,6 @@ sound:{g:{},h:()=>sb()+hd('소리 및 진동')+`<div style="padding:16px;font-si
 store:{g:{},h:()=>sb()+hd('앱 스토어')+`<div class="sr">🔍 앱 및 게임 검색</div>`+app('install','💪','#16a34a','건강 도우미','공식 · ⭐4.8 · 100만+ 다운로드','설치')+app('uninstall','🧩','#f59e0b','퍼즐 게임','설치됨 · 12MB','삭제')+app('unk','🎁','#ef4444','쿠폰 모아 <span style="color:#b91c1c">⚠️ 출처 불명</span>','문자 링크로 받은 파일','설치')},
 con:{g:{add:'add'},h:()=>sb()+hd('연락처','<button data-id="add">＋ 추가</button><button data-id="del">🗑 삭제</button>')+`<div class="sr">🔍 연락처 검색</div>`+['김영희','박철수','아들 민수','내과 병원'].map((n,i)=>`<button class="rw" data-id="x${i+1}"><span class="av">${n[0]}</span><span>${n}<small>010-****-${1000+i*111}</small></span></button>`).join('')},
 add:{g:{save:'con'},h:()=>sb()+hd('새 연락처')+`<div style="padding:14px"><div class="av" style="width:4em;height:4em;margin:0 auto 12px">👤</div><input data-id="name" placeholder="이름"><input placeholder="전화번호"><button class="bt" data-id="save" style="background:#16a34a;color:#fff">저장</button></div>`},
-bank:{g:{send:'transfer'},h:()=>`<div style="background:#1d4ed8;color:#fff;padding-bottom:12px">${sb('#fff')}<div style="padding:4px 14px;font-size:.8em;font-weight:700"><button data-id="back" style="border:0;background:none;color:#fff;font:inherit;cursor:pointer">◀</button> 모두은행</div><div style="margin:8px 12px;background:#fff;color:#111;border-radius:1em;padding:12px;font-size:.8em">입출금통장 123-45-●●●●●●<b style="display:block;font-size:1.6em;margin:4px 0">1,250,000원</b><div style="display:flex;gap:8px"><button class="gb" data-id="send" style="flex:1;margin:0;background:#1d4ed8;color:#fff">송금</button><button class="gb" data-id="x1" style="flex:1;margin:0">내역</button></div></div></div>`+rw('x2','💳','#6366f1','카드','')+rw('x3','📈','#10b981','자산','')+rw('x4','🧾','#f59e0b','최근 거래','편의점 -4,500원')},
-transfer:{g:{},h:()=>sb()+hd('송금')+`<div style="padding:12px"><input data-id="acc" type="password" placeholder="받는 계좌번호"><input placeholder="보낼 금액"><div style="font-size:.7em;margin:6px 0">비밀번호 6자리 ○○○○○○</div><div class="kp">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<span>${n}</span>`).join('')}</div></div>`}
 };
 const val=id=>(($('#dev [data-id="'+id+'"]')||{}).value||'').trim();
 const G={
@@ -208,12 +205,12 @@ delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주
 call:()=>({n:'전화 걸기',real:'call',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
 text:()=>({n:'메시지 보내기',real:'text',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 "전송"을 눌러 주세요.']]}),
 alarm:()=>({n:'알람 맞추기',real:'alarm',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 "저장"을 눌러 주세요.']]}),
-wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]}),
-bank:()=>({n:'은행 송금',secure:1,st:[['home','bank','은행(🏦)을 눌러 주세요.'],['bank','send','파란 "송금" 버튼을 눌러 주세요.']]})
+wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]})
 };
 function parse(t){const h=r=>r.test(t);
  if(h(/연락처|전화번호/))return h(/삭제|지우|지워/)?G.delc():G.addc();
- if(h(/은행|송금|이체/))return G.bank();
+ /* 송금·이체는 연습도 안내도 하지 않는다 (안전 설계 1) */
+ if(h(/은행|송금|이체|계좌/))return {n:'송금',safety:1};
  if(h(/와이파이|wifi|인터넷 ?연결/i))return G.wifi();
  if(h(/알람|깨워|모닝콜/))return G.alarm();
  if(h(/설치|깔|삭제|지우|지워|제거|어플|앱/))return h(/삭제|지우|지워|제거/)?G.uninst():G.inst();
@@ -300,7 +297,7 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
 /* ---------- 1. 말로 물어보기 ---------- */
 const EX=['영희한테 사진 보내고 싶어요','영희한테 전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연습용 퍼즐 앱을 지우고 싶어요','연락처를 추가하고 싶어요'];
 function askRender(){dev=dev||{scr:'home',stack:[],scale:1,vol:5};main.innerHTML=`<h2>🎤 말로 물어보기</h2><span class="badge" id="sh"></span>
-<div id="devwrap"><div id="dev"></div><div id="scan"></div><div id="hl"></div><div id="arr">👇</div><div id="lock"></div><div id="tst"></div></div>
+<div id="devwrap"><div id="dev"></div><div id="scan"></div><div id="hl"></div><div id="arr">👇</div><div id="tst"></div></div>
 <div id="bub">마이크를 누르고 편하게 말씀해 보세요. 천천히, 사투리로 말씀하셔도 괜찮아요.</div><div id="mx"></div>
 <button class="btn" id="mic">🎤 눌러서 말하기</button>
 <div style="font-size:.65em;color:var(--mut)">예시를 눌러 볼 수도 있어요</div><div class="chips">${EX.map(e=>`<button class="chip">${e}</button>`).join('')}</div>
@@ -325,9 +322,10 @@ function mic(cb=handle){if(window.Android){const m=$('#mic'),reset=()=>{m.classL
  r.onresult=e=>cb(e.results[0][0].transcript);
  r.onerror=e=>bub(e.error=='not-allowed'?'마이크를 쓸 수 있게 허락해 주세요. 아래 칸에 써도 돼요.':'잘 못 들었어요. 다시 말씀해 주세요.',0);
  r.onend=()=>{m.classList.remove('on');m.textContent='🎤 눌러서 말하기'};try{r.start()}catch(_){}}
-function handle(t){lastAsk=t;stopSession();dev={scr:'home',stack:[],scale:1,vol:5};devRender();clearHl();$('#lock').style.display='none';
+function handle(t){lastAsk=t;stopSession();dev={scr:'home',stack:[],scale:1,vol:5};devRender();clearHl();
  const g=parse(t);$('#mx').innerHTML=`<div style="font-size:.8em;margin-bottom:6px">🗣️ "${t}"</div>`;
  if(!g){bub('죄송해요, 잘 이해하지 못했어요. "사진 보내고 싶어요"처럼 다시 말씀해 주세요.');return}
+ if(g.safety){bub('송금은 안전을 위해 도와드리지 않아요. 은행 앱에서 받는 분과 금액을 천천히 확인하며 직접 하세요. 누가 시킨 송금이라면 멈추고 가족이나 112에 먼저 물어보세요.');return}
  /* 앱 안에서, 실제 휴대폰 화면 안내가 있는 일이면 연습과 실제 중에서 고른다 */
  if(window.Android&&g.real){bub(`"${g.n}"을(를) 어떻게 해 볼까요? 화면 속 휴대폰으로 연습하거나, 내 휴대폰에서 바로 해 볼 수 있어요.`);
   $('#mx').insertAdjacentHTML('beforeend','<div class="ask"><button class="btn" id="mpr">🎓 화면 속 휴대폰으로 연습하기</button><button class="btn g" id="mreal">📱 내 휴대폰으로 해 보기</button></div>');
@@ -342,7 +340,7 @@ window.onReal=r=>{if(view!='ask')return;bub(r.say);$('#mx .ask')&&$('#mx .ask').
   $('#cperm').onclick=()=>consent('보낼 분의 번호를 연락처에서 찾으려면 허락이 필요해요. 연락처는 <b>휴대폰 밖으로 보내지 않아요.</b> 허락할까요?',()=>Android.enableContacts())}};
 /* 화면 속 가상 휴대폰으로 연습 */
 function practice(g){bub(`"${g.n}"을(를) 도와드릴게요.`,0);
- consent(g.secure?'은행 앱은 <b>처음 화면까지만</b> 도와드려요. 비밀번호나 계좌번호가 나오면 화면 보기를 바로 멈춰요. 지금 화면을 봐도 될까요? (저장하지 않아요)':'도와드리려면 <b>지금 화면을 봐야 해요.</b> 버튼과 글자의 위치만 확인하고, 저장하지 않아요. 화면을 봐도 될까요?',
+ consent('도와드리려면 <b>지금 화면을 봐야 해요.</b> 버튼과 글자의 위치만 확인하고, 저장하지 않아요. 화면을 봐도 될까요?',
   ()=>{goal=g;sharing=true;badge();$('#scan').style.display='block';bub('🔍 화면을 살펴보고 있어요...',0);setTimeout(()=>{$('#scan').style.display='none';guide()},1300)},
   ()=>bub('알겠어요. 화면은 보지 않을게요. 필요하면 다시 불러 주세요.'))}
 function devRender(){const d=$('#dev');if(!d)return;d.style.fontSize=18*dev.scale+'px';d.innerHTML=D[dev.scr].h()}
@@ -363,12 +361,13 @@ function devClick(id){const st=curStep(),hit=sharing&&goal&&st&&tgt(st)==id,last
  else if(id=='unk')toast('⛔ 차단: 공식 스토어가 아닌 앱은 설치할 수 없어요');
  else if(id!='name')toast('(연습) 이 버튼은 연습에서 쓰지 않아요');
  devRender();
- if(hit&&last&&!goal.secure)setTimeout(finish,600);else guide()}
-function finish(){clearHl();sharing=false;badge();const n=goal.n;goal=null;bub(`🎉 "${n}"을 끝까지 해 내셨어요! 잘 하셨어요. 화면 보기도 끝냈어요.`)}
+ if(hit&&last)setTimeout(finish,600);else guide()}
+function finish(){clearHl();sharing=false;badge();const n=goal.n;goal=null;bub(`🎉 "${n}"${josa(n)} 끝까지 해 내셨어요! 잘 하셨어요. 화면 보기도 끝냈어요.`)}
+/* 받침이 있으면 "을", 없으면 "를" */
+const josa=s=>{const k=s.charCodeAt(s.length-1)-0xAC00;return k>=0&&k<11172&&k%28?'을':'를'};
 function clearHl(){['#hl','#arr'].forEach(s=>$(s)&&($(s).style.display='none'))}
 let lastKey='';
 function guide(force){const hl=$('#hl');if(!hl||!sharing||!goal){return}
- if(dev.scr=='transfer'&&goal.secure){secure();return}
  const st=curStep();let id,msg;
  if(st){id=tgt(st);msg=typeof st[2]=='function'?st[2](id):st[2]}
  else if(dev.stack.length){id='back';msg='잘못 들어왔어요. 왼쪽 위 "뒤로"를 눌러 주세요.'}else return;
@@ -377,9 +376,6 @@ function guide(force){const hl=$('#hl');if(!hl||!sharing||!goal){return}
  Object.assign(hl.style,{display:'block',left:r.left-w.left-5+'px',top:r.top-w.top-5+'px',width:r.width+10+'px',height:r.height+10+'px'});
  const a=$('#arr'),up=r.top-w.top>60;a.textContent=up?'👇':'👆';Object.assign(a.style,{display:'block',left:r.left-w.left+r.width/2-17+'px',top:(up?r.top-w.top-46:r.bottom-w.top+4)+'px'});
  const key=dev.scr+id+msg;if(key!=lastKey||force){lastKey=key;bub('👉 '+msg)}}
-function secure(){sharing=false;badge();clearHl();const l=$('#lock');l.style.display='flex';l.textContent='🔒 개인정보 화면이에요. 스마트 헬퍼는 화면을 보지 않아요.';
- const t='여기서부터는 혼자 하셔야 해요. 받는 분의 계좌와 금액을 천천히 확인하세요. 비밀번호는 절대 다른 사람에게 알려 주지 마세요. 모르는 사람이 시킨 송금이라면 멈추고 112나 가족에게 먼저 물어보세요.';
- bub(t);$('#mx').innerHTML='<button class="btn" id="done">다 했어요</button>';$('#done').onclick=()=>{goal=null;l.style.display='none';$('#mx').innerHTML='';bub('수고하셨어요! 도움을 마칠게요.')}}
 /* ---------- 2. 수상한 문자 ---------- */
 const SMP='[Web발신] 고객님 택배가 주소 불명으로 반송됩니다. 오늘까지 아래 주소에서 확인하세요. http://bit.ly/3xYz 계좌번호 123456789012 로 배송비 2,500원을 보내 주세요.';
 const RULES=[[/https?:\/\/|bit\.ly|me2\.do|\.xyz|\.top/i,3,'모르는 인터넷 주소(링크)가 들어 있어요. 누르면 가짜 사이트로 갈 수 있어요.'],[/택배|배송|반송|주소 ?불명/,2,'택배 문자를 흉내 낸 사기가 아주 많아요.'],[/검찰|경찰|금융감독원|수사|체포|안전계좌/,4,'공공기관을 사칭하고 있어요. 진짜 기관은 문자로 돈을 요구하지 않아요.'],[/(엄마|아빠|아들|딸).*(폰|휴대폰|고장|액정|급해|상품권)/,4,'자녀를 사칭하는 전형적인 수법이에요. 꼭 전화로 직접 확인하세요.'],[/계좌|송금|입금|이체|보내 ?[주줘]/,2,'돈을 보내라고 요구해요.'],[/인증번호|비밀번호|OTP|주민|카드번호|CVC/i,3,'비밀번호나 인증번호를 알려 달라고 해요. 절대 알려 주면 안 돼요.'],[/당첨|무료|지원금|환급|대출|저금리|고수익|투자/,2,'공짜 돈이나 큰 이익을 약속해요. 사기의 흔한 미끼예요.'],[/설치|apk|다운로드/i,3,'앱을 설치하라고 해요. 몰래 휴대폰을 조종하는 앱일 수 있어요.'],[/지금 ?바로|오늘까지|긴급|즉시|마감/,1,'서두르게 만들어요. 급하게 하라는 말은 사기의 신호예요.']];
