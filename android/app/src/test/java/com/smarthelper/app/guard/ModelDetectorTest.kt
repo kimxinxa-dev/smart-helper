@@ -29,6 +29,16 @@ class ModelDetectorTest {
         assertTrue("정확도 ${m.accuracy}", m.accuracy >= 0.9)
     }
 
+    @Test fun 고정_시험_문제_성적() {
+        File("build/holdout_report.txt").writeText(ModelTrainer.holdoutReport(model))
+        assertTrue("고정 시험 문제가 있어야 함", ModelTrainer.holdout.size >= 100 && ModelTrainer.finalTest.size >= 50)
+    }
+
+    @Test fun 고정_시험_문제는_학습_데이터에_없음() {
+        val train = SmsDataset.generate().map { it.text.replace("\n", " ") }.toSet()
+        (ModelTrainer.holdout + ModelTrainer.finalTest).forEach { assertTrue("학습 데이터와 겹침: ${it.first}", it.first !in train) }
+    }
+
     @Test fun 저장하고_다시_읽어도_같은_결과() {
         val again = TextModel.parse(model.serialize())
         assertTrue(Math.abs(again.predict(normal) - model.predict(normal)) < 1e-3f)

@@ -35,6 +35,20 @@ class SmishingEngineTest {
     @Test fun 안전계좌는_돈요구() = assertEquals(true, MONEY in reasons("수사 협조를 위해 안전계좌로 즉시 옮기세요"))
     @Test fun 입금_바랍니다는_돈요구() = assertEquals(true, MONEY in reasons("배송비 2,500원 미납. 아래 계좌로 입금 바랍니다"))
 
+    // 진짜 인증번호 문자·기관 예방 안내·평범한 가족 문자는 규칙에 걸리지 않는다
+    private val CODE = "비밀번호나 인증번호를 알려 달라고 해요. 절대 알려 주면 안 돼요."
+    private val AGENCY = "공공기관을 사칭하고 있어요. 진짜 기관은 문자로 돈을 요구하지 않아요."
+    private val FAMILY = "가족을 사칭하는 전형적인 수법이에요. 꼭 전화로 직접 확인하세요."
+    @Test fun 진짜_인증번호_문자() = assertEquals(Level.LOW, level("[카카오] 인증번호 [482910] 입력해 주세요. 타인에게 절대 알려주지 마세요"))
+    @Test fun 인증번호_알려줘는_요구() = assertEquals(true, CODE in reasons("아빠 지금 오는 인증번호 좀 알려줘"))
+    @Test fun 인증번호_회신은_요구() = assertEquals(true, CODE in reasons("인증번호 6자리 회신 바랍니다"))
+    @Test fun 주민센터는_요구_아님() = assertEquals(false, CODE in reasons("[주민센터] 신청하신 등본 발급이 완료되었습니다"))
+    @Test fun 기관_예방_안내() = assertEquals(false, AGENCY in reasons("[경찰청] 검찰 경찰 금감원은 절대로 전화로 돈을 요구하지 않습니다"))
+    @Test fun 기관_사칭() = assertEquals(true, AGENCY in reasons("경찰청 사이버수사대입니다. 고객님 계좌가 범죄에 이용되었습니다"))
+    @Test fun 가족_폰_이야기는_사칭_아님() = assertEquals(false, FAMILY in reasons("엄마 폰 액정 보호필름 내가 사 놨어"))
+    @Test fun 가족_폰_고장은_사칭() = assertEquals(true, FAMILY in reasons("할머니 저 손자예요 폰이 고장 나서 이 번호로 연락드려요"))
+    @Test fun 가족_기프트카드는_사칭() = assertEquals(true, FAMILY in reasons("엄마 기프트카드 몇 장만 사서 번호 보내줘"))
+
     // 브라우저 주소창은 http:// 없이 보여 준다
     @Test fun 주소창_IP주소() = assertEquals(1, RuleDetector.linkWarnings("10.0.0.1/pay").size)
     @Test fun 주소창_수상한_끝자리() = assertEquals(1, RuleDetector.linkWarnings("han-bit.xyz/a8Kd2").size)
