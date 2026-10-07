@@ -60,7 +60,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
 - `guard/` 문자 지킴이 (수신 문자 자동 스미싱 감지, 문자는 휴대폰 밖으로 안 나감)
   - `SmishingReceiver` 3단계: 저장된 연락처 통과 → 규칙 검사 → AI 모델 (링크 유무와 관계없이 항상)
   - `SmishingEngine` 검사기 꽂기 구조: `RuleDetector`(규칙) + `ModelDetector`(A안 모델). `heavy=true` 검사기는 규칙 뒤에, 저장 안 된 번호면 항상 실행 (`LinklessModelTest`)
-  - `TextModel` 글자 n-gram 로지스틱 회귀(46KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
+  - `TextModel` 글자 n-gram 로지스틱 회귀(57KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄
   - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요)
@@ -72,7 +72,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)
   - `RealGuide` 말로 물어보기에서 고른 안내를 시작. 사진·문자는 **받는 사람 확인 후에만 안내**(번호 전체 비교)
 - `testapp/` **연습용 퍼즐**: 지워도 되는 빈 앱. 앱 삭제 안내를 안전하게 시험·시연할 때 설치해 둔다 (`gradle :testapp:assembleDebug`)
-- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 9, `ModelDetectorTest` 4
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 18, `ModelDetectorTest` 4, `InstallGateTest` 19, `LinklessModelTest` 6
 
 ## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
 - SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`
@@ -114,7 +114,7 @@ smart-helper/
 - 실제 폰(갤럭시 예상) 확보 후: 실제 화면 안내 6종을 삼성 문자·설정 앱에서 확인하고 버튼 찾는 규칙 보완, 사진 보내기 마지막 단계(에뮬레이터는 MMS 불가), 와이파이 비밀번호 창, 마이크 음성 인식
 - 실제 화면 안내 늘리기: 알람(시계 앱), 전화 걸기(전화 앱), 음량
 - C안: 휴대폰 안 언어모델(Gemma 약 1B) — 위험 이유 쉬운 말 설명 + 규칙이 못 알아들은 말 해석
-- 실제 문자 데이터 수집 → A안 재학습 (지금 성능은 합성 데이터 기준: 학습에 안 쓴 틀로 정확도 92%, 재현율 100%)
+- 실제 문자 데이터 수집 → A안 재학습 (지금 성능은 합성 데이터 기준: 학습에 안 쓴 틀로 정확도 94%, 재현율 100%. 어머니·할머니·고모 등 호칭의 링크 없는 지인 사칭 틀 추가)
 - 대회 발표 자료(구조도, 동작 흐름, 성능 표)
 ## 테스트 체크리스트 (웹 시뮬레이션)
 - [ ] 말로 물어보기 6개 시나리오가 끝까지 안내되고 완료 시 화면 공유가 꺼진다

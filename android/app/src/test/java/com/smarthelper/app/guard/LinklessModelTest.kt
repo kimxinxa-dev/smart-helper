@@ -30,6 +30,21 @@ class LinklessModelTest {
         "엄마 나야 이 번호 내 새 번호니까 저장해 줘 바쁘면 문자로만 해",
         "아빠 나 딸이야 번호 바뀌었어 지금 회의 중이라 전화는 못 받아",
         "아버지 저예요 번호 바꿨어요 지금 통화 어려우니 문자로 해 주세요",
+        // 재학습 전에는 놓쳤던 문자 (어머니 53%, 할머니 22%, 고모 41%)
+        "어머니 저 큰아들인데요 번호가 바뀌어서 연락드려요 확인되면 답장 주세요",
+        "할머니 저 손녀 지영이에요 새 번호예요 카톡 친구 추가해 주세요",
+        "고모 저 현우예요 잠깐 부탁 하나만 드려도 될까요 문자로 답 주세요",
+        // 학습 틀에 없는 새 말투
+        "이모 저 조카 서연이에요 핸드번호 바꿔서 이걸로 연락드려요 답장 주세요",
+        "할아버지 손자 도윤이에요 이 번호로 문자 좀 보내 주실 수 있어요?",
+    )
+
+    // 같은 호칭의 평범한 가족 문자 — 경고하면 안 됨
+    private val family = listOf(
+        "엄마 오늘 저녁 늦을 것 같아요 먼저 드세요",
+        "할머니 이번 주말에 놀러 갈게요 맛있는 거 해 주세요",
+        "고모 저 현우예요 어제 보내 주신 사과 잘 먹었어요",
+        "어머니 감기 조심하시고 따뜻하게 입고 다니세요",
     )
 
     @Test fun 예시는_규칙만으로는_잡히지_않음() = acquaintance.forEach {
@@ -62,7 +77,9 @@ class LinklessModelTest {
 
     @Test fun 실제_모델로도_정상_가족_문자는_낮음() {
         SmishingEngine.detectors += ModelDetector(model)
-        assertEquals(Level.LOW, SmishingEngine.check("엄마 오늘 저녁 늦을 것 같아요 먼저 드세요", savedContact = false).level)
+        family.forEach {
+            assertEquals("사기 가능성 ${(model.predict(it) * 100).toInt()}%: $it", Level.LOW, SmishingEngine.check(it, savedContact = false).level)
+        }
     }
 
     @Test fun 실제_모델로도_정상_문자는_낮음() {
