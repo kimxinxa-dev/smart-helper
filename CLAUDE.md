@@ -58,8 +58,8 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
 ### 안드로이드 (`android/`, Kotlin, 패키지 `com.smarthelper.app`)
 - `MainActivity` — WebView + `Bridge`(JS ↔ 안드로이드: speak/listen/realGuide/realAnswer/guardStatus/checkText 등)
 - `guard/` 문자 지킴이 (수신 문자 자동 스미싱 감지, 문자는 휴대폰 밖으로 안 나감)
-  - `SmishingReceiver` 3단계: 저장된 연락처 통과 → 링크 없으면 무거운 AI 생략(말투 규칙은 항상) → 정밀 검사
-  - `SmishingEngine` 검사기 꽂기 구조: `RuleDetector`(규칙) + `ModelDetector`(A안 모델). `heavy=true` 검사기는 의심 후보에만
+  - `SmishingReceiver` 3단계: 저장된 연락처 통과 → 규칙 검사 → AI 모델 (링크 유무와 관계없이 항상)
+  - `SmishingEngine` 검사기 꽂기 구조: `RuleDetector`(규칙) + `ModelDetector`(A안 모델). `heavy=true` 검사기는 규칙 뒤에, 저장 안 된 번호면 항상 실행 (`LinklessModelTest`)
   - `TextModel` 글자 n-gram 로지스틱 회귀(46KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄

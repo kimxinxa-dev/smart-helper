@@ -13,7 +13,7 @@ data class Verdict(val level: Level, val score: Int, val reasons: List<String>, 
  * 지금은 RuleDetector 하나지만, 학습한 분류 모델(A안)·휴대폰 안 언어모델(C안)도 같은 자리에 꽂는다.
  */
 interface Detector {
-    /** true 면 AI 모델처럼 무거운 검사기. 링크가 있거나 규칙에 걸린 문자에만 돌린다(배터리 절약). */
+    /** true 면 AI 모델처럼 무거운 검사기. 규칙 검사 뒤에 돌린다. */
     val heavy: Boolean get() = false
     fun inspect(body: String): Finding
 }
@@ -25,10 +25,9 @@ object SmishingEngine {
         val urls = RuleDetector.urls(body)
         // 1단계: 저장된 번호는 검사하지 않는다
         if (savedContact) return Verdict(Level.SKIP, 0, listOf("연락처에 저장된 번호라서 검사하지 않았어요."), urls)
-        // 2·3단계: 가벼운 규칙은 항상, 무거운 AI는 의심 후보에만
-        val light = detectors.filter { !it.heavy }.map { it.inspect(body) }
-        val candidate = urls.isNotEmpty() || light.any { it.score > 0 || it.flag }
-        val found = light + if (candidate) detectors.filter { it.heavy }.map { it.inspect(body) } else emptyList()
+        // 2단계: 규칙 검사, 3단계: AI 모델 검사.
+        // 연락처에 없는 번호는 링크 유무와 관계없이 AI 모델로도 본다 — 링크 없는 지인 사칭("엄마 나 새 번호야")을 놓치지 않기 위해
+        val found = detectors.filter { !it.heavy }.map { it.inspect(body) } + detectors.filter { it.heavy }.map { it.inspect(body) }
         val score = found.sumOf { it.score }
         val flag = found.any { it.flag }
         val level = when {
