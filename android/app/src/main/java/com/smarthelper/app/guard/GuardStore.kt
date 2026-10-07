@@ -32,7 +32,10 @@ object GuardStore {
         val old = all(ctx)
         val arr = JSONArray().put(item)
         for (i in 0 until minOf(old.length(), MAX - 1)) arr.put(old.get(i))
-        prefs(ctx).edit().putString(KEY, arr.toString()).apply()
+        val ed = prefs(ctx).edit().putString(KEY, arr.toString())
+        // 위험 시간대 시작: 주의 이상 메시지를 받은 시각과 보낸 사람 (설치 차단 경고에 보여 준다)
+        if (risky) ed.putLong(RISK_AT, id).putString(RISK_FROM, sender).putString(RISK_SRC, source)
+        ed.apply()
         onChange?.invoke()
         return id
     }
@@ -56,6 +59,41 @@ object GuardStore {
         }
         return out
     }
+
+    /** 마지막 위험 메시지 (시각, 보낸 사람, 출처). 없으면 null */
+    data class LastRisk(val at: Long, val sender: String, val source: String)
+
+    fun lastRisk(ctx: Context): LastRisk? {
+        val p = prefs(ctx)
+        val at = p.getLong(RISK_AT, 0L).takeIf { it > 0 } ?: return null
+        return LastRisk(at, p.getString(RISK_FROM, "").orEmpty(), p.getString(RISK_SRC, "문자").orEmpty())
+    }
+
+    /** "그래도 진행"을 누른 뒤 이 시각까지 설치 경고를 다시 띄우지 않는다 */
+    fun installSnoozedUntil(ctx: Context) = prefs(ctx).getLong(SNOOZE, 0L)
+    fun snoozeInstall(ctx: Context, until: Long) = prefs(ctx).edit().putLong(SNOOZE, until).apply()
+
+    /** 가족 연락처 1명 (이름, 번호) */
+    fun family(ctx: Context): Pair<String, String>? {
+        val p = prefs(ctx)
+        val num = p.getString(FAMILY_NUM, null) ?: return null
+        return p.getString(FAMILY_NAME, "가족").orEmpty() to num
+    }
+    fun setFamily(ctx: Context, name: String, number: String) {
+        prefs(ctx).edit().putString(FAMILY_NAME, name).putString(FAMILY_NUM, number).apply()
+        onChange?.invoke()
+    }
+    fun clearFamily(ctx: Context) {
+        prefs(ctx).edit().remove(FAMILY_NAME).remove(FAMILY_NUM).apply()
+        onChange?.invoke()
+    }
+
+    private const val RISK_AT = "riskAt"
+    private const val RISK_FROM = "riskFrom"
+    private const val RISK_SRC = "riskSource"
+    private const val SNOOZE = "installSnoozedUntil"
+    private const val FAMILY_NAME = "familyName"
+    private const val FAMILY_NUM = "familyNumber"
 
     fun clear(ctx: Context) {
         prefs(ctx).edit().remove(KEY).apply()

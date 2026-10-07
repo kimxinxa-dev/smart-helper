@@ -28,6 +28,9 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     }
 
     private lateinit var block: LinkBlockOverlay
+    private lateinit var installBlock: InstallBlockOverlay
+    private var installPending = false
+    private val installTask = Runnable { installPending = false; checkInstall() }
     /** 마지막으로 검사한 주소 (같은 주소를 계속 검사하지 않는다) */
     private var lastUrl = ""
     private var browserPending = false
@@ -60,6 +63,10 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         block = LinkBlockOverlay(this, wm, onExit = ::leaveRiskySite, onStay = { host ->
             com.smarthelper.app.guard.LinkGuard.allow(host)
             say("알겠어요. 개인정보나 돈을 요구하면 바로 나가세요.")
+        })
+        installBlock = InstallBlockOverlay(this, wm, onQuit = ::quitInstall, onFamily = ::callFamily, onProceed = {
+            com.smarthelper.app.guard.GuardStore.snoozeInstall(this, com.smarthelper.app.guard.InstallGate.snoozeUntil(System.currentTimeMillis()))
+            say("알겠어요. 5분 동안은 다시 묻지 않을게요. 개인정보나 돈을 요구하는 앱이면 바로 그만두세요.")
         })
         tts = TextToSpeech(this, this)
         // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.
@@ -118,7 +125,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         }
         guide = g; current = -1; spoken = ""; misses = 0; leaveTries = 0
         overlay.point(null, "화면을 여는 중이에요...", 1, g.steps.size)
-        handler.removeCallbacksAndMessages(null); browserPending = false
+        handler.removeCallbacksAndMessages(null); browserPending = false; installPending = false
         handler.postDelayed(tick, 1500)
         handler.postDelayed(timeout, TIMEOUT_MS)
         return true
@@ -126,13 +133,20 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     fun stop(message: String?) {
         guide = null
-        handler.removeCallbacksAndMessages(null); browserPending = false
+        handler.removeCallbacksAndMessages(null); browserPending = false; installPending = false
         overlay.hide()
         message?.let { say(it) }
     }
 
     override fun onAccessibilityEvent(e: AccessibilityEvent) {
         // 위험 링크 차단: 안내 중이 아니어도 브라우저 주소가 바뀌면 검사한다
+        // 설치 차단: 위험 시간대일 때만 설치·설정 화면을 본다 (평소에는 아무것도 하지 않음)
+        val pkg = e.packageName?.toString().orEmpty()
+        if (!installPending && (pkg in com.smarthelper.app.guard.InstallGate.INSTALLERS || pkg.endsWith(".packageinstaller") || pkg in com.smarthelper.app.guard.InstallGate.SETTINGS) &&
+            com.smarthelper.app.guard.InstallGate.inRiskWindow(System.currentTimeMillis(), com.smarthelper.app.guard.GuardStore.lastRisk(this)?.at)) {
+            installPending = true
+            handler.postDelayed(installTask, 400)
+        }
         if (e.packageName?.toString() in BROWSERS && !browserPending) {
             // 페이지가 바뀌는 동안 신호가 아주 많이 오므로, 0.7초에 한 번만 본다
             browserPending = true
@@ -168,6 +182,52 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         lastUrl = url
         android.util.Log.i("SmartHelper", "위험 링크 차단: ${d.host}")
         say("위험한 사이트예요. ${d.reason} 안전하게 나가기를 눌러 주세요.")
+    }
+
+    /** 설치 화면이나 "알 수 없는 앱 설치" 화면이면, 위험 시간대·유예를 확인해 전체 화면 경고를 띄운다 */
+    private fun checkInstall() {
+        if (installBlock.showing) return
+        val roots = windows.mapNotNull { it.root }.filter {
+            val p = it.packageName?.toString().orEmpty()
+            p in com.smarthelper.app.guard.InstallGate.INSTALLERS || p.endsWith(".packageinstaller") || p in com.smarthelper.app.guard.InstallGate.SETTINGS
+        }
+        val now = System.currentTimeMillis()
+        val risk = com.smarthelper.app.guard.GuardStore.lastRisk(this)
+        for (r in roots) {
+            val texts = ArrayList<String>()
+            Nodes.first(r) { n -> n.text?.toString()?.let { texts += it }; false } // 화면 글자만 모은다 (저장하지 않음)
+            val screen = com.smarthelper.app.guard.InstallGate.screen(r.packageName?.toString(), texts)
+            if (!com.smarthelper.app.guard.InstallGate.shouldBlock(screen, now, risk?.at, com.smarthelper.app.guard.GuardStore.installSnoozedUntil(this))) continue
+            if (guide != null) stop(null)
+            val time = java.text.SimpleDateFormat("a h:mm", java.util.Locale.KOREAN).format(java.util.Date(risk!!.at))
+            val what = if (risk.source == "문자") "문자" else "${risk.source} 메시지"
+            val detail = "$time · ${risk.sender} 님이 보낸 $what"
+            val family = com.smarthelper.app.guard.GuardStore.family(this)?.first
+            try {
+                installBlock.show(detail, family)
+            } catch (e: Exception) {
+                android.util.Log.w("SmartHelper", "설치 경고를 띄우지 못함", e)
+                return
+            }
+            android.util.Log.i("SmartHelper", "설치 차단 경고: $screen")
+            say("잠깐만요! 방금 받은 문자 때문에 설치하시는 건가요? $time 에 ${risk.sender} 님이 보낸 ${what}가 위험했어요. 안전하게 그만두기를 눌러 주세요.")
+            return
+        }
+    }
+
+    /** "안전하게 그만두기": 설치 화면을 닫고 홈 화면으로 */
+    private fun quitInstall() {
+        performGlobalAction(GLOBAL_ACTION_BACK)
+        handler.postDelayed({ performGlobalAction(GLOBAL_ACTION_HOME); say("잘 하셨어요. 설치를 그만뒀어요.") }, 400)
+    }
+
+    /** "가족에게 전화하기": 전화 앱에 번호만 띄운다 (전화 권한 없이 ACTION_DIAL). 가족이 없으면 118 */
+    private fun callFamily() {
+        val num = com.smarthelper.app.guard.GuardStore.family(this)?.second ?: "118"
+        installBlock.hide()
+        startActivity(android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:$num"))
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+        say("번호를 띄워 두었어요. 통화 버튼을 눌러 물어보세요.")
     }
 
     /**
@@ -264,6 +324,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         if (guide != null) stop(null)
         if (::block.isInitialized) block.hide()
+        if (::installBlock.isInitialized) installBlock.hide()
         if (instance === this) instance = null
         tts?.shutdown()
         return super.onUnbind(intent)

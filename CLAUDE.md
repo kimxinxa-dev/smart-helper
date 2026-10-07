@@ -63,7 +63,10 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `TextModel` 글자 n-gram 로지스틱 회귀(46KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄
-  - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요)- `assist/CommandParser` 규칙 기반 말 이해(순수 Kotlin) — 실제 안내에서 받는 사람 이름 등을 뽑는 데 사용 (대신 실행하던 `Assistant` 는 제거)
+  - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요)
+  - `InstallGate` 설치 차단(순수 Kotlin, 테스트 19개): 주의 이상 메시지 후 30분 위험 시간대, 설치 앱+설치 글자 / 설정+'알 수 없는 앱 설치' 판단, '그래도 진행' 5분 유예. `GuideService.checkInstall` → `InstallBlockOverlay`(그만두기 · 가족 전화 ACTION_DIAL, 없으면 118 · 그래도 진행). 가족 연락처는 `GuardStore`(연락처 선택 창으로 고름, 권한 불필요)
+  - 설치 화면 시험: testapp APK를 `/sdcard/Download/puzzle.apk`로 push → 미디어 스캔 → `am start -a android.intent.action.VIEW -d content://media/external/file/<id> -t application/vnd.android.package-archive --grant-read-uri-permission`. 연락처 선택 창은 캡처가 막혀 DUMP_SCREEN 으로 위치를 찾음
+- `assist/CommandParser` 규칙 기반 말 이해(순수 Kotlin) — 실제 안내에서 받는 사람 이름 등을 뽑는 데 사용 (대신 실행하던 `Assistant` 는 제거)
 - `guide/` 화면 안내 (접근성 서비스, 사용자가 설정에서 직접 켬)
   - `GuideService` 문자·설정 앱 위에 `GuideOverlay`(노란 테두리·👇·큰 말풍선·🔴 띠+그만) 표시. "찾을 수 있는 가장 뒤 단계"가 지금 단계
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)

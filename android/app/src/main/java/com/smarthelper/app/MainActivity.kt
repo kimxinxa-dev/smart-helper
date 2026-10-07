@@ -107,6 +107,16 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
                 if (resultCode == RESULT_OK && !text.isNullOrBlank()) js("window.onVoice&&onVoice(${JSONObject.quote(text)})")
                 else js("window.onVoiceErr&&onVoiceErr('no-match')")
             }
+            REQ_FAMILY -> {
+                // 연락처 선택 창이 고른 한 명만 잠깐 읽을 수 있게 해 준다 (연락처 권한 필요 없음)
+                val uri = data?.data
+                if (resultCode == RESULT_OK && uri != null) {
+                    contentResolver.query(uri, arrayOf(android.provider.ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER), null, null, null)?.use {
+                        if (it.moveToFirst()) GuardStore.setFamily(this, it.getString(0).orEmpty(), it.getString(1).orEmpty())
+                    }
+                }
+                guardChanged()
+            }
         }
     }
 
@@ -198,6 +208,21 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
         /** 권한을 거절해 다시 물을 수 없을 때 앱 설정 화면을 연다 */
         @JavascriptInterface
+        /** 가족 연락처 {name, number} 또는 null */
+        fun familyGet(): String = GuardStore.family(this@MainActivity)?.let { JSONObject().put("name", it.first).put("number", it.second).toString() } ?: "null"
+
+        /** 연락처 선택 창에서 가족 1명 고르기. 결과는 onGuardChanged() 로 */
+        @JavascriptInterface
+        fun familyPick() = runOnUiThread {
+            try {
+                startActivityForResult(Intent(Intent.ACTION_PICK, android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI), REQ_FAMILY)
+            } catch (e: ActivityNotFoundException) { /* 연락처 앱 없음 */ }
+        }
+
+        @JavascriptInterface
+        fun familyClear() = GuardStore.clearFamily(this@MainActivity)
+
+        @JavascriptInterface
         fun openNotifAccess() = runOnUiThread { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
 
         @JavascriptInterface
@@ -259,5 +284,6 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         private const val REQ_FILE = 1
         private const val REQ_VOICE = 2
         private const val REQ_PERM = 3
+        private const val REQ_FAMILY = 4
     }
 }

@@ -262,7 +262,7 @@ ${lv[0]=='lo'?'':`<b style="font-size:.85em">이렇게 하세요</b><ul><li>${li
  lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]+' '+(r.reasons[0]||'')]}
 window.onGuardChanged=()=>{if(view=='guard')guardRender();
  else if(view=='ask'){const p=$('#cperm');if(p&&JSON.parse(Android.guardStatus()).contacts){p.remove();bub('허락해 주셔서 고마워요. 이제 "내 휴대폰으로 해 보기"를 다시 해 볼게요.',0);Android.realGuide(lastAsk,lastReal)}}};
-function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms;
+function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms,fam=JSON.parse(Android.familyGet());
  main.innerHTML=`<h2>🛡️ 문자 지킴이</h2>
 <div class="res ${on?'lo':'mid'}" style="margin-top:0"><h3>${on?'🟢 지키고 있어요':'⚪ 꺼져 있어요'}</h3><div style="font-size:.8em;line-height:1.5">${on?'모르는 번호로 문자가 오면 바로 살펴보고, 위험하면 알려 드려요.':'켜 두시면 사기 문자가 왔을 때 바로 알려 드려요.'} 문자 내용은 <b>휴대폰 밖으로 나가지 않아요.</b></div>
 ${on&&!st.notif?'<div style="font-size:.75em;color:var(--bad);margin-top:6px">알림이 꺼져 있어서 경고를 띄울 수 없어요.</div>':''}
@@ -272,8 +272,10 @@ ${guardAsked&&(!on||!st.notif)?'<button class="btn g" id="gset">⚙️ 설정에
 <h2 style="margin-top:16px">🛡️ 더 지키기</h2>
 <div class="res ${st.msg?'lo':'mid'}" style="margin-top:0"><b>💬 카카오톡 지킴이 · ${st.msg?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">카카오톡·라인·텔레그램으로 온 메시지도 알림으로 살펴봐요. 메신저 알림만 보고, 밖으로 보내지 않아요.</div>
 ${st.msg?'':'<button class="btn" id="gmsg" style="margin-top:8px">💬 카카오톡 지킴이 켜기</button>'}</div>
-<div class="res ${st.link?'lo':'mid'}"><b>🔗 위험 링크 차단 · ${st.link?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자의 링크를 눌러도 사이트가 열리기 전에 화면을 가리고 알려 드려요. 브라우저는 주소창만 봐요.</div>
+<div class="res ${st.link?'lo':'mid'}"><b>🔗 위험 링크·설치 차단 · ${st.link?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자의 링크를 눌러도 사이트가 열리기 전에 화면을 가리고, 사기 문자를 받은 뒤 30분 안에 앱을 설치하려 하면 멈추고 물어봐요. 브라우저는 주소창만, 설치 화면은 설치 글자만 봐요.</div>
 ${st.link?'':'<button class="btn" id="glink" style="margin-top:8px">🔗 위험 링크 차단 켜기</button>'}</div>
+<div class="res ${fam?'lo':'mid'}"><b>👨‍👩‍👧 가족 연락처 · ${fam?esc(fam.name):'없음'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자를 받은 뒤 30분 안에 앱을 설치하려 하면 화면을 가리고 물어봐요. 그때 <b>"가족에게 전화하기"</b>를 누르면 이 분 번호를 띄워 드려요.${fam?'':' 등록하지 않으면 118 상담센터 번호를 띄워요.'}</div>
+<button class="btn${fam?' g':''}" id="gfam" style="margin-top:8px">${fam?'👨‍👩‍👧 다른 분으로 바꾸기':'👨‍👩‍👧 가족 연락처 고르기'}</button>${fam?'<button class="btn g" id="gfamx">지우기</button>':''}</div>
 <h2 style="margin-top:16px">✍️ 직접 검사하기</h2>
 <div style="font-size:.75em;color:var(--mut);margin-bottom:6px;line-height:1.5">카카오톡 등으로 받은 수상한 글을 <b>꾹 눌러 복사</b>한 뒤, 아래 칸에 붙여 넣어 주세요. 휴대폰 안에서만 살펴보고 저장하지 않아요.</div>
 <textarea id="gtx" placeholder="여기에 문자 내용을 붙여 넣으세요">${esc(gText)}</textarea>
@@ -287,7 +289,8 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
  const g=$('#gon');g&&(g.onclick=()=>on?(guardAsked=true,Android.enableGuard()):consent('문자가 오면 <b>휴대폰 안에서만</b> 내용을 살펴보고 사기인지 알려 드려요. 문자는 밖으로 보내지 않고, 긴 숫자는 가려서 기록해요. 켜 드릴까요?',()=>{guardAsked=true;Android.enableGuard()}));
  const s=$('#gset');s&&(s.onclick=()=>Android.openAppSettings());
  const gm=$('#gmsg');gm&&(gm.onclick=()=>consent('카카오톡 같은 메신저에 새 메시지가 오면, <b>알림에 보이는 내용만</b> 휴대폰 안에서 살펴봐요. 다른 앱 알림은 보지 않고, 밖으로 보내지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 메신저 지킴이"</b>를 눌러 켜 주세요.',()=>Android.openNotifAccess()));
- const gl=$('#glink');gl&&(gl.onclick=()=>consent('사기 문자의 링크를 실수로 눌러도, 위험한 사이트가 열리면 바로 화면을 가리고 알려 드려요. 브라우저는 <b>주소창만</b> 보고 저장하지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 화면 안내"</b>를 눌러 켜 주세요.',()=>Android.openA11y()));
+ const gf=$('#gfam');gf&&(gf.onclick=()=>Android.familyPick());const gfx=$('#gfamx');gfx&&(gfx.onclick=()=>Android.familyClear());
+ const gl=$('#glink');gl&&(gl.onclick=()=>consent('사기 문자의 링크를 실수로 눌러도, 위험한 사이트가 열리면 바로 화면을 가리고 알려 드려요. 사기 문자를 받은 뒤 30분 안에 <b>앱을 설치하려 하면</b> 설치 화면도 가리고 물어봐요. 브라우저는 <b>주소창만</b>, 설치 화면은 <b>설치 여부를 묻는 글자만</b> 보고 저장하지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 화면 안내"</b>를 눌러 켜 주세요.',()=>Android.openA11y()));
  const c=$('#gclr');c&&(c.onclick=()=>Android.clearGuard());
  $('#gtx').oninput=e=>gText=e.target.value;
  $('#gex').onclick=()=>{gEx=(gEx+1)%SHOTS.length;gText=$('#gtx').value=SHOTS[gEx][2]};
