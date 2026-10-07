@@ -97,6 +97,7 @@ object GuardStore {
 
     fun clear(ctx: Context) {
         prefs(ctx).edit().remove(KEY).apply()
+        SenderBook.clear(ctx)
         onChange?.invoke()
     }
 

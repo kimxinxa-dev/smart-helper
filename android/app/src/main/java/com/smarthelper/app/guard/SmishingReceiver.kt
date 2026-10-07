@@ -10,6 +10,7 @@ import android.provider.Telephony
  *  1단계: 연락처에 저장된 번호면 즉시 통과 (자원 소모 0)
  *  2단계: 규칙 검사 (말투·돈 요구·링크 모양)
  *  3단계: AI 분류 모델 검사 — 링크가 없어도 항상 본다 (링크 없는 지인 사칭 대비)
+ *  4단계: 내용 밖의 단서 — 처음 온 번호인지, 조금 전 의심 문자를 보낸 번호인지 (SenderSignals, GuardAlert 에서)
  * 카카오톡 등 메신저는 MessengerListener 가 같은 방식으로 검사한다.
  */
 class SmishingReceiver : BroadcastReceiver() {

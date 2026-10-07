@@ -22,7 +22,14 @@ object GuardAlert {
      */
     fun handle(ctx: Context, sender: String, body: String, source: String, savedContact: Boolean, alertOnlyHigh: Boolean = false) {
         Guard.init(ctx)
-        val v = SmishingEngine.check(body, savedContact)
+        var v = SmishingEngine.check(body, savedContact)
+        if (!savedContact) {
+            // 내용 밖의 단서: 처음 온 번호인지, 해외 번호인지, 조금 전 의심 문자를 보낸 상대인지
+            val now = System.currentTimeMillis()
+            val seen = SenderBook.get(ctx, source, sender)
+            v = SmishingEngine.withExtra(v, SenderSignals.inspect(sender, source == "문자", body, seen, now, v.urls.isNotEmpty()))
+            SenderBook.record(ctx, source, sender, now, warned = v.level >= Level.MID)
+        }
         val id = GuardStore.add(ctx, sender, body, v, source)
         val alert = if (alertOnlyHigh) v.level == Level.HIGH else v.level == Level.MID || v.level == Level.HIGH
         if (alert) notify(ctx, id, sender, v, source)

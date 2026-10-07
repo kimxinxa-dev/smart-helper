@@ -30,12 +30,21 @@ object SmishingEngine {
         val found = detectors.filter { !it.heavy }.map { it.inspect(body) } + detectors.filter { it.heavy }.map { it.inspect(body) }
         val score = found.sumOf { it.score }
         val flag = found.any { it.flag }
-        val level = when {
-            score >= 6 -> Level.HIGH
-            score >= 3 || flag -> Level.MID
-            else -> Level.LOW
-        }
-        return Verdict(level, score, found.flatMap { it.reasons }.distinct(), urls)
+        return Verdict(levelOf(score, flag), score, found.flatMap { it.reasons }.distinct(), urls)
+    }
+
+    private fun levelOf(score: Int, flag: Boolean) = when {
+        score >= 6 -> Level.HIGH
+        score >= 3 || flag -> Level.MID
+        else -> Level.LOW
+    }
+
+    /** 문자 내용 밖의 단서(SenderSignals)를 더한다. 이미 주의 이상이었으면 flag 로 낮아지지 않는다 */
+    fun withExtra(v: Verdict, extra: Finding): Verdict {
+        if (v.level == Level.SKIP || (extra.score == 0 && !extra.flag)) return v
+        val score = v.score + extra.score
+        val flag = extra.flag || v.level >= Level.MID
+        return v.copy(level = maxOf(v.level, levelOf(score, flag)), score = score, reasons = (extra.reasons + v.reasons).distinct())
     }
 
     /** 6자리 이상 숫자(계좌·주민번호 등)를 가린다 */

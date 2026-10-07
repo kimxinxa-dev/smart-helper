@@ -58,7 +58,8 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
 ### 안드로이드 (`android/`, Kotlin, 패키지 `com.smarthelper.app`)
 - `MainActivity` — WebView + `Bridge`(JS ↔ 안드로이드: speak/listen/realGuide/realAnswer/guardStatus/checkText 등)
 - `guard/` 문자 지킴이 (수신 문자 자동 스미싱 감지, 문자는 휴대폰 밖으로 안 나감)
-  - `SmishingReceiver` 3단계: 저장된 연락처 통과 → 규칙 검사 → AI 모델 (링크 유무와 관계없이 항상)
+  - `SmishingReceiver` 단계: 저장된 연락처 통과 → 규칙 검사 → AI 모델 (링크 유무와 관계없이 항상) → 내용 밖 단서
+  - `SenderSignals` 내용 밖 단서(순수 Kotlin, `SenderSignalsTest`): 처음 온 번호+가족 말투 → 주의(문자만), 해외·070 +1(문자만), 24시간 안 의심 상대가 돈·상품권·인증·설치·링크 요구 → +6(위험), 그 밖의 다음 메시지도 주의 유지(문자·메신저). `SmishingEngine.withExtra` 로 합침. `SenderBook` 이 상대별 횟수·마지막 의심 시각을 SHA-256 키로 저장(기록 지우기 때 함께 지움). `GuardAlert.handle` 에서 연결
   - `SmishingEngine` 검사기 꽂기 구조: `RuleDetector`(규칙) + `ModelDetector`(A안 모델). `heavy=true` 검사기는 규칙 뒤에, 저장 안 된 번호면 항상 실행 (`LinklessModelTest`)
   - `TextModel` 글자 n-gram 로지스틱 회귀(64KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
@@ -72,7 +73,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)
   - `RealGuide` 말로 물어보기에서 고른 안내를 시작. 사진·문자는 **받는 사람 확인 후에만 안내**(번호 전체 비교)
 - `testapp/` **연습용 퍼즐**: 지워도 되는 빈 앱. 앱 삭제 안내를 안전하게 시험·시연할 때 설치해 둔다 (`gradle :testapp:assembleDebug`)
-- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19
 
 ## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
 - SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`
