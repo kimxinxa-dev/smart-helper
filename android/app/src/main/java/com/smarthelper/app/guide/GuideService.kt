@@ -25,7 +25,19 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         /** 위험 링크 차단: 이 브라우저들의 주소창만 본다 */
         val BROWSERS = setOf("com.android.chrome", "com.sec.android.app.sbrowser", "com.naver.whale", "org.mozilla.firefox", "com.microsoft.emmx")
         private val URL_BAR_IDS = arrayOf("url_bar", "location_bar_edit_text", "url_field", "mozac_browser_toolbar_url_view", "addressbarEdit")
+        /** 위험 링크 차단: 주소창 없이 앱 안에서 링크를 여는 앱 (누른 말풍선 + 앱 안 웹 화면 제목 줄을 본다) */
+        val IN_APP = setOf("com.kakao.talk")
+        /** 개발용: 디버그 앱에서는 연습용 퍼즐의 '가짜 카카오톡' 화면도 같은 방식으로 본다 */
+        private const val FAKE_IN_APP = "com.smarthelper.practicepuzzle"
     }
+
+    private var inApp = IN_APP
+    /** 앱 안 웹 화면에서 마지막으로 검사한 주소들 */
+    private var lastInApp = ""
+    private var inAppPending = false
+    private val inAppTask = Runnable { inAppPending = false; checkInAppBrowser() }
+    /** 지금 띄운 링크 경고가 카카오톡 같은 앱 안에서 막은 것인지 (나가기 방법이 다르다) */
+    private var blockedInApp = false
 
     private lateinit var block: LinkBlockOverlay
     private lateinit var installBlock: InstallBlockOverlay
@@ -73,6 +85,8 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         //   adb shell am broadcast -a com.smarthelper.app.DUMP_SCREEN
         // 화면이 계속 움직여 uiautomator 로 못 읽는 앱(시계 등)이나 새 휴대폰의 버튼 이름을 조사할 때 쓴다.
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            inApp = IN_APP + FAKE_IN_APP
+            serviceInfo = serviceInfo.apply { packageNames = (packageNames.orEmpty().toList() + FAKE_IN_APP).toTypedArray() }
             val filter = android.content.IntentFilter(DUMP_ACTION)
             if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(dumpReceiver, filter, RECEIVER_EXPORTED)
             else @Suppress("UnspecifiedRegisterReceiverFlag") registerReceiver(dumpReceiver, filter)
@@ -152,6 +166,15 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             browserPending = true
             handler.postDelayed(browserTask, 700)
         }
+        if (pkg in inApp) {
+            // 카카오톡: 링크를 누르는 순간(페이지가 열리기 전에) 누른 말풍선 글자를 보고,
+            // 앱 안 웹 화면이 열리거나 바뀌면 제목 줄의 주소를 본다. 채팅 내용은 저장하지 않는다.
+            if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED) checkInAppClick(e)
+            else if (!inAppPending && (e.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || e.className?.contains("WebView") == true)) {
+                inAppPending = true
+                handler.postDelayed(inAppTask, 700)
+            }
+        }
         val g = guide ?: return
         // 마지막 단계에서 완료 버튼(보내기, 확대, 와이파이 이름 등)을 누르면 끝
         if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && current == g.steps.lastIndex && (g.isDone(e.source) || clickedText(e) in g.doneTexts)) {
@@ -180,8 +203,77 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             return
         }
         lastUrl = url
+        blockedInApp = false
         android.util.Log.i("SmartHelper", "위험 링크 차단: ${d.host}")
         say("위험한 사이트예요. ${d.reason} 안전하게 나가기를 눌러 주세요.")
+    }
+
+    /** 카카오톡 채팅방에서 누른 말풍선·미리보기 카드에 위험한 링크가 있으면 페이지가 열리기 전에 막는다 */
+    private fun checkInAppClick(e: AccessibilityEvent) {
+        val texts = ArrayList<String>()
+        texts += e.text.map { it.toString() }
+        e.contentDescription?.let { texts += it.toString() }
+        // 미리보기 카드처럼 글자가 안쪽에 나뉘어 있으면 누른 칸 안의 글자를 조금만 모은다
+        e.source?.let { src ->
+            var budget = 30
+            Nodes.first(src) { n ->
+                n.text?.let { texts += it.toString() }
+                n.contentDescription?.let { texts += it.toString() }
+                --budget <= 0
+            }
+        }
+        blockInApp(texts)
+    }
+
+    /** 카카오톡 안 웹 화면: 웹 페이지 내용은 보지 않고, 웹 화면 바깥(제목 줄)의 글자만 본다 */
+    private fun checkInAppBrowser() {
+        if (block.showing) return
+        for (w in windows) {
+            val root = w.root ?: continue
+            if (root.packageName?.toString() !in inApp) continue
+            val texts = ArrayList<String>()
+            var web = false
+            val queue = ArrayDeque<android.view.accessibility.AccessibilityNodeInfo>().apply { add(root) }
+            while (queue.isNotEmpty()) {
+                val n = queue.removeFirst()
+                if (n.className?.toString() == "android.webkit.WebView") {
+                    web = true
+                    // 웹 화면 자체의 이름(주소나 페이지 제목)만 보고, 안쪽 페이지 내용은 훑지 않는다
+                    n.text?.let { texts += it.toString() }
+                    n.contentDescription?.let { texts += it.toString() }
+                    continue
+                }
+                n.text?.let { texts += it.toString() }
+                for (i in 0 until n.childCount) n.getChild(i)?.let { queue.add(it) }
+            }
+            if (!web) { lastInApp = ""; continue }
+            val key = texts.joinToString("|")
+            if (key == lastInApp) return
+            if (blockInApp(texts)) return
+            lastInApp = key
+        }
+    }
+
+    /** 글자들에서 링크를 찾아 위험하면 경고. 경고를 띄웠으면 true */
+    private fun blockInApp(texts: List<String>): Boolean {
+        if (block.showing) return false
+        val d = com.smarthelper.app.guard.InAppLink.links(texts).firstNotNullOfOrNull { com.smarthelper.app.guard.LinkGuard.check(this, it) } ?: return false
+        if (guide != null) stop(null)
+        try {
+            block.show(d)
+        } catch (e: Exception) {
+            android.util.Log.w("SmartHelper", "앱 안 위험 링크 경고를 띄우지 못함: ${d.host}", e)
+            return false
+        }
+        blockedInApp = true
+        android.util.Log.i("SmartHelper", "앱 안 위험 링크 차단: ${d.host}")
+        say("위험한 링크예요. ${d.reason} 안전하게 나가기를 눌러 주세요.")
+        return true
+    }
+
+    /** 앱 안 웹 화면이 떠 있는지 (나가기 때 뒤로 가기를 할지 정한다) */
+    private fun inAppWebOpen() = windows.mapNotNull { it.root }.filter { it.packageName?.toString() in inApp }.any { r ->
+        Nodes.first(r) { it.className?.toString() == "android.webkit.WebView" } != null
     }
 
     /** 설치 화면이나 "알 수 없는 앱 설치" 화면이면, 위험 시간대·유예를 확인해 전체 화면 경고를 띄운다 */
@@ -242,6 +334,17 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     /** "안전하게 나가기": 뒤로 가고, 그래도 위험한 주소에 머물러 있으면 홈 화면으로 */
     private fun leaveRiskySite() {
+        if (blockedInApp) {
+            // 카카오톡: 말풍선을 누르자마자 막았으면 웹 화면이 막 열리는 중일 수 있어 잠시 뒤에 확인하고, 열려 있으면 닫는다.
+            // 열려 있지 않으면 채팅방에 그대로 둔다 (뒤로 가기를 하면 채팅방이 닫힌다)
+            blockedInApp = false
+            handler.postDelayed({
+                if (inAppWebOpen()) performGlobalAction(GLOBAL_ACTION_BACK)
+                lastInApp = ""
+                say("안전하게 나왔어요. 잘 하셨어요.")
+            }, 700)
+            return
+        }
         val risky = lastUrl
         lastUrl = ""
         performGlobalAction(GLOBAL_ACTION_BACK)

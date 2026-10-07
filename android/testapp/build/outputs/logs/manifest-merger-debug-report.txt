@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-13:12
-INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-13:12
-INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-13:12
-INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-13:12
+ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-16:12
+INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-16:12
+INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-16:12
+INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-16:12
 	package
 		INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml
 	android:versionName
@@ -13,8 +13,8 @@ INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:1-1
 	xmlns:android
 		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:2:11-69
 application
-ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:3:5-12:19
-INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:3:5-12:19
+ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:3:5-15:19
+INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:3:5-15:19
 	android:extractNativeLibs
 		INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml
 	android:label
@@ -37,6 +37,18 @@ category#android.intent.category.LAUNCHER
 ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:9:17-77
 	android:name
 		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:9:27-74
+activity#com.smarthelper.testapp.FakeChatActivity
+ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:13:9-78
+	android:exported
+		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:13:52-75
+	android:name
+		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:13:19-51
+activity#com.smarthelper.testapp.FakeBrowserActivity
+ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:14:9-81
+	android:exported
+		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:14:55-78
+	android:name
+		ADDED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml:14:19-54
 uses-sdk
 INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\smart-helper\android\testapp\src\main\AndroidManifest.xml

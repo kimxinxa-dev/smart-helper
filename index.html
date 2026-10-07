@@ -430,7 +430,7 @@ ${guardAsked&&(!on||!st.notif)?'<button class="btn g" id="gset">⚙️ 설정에
 <h2 style="margin-top:16px">🛡️ 더 지키기</h2>
 <div class="res ${st.msg?'lo':'mid'}" style="margin-top:0"><b>💬 카카오톡 지킴이 · ${st.msg?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">카카오톡·라인·텔레그램으로 온 메시지도 알림으로 살펴봐요. 메신저 알림만 보고, 밖으로 보내지 않아요.</div>
 ${st.msg?'':'<button class="btn" id="gmsg" style="margin-top:8px">💬 카카오톡 지킴이 켜기</button>'}</div>
-<div class="res ${st.link?'lo':'mid'}"><b>🔗 위험 링크·설치 차단 · ${st.link?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자의 링크를 눌러도 사이트가 열리기 전에 화면을 가리고, 사기 문자를 받은 뒤 30분 안에 앱을 설치하려 하면 멈추고 물어봐요. 브라우저는 주소창만, 설치 화면은 설치 글자만 봐요.</div>
+<div class="res ${st.link?'lo':'mid'}"><b>🔗 위험 링크·설치 차단 · ${st.link?'🟢 켜짐':'⚪ 꺼짐'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자의 링크를 눌러도(카카오톡 안에서 열리는 링크 포함) 사이트가 열리기 전에 화면을 가리고, 사기 문자를 받은 뒤 30분 안에 앱을 설치하려 하면 멈추고 물어봐요. 브라우저는 주소창만, 카카오톡은 누른 말풍선과 웹 화면 제목 줄만, 설치 화면은 설치 글자만 봐요.</div>
 ${st.link?'':'<button class="btn" id="glink" style="margin-top:8px">🔗 위험 링크 차단 켜기</button>'}</div>
 <div class="res ${fam?'lo':'mid'}"><b>👨‍👩‍👧 가족 연락처 · ${fam?esc(fam.name):'없음'}</b><div style="font-size:.75em;line-height:1.5;margin-top:4px">사기 문자를 받은 뒤 30분 안에 앱을 설치하려 하면 화면을 가리고 물어봐요. 그때 <b>"가족에게 전화하기"</b>를 누르면 이 분 번호를 띄워 드려요.${fam?'':' 등록하지 않으면 118 상담센터 번호를 띄워요.'}</div>
 <button class="btn${fam?' g':''}" id="gfam" style="margin-top:8px">${fam?'👨‍👩‍👧 다른 분으로 바꾸기':'👨‍👩‍👧 가족 연락처 고르기'}</button>${fam?'<button class="btn g" id="gfamx">지우기</button>':''}</div>
@@ -448,7 +448,7 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
  const s=$('#gset');s&&(s.onclick=()=>Android.openAppSettings());
  const gm=$('#gmsg');gm&&(gm.onclick=()=>consent('카카오톡 같은 메신저에 새 메시지가 오면, <b>알림에 보이는 내용만</b> 휴대폰 안에서 살펴봐요. 다른 앱 알림은 보지 않고, 밖으로 보내지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 메신저 지킴이"</b>를 눌러 켜 주세요.',()=>Android.openNotifAccess()));
  const gf=$('#gfam');gf&&(gf.onclick=()=>Android.familyPick());const gfx=$('#gfamx');gfx&&(gfx.onclick=()=>Android.familyClear());
- const gl=$('#glink');gl&&(gl.onclick=()=>consent('사기 문자의 링크를 실수로 눌러도, 위험한 사이트가 열리면 바로 화면을 가리고 알려 드려요. 사기 문자를 받은 뒤 30분 안에 <b>앱을 설치하려 하면</b> 설치 화면도 가리고 물어봐요. 브라우저는 <b>주소창만</b>, 설치 화면은 <b>설치 여부를 묻는 글자만</b> 보고 저장하지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 화면 안내"</b>를 눌러 켜 주세요.',()=>Android.openA11y()));
+ const gl=$('#glink');gl&&(gl.onclick=()=>consent('사기 문자의 링크를 실수로 눌러도, 위험한 사이트가 열리면 바로 화면을 가리고 알려 드려요. <b>카카오톡 안에서 여는 링크</b>도 막아요. 사기 문자를 받은 뒤 30분 안에 <b>앱을 설치하려 하면</b> 설치 화면도 가리고 물어봐요. 브라우저는 <b>주소창만</b>, 카카오톡은 <b>누른 말풍선과 웹 화면 제목 줄만</b>, 설치 화면은 <b>설치 여부를 묻는 글자만</b> 보고 저장하지 않아요.<br><br>다음 화면에서 <b>"스마트 헬퍼 화면 안내"</b>를 눌러 켜 주세요.',()=>Android.openA11y()));
  const c=$('#gclr');c&&(c.onclick=()=>Android.clearGuard());
  $('#gtx').oninput=e=>gText=e.target.value;
  $('#gex').onclick=()=>{gEx=(gEx+1)%SHOTS.length;gText=$('#gtx').value=SHOTS[gEx][2]};

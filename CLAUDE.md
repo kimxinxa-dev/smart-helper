@@ -65,6 +65,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄
   - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요)
+  - 카카오톡(`GuideService.IN_APP`): 채팅방 말풍선·미리보기 카드를 누르는 순간(TYPE_VIEW_CLICKED) 글자에서 링크를 찾아 막고, 앱 안 WebView 가 있으면 WebView 바깥(제목 줄) 글자만 봄(`InAppLink`, 순수 Kotlin, `InAppLinkTest`). 나가기는 웹 화면이 열려 있을 때만 뒤로 가기. 디버그 앱은 testapp(패키지 `com.smarthelper.practicepuzzle`)의 가짜 카카오톡도 봄: `adb shell am start -n com.smarthelper.practicepuzzle/com.smarthelper.testapp.FakeChatActivity --es msg "'택배 확인 http://cj-logis.xyz/a'"` → 말풍선(540,330) 누르기. 실제 카카오톡 제목 줄에 주소가 보이는지는 실기기 확인 필요
   - `InstallGate` 설치 차단(순수 Kotlin, 테스트 19개): 주의 이상 메시지 후 30분 위험 시간대, 설치 앱+설치 글자 / 설정+'알 수 없는 앱 설치' 판단, '그래도 진행' 5분 유예. `GuideService.checkInstall` → `InstallBlockOverlay`(그만두기 · 가족 전화 ACTION_DIAL, 없으면 118 · 그래도 진행). 가족 연락처는 `GuardStore`(연락처 선택 창으로 고름, 권한 불필요)
   - 설치 화면 시험: testapp APK를 `/sdcard/Download/puzzle.apk`로 push → 미디어 스캔 → `am start -a android.intent.action.VIEW -d content://media/external/file/<id> -t application/vnd.android.package-archive --grant-read-uri-permission`. 연락처 선택 창은 캡처가 막혀 DUMP_SCREEN 으로 위치를 찾음
 - `assist/CommandParser` 규칙 기반 말 이해(순수 Kotlin) — 실제 안내에서 받는 사람 이름 등을 뽑는 데 사용 (대신 실행하던 `Assistant` 는 제거)
@@ -73,7 +74,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)
   - `RealGuide` 말로 물어보기에서 고른 안내를 시작. 사진·문자는 **받는 사람 확인 후에만 안내**(번호 전체 비교)
 - `testapp/` **연습용 퍼즐**: 지워도 되는 빈 앱. 앱 삭제 안내를 안전하게 시험·시연할 때 설치해 둔다 (`gradle :testapp:assembleDebug`)
-- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19, `InAppLinkTest` 9
 
 ## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
 - SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`

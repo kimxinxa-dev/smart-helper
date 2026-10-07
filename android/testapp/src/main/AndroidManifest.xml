@@ -9,5 +9,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 개발용 '가짜 카카오톡' (앱 목록에 안 나옴, adb 로만 연다) -->
+        <activity android:name=".FakeChatActivity" android:exported="true" />
+        <activity android:name=".FakeBrowserActivity" android:exported="true" />
     </application>
 </manifest>
