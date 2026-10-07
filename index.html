@@ -76,6 +76,96 @@ textarea{width:100%;height:130px;padding:10px;border:2px solid var(--bd);border-
 .strip{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 10px}
 .stw{flex:none;border:0;background:none;padding:0;font:inherit;font-size:.65em;color:var(--tx);cursor:pointer}
 #pv:not(:empty){margin:10px 0}
+/* ---------- 연습용 가상 휴대폰: 삼성 갤럭시(One UI) 모양 ---------- */
+#dev .ou{background:#f2f2f4;color:#111;min-height:100%;padding-bottom:4px}#dev .ou.wh{background:#fff}
+.osb{display:flex;justify-content:space-between;font-size:.52em;padding:6px 14px 2px;font-weight:600}
+.obig{padding:26px 20px 10px;font-size:1.45em;line-height:1.2}.obig small{display:block;font-size:.42em;color:#666;margin-top:6px}
+.oact{display:flex;justify-content:flex-end;gap:4px;padding:0 10px 6px}
+.oact button,.ohd .r button{position:relative;border:0;background:none;font:inherit;font-size:.95em;color:#111;padding:4px 8px;cursor:pointer;border-radius:50%}
+.ohd{display:flex;align-items:center;gap:4px;padding:4px 6px;font-size:.85em}.ohd b{flex:1;font-weight:700;display:flex;align-items:center;gap:6px}
+.ohd>button{position:relative;border:0;background:none;font:inherit;font-size:1.5em;line-height:1;color:#111;padding:0 10px;cursor:pointer}.ohd .r{display:flex}.ohd .oav{width:1.6em;height:1.6em;font-size:.8em}
+.osmall{font-size:.75em;color:#3e91ff;font-weight:600;padding-right:6px}
+.ocard{background:#fff;border-radius:20px;margin:0 9px 10px;overflow:hidden}
+.orow{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:2.9em;padding:10px 16px;border:0;background:none;text-align:left;font:inherit;font-size:.74em;color:#111;cursor:pointer}
+div.orow{cursor:default}.orow+.orow,.ocard>div+.orow{border-top:1px solid #f1f1f3}
+.ot{flex:1;min-width:0}.ot small{display:block;color:#6b6b70;font-size:.82em;margin-top:2px}.ot b{font-weight:600}
+.olink{position:relative;border:0;background:none;font:inherit;color:inherit;text-align:left;padding:4px 0;cursor:pointer}
+.oic{width:1.9em;height:1.9em;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95em;flex:none;color:#fff}
+.osw{flex:none;width:2.4em;height:1.35em;border-radius:1em;background:#c7c7cc;position:relative}.osw.on{background:#3e91ff}
+.osw::after{content:"";position:absolute;top:.15em;left:.15em;width:1.05em;height:1.05em;border-radius:50%;background:#fff;transition:left .2s}.osw.on::after{left:1.2em}
+.otab{display:flex;justify-content:space-around;padding:8px 4px 10px;margin-top:10px;font-size:.62em;color:#888;background:inherit}
+.otab button,.otab span{position:relative;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:4px 8px;text-align:center}.otab .on{color:#111;font-weight:700}
+.otab button.on::after{content:"";display:block;height:2px;background:#111;margin-top:3px;border-radius:2px}
+.obar{display:flex;margin:12px 9px 6px;background:#fff;border-radius:20px}.obar button{position:relative;flex:1;border:0;background:none;font:inherit;font-size:.78em;font-weight:600;color:#111;padding:12px;cursor:pointer}
+.oav{width:2.3em;height:2.3em;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex:none;font-size:.95em}.oav.big{width:3.6em;height:3.6em;font-size:1.6em;margin:0 auto}
+.osub{font-size:.62em;color:#6b6b70;padding:10px 20px 6px}
+.osearch{margin:8px 12px 10px;padding:.55em 1em;background:#e7e7ea;border-radius:2em;font-size:.7em;color:#666}
+/* 홈 화면 */
+.owall{min-height:100%;color:#fff;background:linear-gradient(170deg,#1d2b64 0%,#3a4fb4 45%,#8f6fd6 75%,#f1a7c4 100%);display:flex;flex-direction:column}
+.owid{padding:22px 20px 8px}.owid b{display:block;font-size:2.1em;font-weight:300;line-height:1}.owid span{font-size:.6em;opacity:.9}
+.ogrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 0;padding:18px 8px 6px;flex:1;align-content:start}
+.oapp{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:#fff;font:inherit;font-size:.55em;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.oapp span{width:2.9em;height:2.9em;border-radius:32%;display:flex;align-items:center;justify-content:center;font-size:1.45em;box-shadow:0 2px 6px rgba(0,0,0,.2);text-shadow:none}
+.odots{display:flex;justify-content:center;gap:5px;padding:6px}.odots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5)}.odots i.on{background:#fff}
+.odock{display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px 14px}.odock .oapp{font-size:.5em}
+/* 메시지 */
+.olist{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px;border:0;background:none;font:inherit;font-size:.72em;color:#111;text-align:left;cursor:pointer}
+.oside{font-size:.78em;color:#888;text-align:right;align-self:flex-start;padding-top:2px}.oside i{display:block;margin:4px 0 0 auto;width:1.5em;height:1.5em;line-height:1.5em;border-radius:50%;background:#3e91ff;color:#fff;font-style:normal;text-align:center}
+.ofab{position:absolute;right:16px;bottom:56px;width:2.6em;height:2.6em;border-radius:50%;background:#3e91ff;display:flex;align-items:center;justify-content:center;font-size:1em;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#dev .ou{position:relative}
+.obubs{padding:6px 12px;min-height:200px;font-size:.72em}.oday{text-align:center;font-size:.8em;color:#888;margin:4px 0 10px}
+.ob{max-width:78%;padding:.6em .85em;border-radius:1.1em;margin-bottom:6px;background:#eeeef1;line-height:1.4;width:fit-content}.ob small{display:block;font-size:.72em;color:#999;margin-top:2px}
+.ob.out{background:#d4e4fd;margin-left:auto}.ob.ph{font-size:3em;padding:.2em .5em}.ob.ph small{font-size:.25em}
+.oatt{display:flex;align-items:center;gap:8px;margin:0 12px 4px;padding:6px 10px;background:#f2f2f4;border-radius:14px;font-size:.7em}.oatt span{font-size:2em}.oatt small{flex:1}.oatt b{color:#888}
+.oin{display:flex;align-items:center;gap:6px;padding:6px 8px 10px}
+.oplus,.osend{position:relative;flex:none;width:2.1em;height:2.1em;border-radius:50%;border:0;font:inherit;font-size:.85em;cursor:pointer}
+.oplus{background:#f2f2f4;color:#333}.osend{background:#e3e3e6;color:#999}.osend.on{background:#3e91ff;color:#fff}
+#dev .ofield{flex:1;width:auto;margin:0;border:0;border-radius:1.2em;background:#f2f2f4;color:#111;padding:.55em .9em;font:inherit;font-size:.72em;outline-color:#3e91ff}
+#dev .ofield.dim{color:#999}#dev .ofield.box{width:100%;border-radius:12px;margin:10px 0 6px;padding:.75em .9em;font-size:.8em}
+#dev .ofield.line{border-radius:0;background:none;border-bottom:1px solid #d1d1d6;padding:.4em 0;font-size:.95em}
+.osheet2{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 0;padding:14px 8px;background:#f7f7f9;border-top:1px solid #eee}
+.oapp2{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:none;font:inherit;font-size:.58em;color:#333;cursor:pointer}.oapp2 .oic{width:2.4em;height:2.4em;font-size:1.3em}
+.opics{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 2px}.opics button{position:relative;aspect-ratio:1;border:0;font-size:1.9em;cursor:pointer}
+/* 전화 */
+.onum{text-align:center;color:#999;font-size:.7em;padding:26px 0 18px;line-height:1.5}
+.okp{display:grid;grid-template-columns:repeat(3,1fr);row-gap:8px;padding:0 24px;text-align:center;font-size:1.25em}.okp span{line-height:1.1}.okp small{display:block;font-size:.38em;color:#888;height:1.2em}
+.ocallrow{display:flex;justify-content:center;padding:10px 0}
+.ocall{position:relative;width:2.8em;height:2.8em;border-radius:50%;border:0;background:#2fc15a;font-size:1.05em;cursor:pointer}.ocall.end{background:#ef4444;transform:rotate(135deg)}
+.oprof{text-align:center;padding:16px 0 10px}.oprof b{display:block;font-size:1.25em;font-weight:500;margin-top:10px}.oprof small{display:block;color:#888;font-size:.6em}
+.overbs{display:flex;justify-content:center;gap:22px;padding:4px 0 14px}.overbs button{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:none;font:inherit;font-size:.6em;color:#333;cursor:pointer}.overbs .oic{width:2.4em;height:2.4em;font-size:1.3em}
+#dev .ocallscr{background:linear-gradient(#e9eef8,#fff)}
+.ocaller{text-align:center;padding:16px 0}.ocaller small{display:block;font-size:.65em;color:#666}.ocaller b{display:block;font-size:1.45em;font-weight:400;margin:6px 0 2px}.ocaller span{display:block;font-size:.65em;color:#666;margin-bottom:14px}
+.ocbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:6px 18px;text-align:center;font-size:.58em;color:#444}
+/* 시계 */
+.orow.alarm .ot{font-size:1.9em;font-weight:300}.orow.alarm .ot small{font-size:.32em}.orow.alarm.off{opacity:.55}.oampm{font-size:.45em}
+.owheel{display:flex;justify-content:center;align-items:center;gap:14px;padding:22px 0 10px;font-size:1.7em}.owheel div{display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.owheel span{color:#c7c7cc;font-size:.7em}.owheel b{font-weight:500}.owheel>div:first-child b,.owheel>div:first-child span{font-size:.5em}.owheel i{font-style:normal}
+.otip{font-size:.6em;color:#6b6b70;text-align:center;padding:0 20px 12px;line-height:1.5}
+.odays{display:flex;justify-content:space-between;padding:4px 16px 12px;font-size:.66em;color:#888}.odays span{width:1.9em;height:1.9em;border-radius:50%;border:1px solid #ddd;display:flex;align-items:center;justify-content:center}
+.ocal{font-size:.9em}
+/* 설정 */
+.omode{display:flex;justify-content:space-around;padding:14px;font-size:.68em;text-align:center;color:#666}.omode span{padding:8px 14px;border-radius:14px}.omode .on{color:#3e91ff;font-weight:700;background:#eaf2ff}
+.oslide{display:flex;align-items:center;gap:10px;padding:2px 16px 14px;font-size:.8em}
+.oend{position:relative;flex:none;min-width:2em;height:2em;border:0;border-radius:50%;background:none;font:inherit;font-size:1em;color:#333;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.otrack{position:relative;flex:1;height:5px;background:#dcdce0;border-radius:3px}.otrack i{display:block;height:100%;background:#3e91ff;border-radius:3px}.otrack b{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#3e91ff}
+.oprev{padding:16px;line-height:1.6}
+.ovol{color:#3e91ff}
+.oonbar{display:flex;align-items:center;justify-content:space-between;margin:4px 9px 10px;padding:12px 18px;border-radius:20px;background:#3e91ff;color:#fff;font-size:.78em;font-weight:700}.oonbar .osw.on{background:#fff}.oonbar .osw.on::after{background:#3e91ff}
+#dev .orel{position:relative}
+.odim{position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:2}.odim.clear{background:transparent}
+.osheet{position:sticky;bottom:0;z-index:3;background:#fff;border-radius:22px 22px 0 0;padding:18px 18px 14px;font-size:.78em}.osheet small{display:block;color:#666;font-size:.78em;margin-top:6px;line-height:1.45}
+.ochk{font-size:.8em;color:#333;margin-bottom:10px}
+.oblue{position:relative;width:100%;border:0;border-radius:1.4em;background:#3e91ff;color:#fff;font:inherit;font-weight:700;padding:.8em;cursor:pointer}
+.odlg{position:absolute;left:16px;right:16px;top:30%;z-index:3;background:#fff;border-radius:24px;padding:20px 20px 10px;font-size:.8em}.odlg p{margin:8px 0 14px;color:#444}
+.odlg div{display:flex}.odlg button{position:relative;flex:1;border:0;background:none;font:inherit;font-weight:700;color:#3e91ff;padding:10px;cursor:pointer}
+.omenu{position:absolute;top:96px;right:10px;z-index:3;background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.18);padding:6px 0;min-width:44%}.omenu button{position:relative;display:block;width:100%;border:0;background:none;font:inherit;font-size:.74em;text-align:left;padding:10px 18px;color:#111;cursor:pointer}
+/* Play 스토어 */
+.osearch.play{display:flex;justify-content:space-between;background:#eef0f4}
+.ochips{display:flex;gap:6px;padding:0 12px 6px;font-size:.6em;overflow:hidden}.ochips span{padding:5px 11px;border:1px solid #ddd;border-radius:9px;white-space:nowrap}.ochips .on{background:#e6f4ea;border-color:#e6f4ea;color:#0b5d2b;font-weight:700}
+.oplay{display:flex;align-items:center;gap:12px;padding:9px 16px;font-size:.72em}
+.oappic{width:2.6em;height:2.6em;border-radius:22%;display:flex;align-items:center;justify-content:center;font-size:1.3em;flex:none}.oappic.small{width:2em;height:2em;font-size:1em}.oprof .oappic{width:1.7em;height:1.7em;font-size:1.9em;margin:0 auto}
+.ogreen{position:relative;border:0;border-radius:1.2em;background:#0b8043;color:#fff;font:inherit;font-weight:700;font-size:.9em;padding:.45em 1.1em;cursor:pointer}
+.otab.play{position:sticky;bottom:0;border-top:1px solid #eee;background:#fff}
 /* ---------- 키오스크 (실제 기기 모양: 화면 + 아래 투입구·출력구) ---------- */
 .kxtop{display:flex;align-items:center;gap:6px;font-size:.65em;color:var(--mut);margin-bottom:8px}.kxtop span{flex:1}
 .kxtop button{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:4px 8px;font:inherit;cursor:pointer}
@@ -161,51 +251,119 @@ textarea{width:100%;height:130px;padding:10px;border:2px solid var(--bd);border-
 <script>
 const $=s=>document.querySelector(s),main=$('#main');
 let view='home',lastMsg='',lastAsk='',lastReal='',sharing=false,goal=null,dev,k,live=null;
-const sb=(c='#111')=>`<div class="sb" style="color:${c}"><span>9:41</span><span>📶 🔋 82%</span></div>`;
-const hd=(t,r='')=>`<div class="hd"><button data-id="back">◀</button>${t}<span class="r">${r}</span></div>`;
-const rw=(id,ic,bg,t,s)=>`<button class="rw" data-id="${id}"><span class="sq" style="background:${bg}">${ic}</span><span>${t}<small>${s||''}</small></span></button>`;
-const chat=(sheet,sent,txt)=>sb()+hd('김영희','🔍 ☰')+`<div style="background:#b2c7da;height:${sheet?200:300}px;padding:10px;font-size:.7em;overflow:hidden"><div class="m">할머니 잘 지내세요? 😊</div><div class="m">오늘 손주 사진 보내 주세요~</div>${sent?'<div class="m r">🌄 사진 1장<br><small>읽지 않음 1</small></div>':''}${txt?`<div class="m r">${esc(txt)}<br><small>읽지 않음 1</small></div>`:''}</div><div class="ib"><button data-id="attach">＋</button><input class="fi" data-id="mtext" placeholder="메시지 입력"><button class="snd" data-id="msend">전송</button></div>`+(sheet?`<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#f5f5f5;padding:10px 4px">${[['gallery','🖼️','앨범'],['x1','📷','카메라'],['x2','📁','파일'],['x3','👤','연락처']].map(a=>`<button class="ic" style="color:#333" data-id="${a[0]}"><span class="sq" style="background:#fff;border:1px solid #ddd">${a[1]}</span>${a[2]}</button>`).join('')}</div>`:'');
-const slider=(m,p,mi,pl)=>`<div style="display:flex;align-items:center;gap:8px;margin-top:16px"><button class="ab" data-id="${mi}">${m}</button><div class="tr"><i style="width:${p}%"></i></div><button class="ab" data-id="${pl}">${m=='－'?'＋':'가'}</button></div>`;
-const app=(id,ic,bg,n,sub,b)=>`<div class="rw" style="cursor:default"><span class="sq" style="background:${bg}">${ic}</span><span>${n}<small>${sub}</small></span><button class="gb" data-id="${id}">${b}</button></div>`;
+/* ---------- 연습용 가상 휴대폰: 삼성 갤럭시(One UI) 모양 ----------
+   화면마다 h(그리기)와 g(누르면 갈 화면)를 둔다. 연습 안내(G)는 data-id 로 눌러야 할 곳을 짚는다. */
+const osb=(c='#111')=>`<div class="osb" style="color:${c}"><span>9:41</span><span>📶 🔋 82%</span></div>`;
+/* 큰 제목(앱 첫 화면) / 작은 제목(안쪽 화면) */
+const obig=(t,sub='',acts='')=>osb()+`<div class="obig">${t}${sub?`<small>${sub}</small>`:''}</div>${acts?`<div class="oact">${acts}</div>`:''}`;
+const ohd=(t,r='')=>osb()+`<div class="ohd"><button data-id="back" aria-label="뒤로">‹</button><b>${t}</b><span class="r">${r}</span></div>`;
+const ocard=(...rows)=>`<div class="ocard">${rows.join('')}</div>`;
+const osw=on=>`<span class="osw${on?' on':''}"></span>`;
+/* 카드 안 한 줄. id 가 x 로 시작하면 연습에서 쓰지 않는 메뉴 */
+const orow=(id,ic,bg,t,s='',right='')=>`<button class="orow" data-id="${id}">${ic?`<span class="oic" style="background:${bg}">${ic}</span>`:''}<span class="ot">${t}${s?`<small>${s}</small>`:''}</span>${right}</button>`;
+const otab=(items,on)=>`<div class="otab">${items.map(([id,t])=>`<button data-id="${id}" class="${t==on?'on':''}">${t}</button>`).join('')}</div>`;
+const obar=(...b)=>`<div class="obar">${b.map(([id,t])=>`<button data-id="${id}">${t}</button>`).join('')}</div>`;
+const oav=(n,c)=>`<span class="oav" style="background:${c}">${n[0]}</span>`;
+const PEOPLE=[['김영희','#f472b6'],['박철수','#60a5fa'],['아들 민수','#34d399'],['내과 병원','#a78bfa']];
+/* 메시지 대화창. mode: '' / 'sheet'(＋ 누름) / 'photo'(사진 넣음) / 'sentp'(사진 보냄) / 'sentt'(글 보냄) */
+const ochat=mode=>ohd(`${oav('김','#f472b6')} 김영희`,'<button data-id="x1" aria-label="전화">📞</button><button data-id="x2" aria-label="더보기">⋮</button>')+
+ `<div class="obubs"><div class="oday">10월 7일 화요일</div><div class="ob in">할머니 잘 지내세요? 😊</div><div class="ob in">오늘 손주 사진 보내 주세요~<small>오전 9:12</small></div>`+
+ (mode=='sentp'?'<div class="ob out ph">🌄<small>오전 9:41</small></div>':'')+(mode=='sentt'?`<div class="ob out">${esc(dev.msgText||'')}<small>오전 9:41</small></div>`:'')+`</div>`+
+ (mode=='photo'?'<div class="oatt"><span>🌄</span><small>사진 1장</small><b>✕</b></div>':'')+
+ `<div class="oin"><button class="oplus" data-id="attach" aria-label="첨부">＋</button>${mode=='photo'?'<span class="ofield dim">메시지 입력</span>':'<input class="ofield" data-id="mtext" placeholder="메시지 입력">'}<button class="osend${mode=='photo'?' on':''}" data-id="${mode=='photo'?'send':'msend'}" aria-label="보내기">➤</button></div>`+
+ (mode=='sheet'?`<div class="osheet2">${[['gallery','🖼️','갤러리','#ec4899'],['x3','📷','카메라','#ef4444'],['x4','🎙️','음성 녹음','#f59e0b'],['x5','📍','위치','#10b981'],['x6','👤','연락처','#3b82f6'],['x7','📅','일정','#8b5cf6']].map(a=>`<button class="oapp2" data-id="${a[0]}"><span class="oic" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div>`:'');
+/* 슬라이더: 양 끝 버튼(mi/pl) + 막대 */
+const oslide=(lo,hi,p,mi,pl)=>`<div class="oslide"><button data-id="${mi}" class="oend">${lo}</button><span class="otrack"><i style="width:${p}%"></i><b style="left:${p}%"></b></span><button data-id="${pl}" class="oend">${hi}</button></div>`;
+/* 어두운 막 + 가운데 창(팝업) / 아래 창 */
+const odlg=(t,msg,btns)=>`<div class="odim"></div><div class="odlg"><b>${t}</b><p>${msg}</p><div>${btns.map(([id,x])=>`<button data-id="${id}">${x}</button>`).join('')}</div></div>`;
+const APPS=()=>[['x1','💪','#16a34a','건강 도우미','42.1MB'],...(dev.puzzleGone?[]:[['puzzle','🧩','#f59e0b','연습용 퍼즐','12.0MB']]),['x2','💬','#facc15','카카오톡','512MB'],['x3','🗺️','#22c55e','네이버 지도','198MB']];
 const D={
-home:{g:{msg:'msg',set:'set',store:'store',con:'con',phone:'phone',clock:'clock'},h:()=>`<div class="wall">${sb('#fff')}<div style="padding:14px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 2px">${[['msg','💬','메신저','#fbbf24'],['phone','📞','전화','#22c55e'],['set','⚙️','설정','#6b7280'],['store','🛍️','앱 스토어','#2563eb'],['con','👤','연락처','#16a34a'],['x2','🎵','음악','#ec4899'],['clock','⏰','시계','#f97316'],['x1','📷','카메라','#ef4444'],['x3','🌐','인터넷','#8b5cf6']].map(a=>`<button class="ic" data-id="${a[0]}"><span class="sq" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div></div>`},
-msg:{g:{chat:'chat'},h:()=>sb()+hd('채팅','🔍 ✏️')+`<button class="rw" data-id="chat"><span class="av">🙂</span><span>김영희<small>오늘 손주 사진 보내 주세요~</small></span><small>오전 9:12</small></button><button class="rw" data-id="x1"><span class="av">🙂</span><span>박철수<small>내일 보자</small></span><small>어제</small></button><button class="rw" data-id="x2"><span class="av">👪</span><span>우리 가족방<small>저녁 뭐 먹을까요</small></span><small>어제</small></button><div class="tb"><span>👥<br>친구</span><span>💬<br><b>채팅</b></span><span>⋯<br>더보기</span></div>`},
-chat:{g:{attach:'attach',msend:'chatsent'},h:()=>chat(0,0)},attach:{g:{gallery:'gallery'},h:()=>chat(1,0)},sent:{g:{},h:()=>chat(0,1)},
-chatsent:{g:{attach:'attach',msend:'chatsent'},h:()=>chat(0,0,dev.msgText)},
-/* 전화: 키패드 → 연락처 → 김영희 → 통화 */
-phone:{g:{ptab:'pcon'},h:()=>sb()+`<div style="text-align:center;padding:28px 0 10px;font-size:1.3em;color:#999">번호를 누르거나 연락처에서 찾아요</div><div class="kp" style="padding:0 30px;font-size:1.1em">${[1,2,3,4,5,6,7,8,9,'*',0,'#'].map(n=>`<span>${n}</span>`).join('')}</div><div style="text-align:center;margin:14px"><button class="ab" data-id="x1" style="width:3em;height:3em;background:#22c55e;border:0">📞</button></div><div class="tb"><span>⌨️<br><b>키패드</b></span><span>🕘<br>최근 기록</span><button data-id="ptab">👤<br>연락처</button></div>`},
-pcon:{g:{pyh:'pcard'},h:()=>sb()+hd('연락처')+`<div class="sr">🔍 검색</div>`+['김영희','박철수','아들 민수','내과 병원'].map((n,i)=>`<button class="rw" data-id="${i?'x'+i:'pyh'}"><span class="av">${n[0]}</span><span>${n}<small>휴대전화</small></span></button>`).join('')},
-pcard:{g:{pcall:'calling'},h:()=>sb()+hd('')+`<div style="text-align:center;padding:16px"><div class="av" style="width:4em;height:4em;margin:0 auto;font-size:1.3em">김</div><b style="display:block;margin:8px 0;font-size:1.1em">김영희</b><small style="color:#888">휴대전화 010-1234-1000</small></div><div style="display:flex;justify-content:center;gap:18px">${[['pcall','📞','통화','#22c55e'],['x1','💬','문자','#3b82f6'],['x2','📹','영상','#8b5cf6']].map(a=>`<button class="ic" style="color:#333" data-id="${a[0]}"><span class="sq" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div>`},
-calling:{g:{hang:'pcard'},h:()=>`<div style="background:#111827;color:#fff;height:100%;text-align:center">${sb('#fff')}<div style="padding:40px 0 20px"><div class="av" style="width:4.5em;height:4.5em;margin:0 auto;font-size:1.3em;color:#111">김</div><b style="display:block;margin:10px 0;font-size:1.2em">김영희</b><small>전화 거는 중...</small></div><button class="ab" data-id="hang" style="width:3.2em;height:3.2em;background:#ef4444;border:0;margin-top:30px">📞</button><div style="font-size:.6em;margin-top:6px">끊기</div></div>`},
-/* 시계: 알람 목록 → ＋ → 시간 확인 → 저장 */
-clock:{g:{addal:'alset'},h:()=>sb()+hd('알람','<button data-id="addal">＋</button>')+(dev.alarm?'<div class="rw" style="cursor:default"><span><b style="font-size:1.6em">오전 7:00</b><small>매일</small></span><span class="pill on">켜짐</span></div>':'')+'<div class="rw" style="cursor:default;opacity:.6"><span><b style="font-size:1.6em">오후 2:00</b><small>주말</small></span><span class="pill">꺼짐</span></div><div class="tb"><span>⏰<br><b>알람</b></span><span>🕐<br>세계 시각</span><span>⏱️<br>스톱워치</span></div>'},
-alset:{g:{asave:'clock'},h:()=>sb()+hd('알람 추가')+`<div style="text-align:center;padding:20px 10px"><div style="display:flex;justify-content:center;align-items:center;gap:14px;font-size:2em;font-weight:700"><span style="font-size:.5em;line-height:1.6">오전<br><span style="color:#ccc">오후</span></span><span><span class="dim">6</span>7<span class="dim">8</span></span>:<span><span class="dim">59</span>00<span class="dim">01</span></span></div><div style="font-size:.65em;color:#666;margin:12px 0">위아래로 밀어서 시간을 바꿔요 (연습에서는 오전 7시로 맞춰져 있어요)</div></div><div style="padding:0 14px;display:flex;gap:8px"><button class="bt" data-id="back" style="background:#eee">취소</button><button class="bt" data-id="asave" style="background:#2563eb;color:#fff">저장</button></div>`},
-/* 와이파이: 설정 → 연결 → Wi-Fi → 우리집_WiFi → 비밀번호 → 연결 */
-conn:{g:{wifi:'wifi'},h:()=>sb()+hd('연결')+rw('wifi','📶','#3b82f6','Wi-Fi',dev.wifi?'우리집_WiFi 연결됨':'연결 안 됨')+rw('x1','🔵','#2563eb','블루투스','')+rw('x2','✈️','#64748b','비행기 탑승 모드','')},
-wifi:{g:{mynet:'wpw'},h:()=>sb()+hd('Wi-Fi')+'<div style="padding:8px 12px;font-size:.65em;color:#666">사용할 수 있는 와이파이</div>'+[['mynet','우리집_WiFi','🔒 비밀번호 필요'],['x1','카페_무료','열린 와이파이 (조심)'],['x2','이웃집 5G','🔒 비밀번호 필요']].map(n=>rw(n[0],'📶','#94a3b8',n[1],n[2])).join('')},
-wpw:{g:{wconn:'conn'},h:()=>sb()+hd('우리집_WiFi')+`<div style="padding:14px"><div style="font-size:.7em;color:#666;margin-bottom:8px">공유기 뒷면이나 옆에 적힌 비밀번호를 써 주세요 (연습이니 아무 글자나 괜찮아요)</div><input data-id="wpw" placeholder="비밀번호"><button class="bt" data-id="wconn" style="background:#2563eb;color:#fff">연결</button></div>`},
-gallery:{g:{pic:'confirm'},h:()=>sb()+hd('앨범')+`<div style="padding:6px 10px;font-size:.65em;color:#666">최근 항목</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px">${[['pic','🌄','#93c5fd'],['x4','🌸','#fbcfe8'],['x5','🐶','#fde68a'],['x6','🍰','#fecaca'],['x7','⛰️','#bbf7d0'],['x8','🚗','#ddd6fe']].map(t=>`<button class="ph" data-id="${t[0]}" style="background:${t[2]}">${t[1]}</button>`).join('')}</div>`},
-confirm:{g:{send:'sent'},h:()=>sb()+hd('사진 보내기')+`<div style="height:230px;background:#93c5fd;display:flex;align-items:center;justify-content:center;font-size:5em">🌄</div><div style="padding:12px"><button class="bt" data-id="send">보내기 (1)</button></div>`},
-set:{g:{font:'font',sound:'sound',conn:'conn'},h:()=>sb()+hd('설정')+`<div class="sr">🔍 설정 검색</div>`+rw('conn','📶','#3b82f6','연결','와이파이, 블루투스')+rw('sound','🔊','#10b981','소리 및 진동','음량, 벨소리')+rw('x2','🔔','#f59e0b','알림','앱 알림')+rw('font','🖥️','#6366f1','디스플레이','글자 크기, 밝기')+rw('x3','🔋','#84cc16','배터리','')+rw('x4','📱','#64748b','애플리케이션','')},
-font:{g:{},h:()=>sb()+hd('글자 크기')+`<div style="padding:16px"><div style="background:#f3f4f6;border-radius:12px;padding:14px;font-size:.8em">가나다 abc 123<br>글자 크기를 바꾸면 이렇게 보여요.</div>${slider('가',dev.scale>1?85:dev.scale<1?15:50,'small','big')}</div>`},
-sound:{g:{},h:()=>sb()+hd('소리 및 진동')+`<div style="padding:16px;font-size:.8em">미디어 음량 <b>${dev.vol}</b>${slider('－',dev.vol*10,'vdn','vup')}</div>`+rw('x1','📳','#10b981','진동','켜짐')+rw('x2','🎵','#8b5cf6','벨소리','')},
-store:{g:{},h:()=>sb()+hd('앱 스토어')+`<div class="sr">🔍 앱 및 게임 검색</div>`+app('install','💪','#16a34a','건강 도우미','공식 · ⭐4.8 · 100만+ 다운로드','설치')+app('uninstall','🧩','#f59e0b','퍼즐 게임','설치됨 · 12MB','삭제')+app('unk','🎁','#ef4444','쿠폰 모아 <span style="color:#b91c1c">⚠️ 출처 불명</span>','문자 링크로 받은 파일','설치')},
-con:{g:{add:'add'},h:()=>sb()+hd('연락처','<button data-id="add">＋ 추가</button><button data-id="del">🗑 삭제</button>')+`<div class="sr">🔍 연락처 검색</div>`+['김영희','박철수','아들 민수','내과 병원'].map((n,i)=>`<button class="rw" data-id="x${i+1}"><span class="av">${n[0]}</span><span>${n}<small>010-****-${1000+i*111}</small></span></button>`).join('')},
-add:{g:{save:'con'},h:()=>sb()+hd('새 연락처')+`<div style="padding:14px"><div class="av" style="width:4em;height:4em;margin:0 auto 12px">👤</div><input data-id="name" placeholder="이름"><input placeholder="전화번호"><button class="bt" data-id="save" style="background:#16a34a;color:#fff">저장</button></div>`},
+/* 홈 화면: 시계 위젯 + 앱 + 아래 고정 줄(전화·메시지·인터넷·카메라) */
+home:{g:{msg:'msg',set:'set',store:'store',con:'con',phone:'phone',clock:'clock'},h:()=>`<div class="owall">${osb('#fff')}<div class="owid"><b>9:41</b><span>10월 7일 화요일 · ☀️ 21°</span></div><div class="ogrid">${[['x4','🖼️','갤러리','#ff5a7a'],['store','▶️','Play 스토어','#ffffff'],['clock','⏰','시계','#1f2a44'],['set','⚙️','설정','#8a8f99'],['con','👤','연락처','#f7931e'],['x5','📅','캘린더','#4285f4'],['x6','🧮','계산기','#34c759'],['x2','🎵','음악','#ec4899']].map(a=>`<button class="oapp" data-id="${a[0]}"><span style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div><div class="odots"><i class="on"></i><i></i></div><div class="odock">${[['phone','📞','전화','#22c55e'],['msg','💬','메시지','#3e91ff'],['x3','🌐','인터넷','#6a5cff'],['x1','📷','카메라','#ef4444']].map(a=>`<button class="oapp" data-id="${a[0]}"><span style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div></div>`},
+/* 메시지 */
+msg:{g:{chat:'chat'},h:()=>`<div class="ou">`+obig('메시지','읽지 않은 메시지 1개','<button data-id="x1" aria-label="검색">🔍</button><button data-id="x2" aria-label="더보기">⋮</button>')+
+ `<button class="olist" data-id="chat">${oav('김','#f472b6')}<span class="ot"><b>김영희</b><small>오늘 손주 사진 보내 주세요~</small></span><span class="oside">오전 9:12<i>1</i></span></button>`+
+ `<button class="olist" data-id="x3">${oav('박','#60a5fa')}<span class="ot"><b>박철수</b><small>내일 보자</small></span><span class="oside">어제</span></button>`+
+ `<button class="olist" data-id="x4">${oav('1','#94a3b8')}<span class="ot"><b>1588-0000</b><small>[한마음병원] 내일 오전 10시 진료 예약…</small></span><span class="oside">10월 5일</span></button>`+
+ `<div class="ofab">💬</div>`+otab([['x5','대화'],['x6','연락처']],'대화')+`</div>`},
+chat:{g:{attach:'attach',msend:'chatsent'},h:()=>`<div class="ou wh">${ochat('')}</div>`},
+attach:{g:{gallery:'gallery',attach:'chat'},h:()=>`<div class="ou wh">${ochat('sheet')}</div>`},
+gallery:{g:{pic:'confirm'},h:()=>`<div class="ou wh">`+ohd('갤러리','<span class="osmall">사진 선택</span>')+`<div class="osub">최근 항목</div><div class="opics">${[['pic','🌄','#93c5fd'],['x4','🌸','#fbcfe8'],['x5','🐶','#fde68a'],['x6','🍰','#fecaca'],['x7','⛰️','#bbf7d0'],['x8','🚗','#ddd6fe'],['x9','🌻','#fef08a'],['x10','🏖️','#a5f3fc'],['x11','🎂','#fed7aa']].map(t=>`<button data-id="${t[0]}" style="background:${t[2]}">${t[1]}</button>`).join('')}</div></div>`},
+confirm:{g:{send:'sent'},h:()=>`<div class="ou wh">${ochat('photo')}</div>`},
+sent:{g:{attach:'attach'},h:()=>`<div class="ou wh">${ochat('sentp')}</div>`},
+chatsent:{g:{attach:'attach',msend:'chatsent'},h:()=>`<div class="ou wh">${ochat('sentt')}</div>`},
+/* 전화: 키패드 → 연락처 탭 → 김영희 → 통화 */
+phone:{g:{ptab:'pcon'},h:()=>`<div class="ou wh">${osb()}<div class="onum">번호를 누르거나<br>아래 '연락처'에서 찾아요</div><div class="okp">${[['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ'],['*',''],['0','+'],['#','']].map(([n,l])=>`<span>${n}<small>${l}</small></span>`).join('')}</div><div class="ocallrow"><button class="ocall" data-id="x1" aria-label="통화">📞</button></div>`+otab([['x2','키패드'],['x3','최근 기록'],['ptab','연락처']],'키패드')+`</div>`},
+pcon:{g:{pyh:'pcard'},h:()=>`<div class="ou">${osb()}<div class="osearch">🔍 검색</div>`+ocard(`<div class="orow"><span class="oav" style="background:#64748b">나</span><span class="ot">내 프로필</span></div>`)+ocard(...PEOPLE.map(([n,c],i)=>`<button class="orow" data-id="${i?'x'+(i+3):'pyh'}">${oav(n,c)}<span class="ot">${n}</span></button>`))+otab([['x2','키패드'],['x3','최근 기록'],['ptab','연락처']],'연락처')+`</div>`},
+pcard:{g:{pcall:'calling'},h:()=>`<div class="ou">`+ohd('','<button data-id="x2" aria-label="즐겨찾기">☆</button><button data-id="x3" aria-label="편집">✏️</button>')+`<div class="oprof"><span class="oav big" style="background:#f472b6">김</span><b>김영희</b></div><div class="overbs">${[['pcall','📞','통화','#22c55e'],['x4','💬','메시지','#3e91ff'],['x5','📹','영상 통화','#8b5cf6']].map(a=>`<button data-id="${a[0]}"><span class="oic" style="background:${a[3]}">${a[1]}</span>${a[2]}</button>`).join('')}</div>`+ocard(`<div class="orow"><span class="ot">010-2345-6789<small>휴대전화</small></span></div>`)+`</div>`},
+calling:{g:{hang:'pcard'},h:()=>`<div class="ou ocallscr">${osb()}<div class="ocaller"><small>전화 거는 중…</small><b>김영희</b><span>010-2345-6789</span><span class="oav big" style="background:#f472b6">김</span></div><div class="ocbtns">${['⏺️<br>녹음','📹<br>영상 통화','🎧<br>블루투스','🔈<br>스피커','🎙️<br>음소거','⌨️<br>키패드'].map(t=>`<span>${t}</span>`).join('')}</div><div class="ocallrow"><button class="ocall end" data-id="hang" aria-label="끊기">📞</button></div></div>`},
+/* 시계: 알람 탭 → ＋ → 시간 바퀴 → 저장 */
+clock:{g:{addal:'alset'},h:()=>`<div class="ou">`+obig(dev.alarm?'알람 9시간 19분 후':'모든 알람이 꺼져 있어요','',`<button data-id="addal" aria-label="알람 추가">＋</button><button data-id="x1" aria-label="더보기">⋮</button>`)+
+ (dev.alarm?ocard(`<div class="orow alarm"><span class="ot"><span class="oampm">오전</span> 7:00<small>매일</small></span>${osw(1)}</div>`):'')+
+ ocard(`<div class="orow alarm off"><span class="ot"><span class="oampm">오후</span> 2:00<small>토, 일</small></span>${osw(0)}</div>`)+otab([['x2','알람'],['x3','세계 시각'],['x4','스톱워치'],['x5','타이머']],'알람')+`</div>`},
+alset:{g:{asave:'clock'},h:()=>`<div class="ou">${osb()}<div class="owheel"><div><span>오후</span><b>오전</b><span>&nbsp;</span></div><div><span>6</span><b>7</b><span>8</span></div><i>:</i><div><span>59</span><b>00</b><span>01</span></div></div><div class="otip">손가락으로 숫자를 위아래로 밀어서 시간을 맞춰요. 연습에서는 오전 7시로 맞춰져 있어요.</div>`+
+ ocard(`<div class="orow"><span class="ot">내일 - 10월 8일 (수)</span><span class="ocal">📅</span></div><div class="odays">${'일월화수목금토'.split('').map(d=>`<span>${d}</span>`).join('')}</div>`)+
+ ocard(`<div class="orow"><span class="ot">알람 이름</span></div>`,`<div class="orow"><span class="ot">알람음<small>Morning Flower</small></span>${osw(1)}</div>`,`<div class="orow"><span class="ot">진동<small>Basic call</small></span>${osw(1)}</div>`)+
+ obar(['back','취소'],['asave','저장'])+`</div>`},
+/* 설정 */
+set:{g:{conn:'conn',sound:'sound',disp:'disp',apps:'apps'},h:()=>`<div class="ou">`+obig('설정','','<button data-id="x9" aria-label="검색">🔍</button>')+
+ ocard(`<div class="orow"><span class="oav" style="background:#94a3b8">👤</span><span class="ot">삼성 계정<small>로그인하세요</small></span></div>`)+
+ ocard(orow('conn','📶','#3e91ff','연결','Wi-Fi • 블루투스 • 비행기 탑승 모드'),orow('x1','🔗','#3e91ff','연결된 기기','Quick Share • Android Auto'))+
+ ocard(orow('x2','✔️','#22c55e','모드 및 루틴','모드 • 루틴'),orow('sound','🔊','#8b5cf6','소리 및 진동','소리 모드 • 벨소리'),orow('x3','🔔','#f97316','알림','상태 표시줄 • 방해 금지'))+
+ ocard(orow('disp','☀️','#22c55e','디스플레이','밝기 • 눈 보호 모드 • 내비게이션 바'),orow('x4','🔋','#22c55e','배터리','절전 모드 • 충전'),orow('x5','🎨','#ec4899','배경화면 및 스타일','배경화면 • 색상 팔레트'))+
+ ocard(orow('x6','🛡️','#3e91ff','보안 및 개인정보 보호','생체 인식 • 권한 관리자'),orow('apps','▦','#3e91ff','애플리케이션','기본 앱 • 앱 설정'))+`</div>`},
+disp:{g:{fontsty:'font'},h:()=>`<div class="ou">`+ohd('디스플레이')+
+ ocard(`<div class="omode"><span class="on">☀️<br>라이트</span><span>🌙<br>다크</span></div>`)+
+ ocard(`<div class="orow"><span class="ot">밝기</span></div><div class="oslide"><span class="oend">🔅</span><span class="otrack"><i style="width:70%"></i><b style="left:70%"></b></span><span class="oend">🔆</span></div>`,orow('x1','','','눈 보호 모드','','')+'')+
+ ocard(orow('x2','','','화면 모드','선명한 화면'),orow('fontsty','','','글자 크기와 스타일',''),orow('x3','','','화면 크게/작게',''))+`</div>`},
+font:{g:{},h:()=>`<div class="ou">`+ohd('글자 크기와 스타일')+
+ ocard(`<div class="oprev" style="font-size:${dev.scale>1?1.15:dev.scale<1?.8:.95}em">가나다라마바사<br>Aa 123 · 글자 크기를 바꾸면 이렇게 보여요.</div>`)+
+ ocard(`<div class="orow"><span class="ot">글자 스타일<small>기본</small></span></div>`,`<div class="orow"><span class="ot">글자 굵게</span>${osw(0)}</div>`)+
+ ocard(`<div class="orow"><span class="ot">글자 크기</span></div>`+oslide('<small>가</small>','가',dev.scale>1?85:dev.scale<1?15:50,'small','big'))+`</div>`},
+sound:{g:{vol:'vol'},h:()=>`<div class="ou">`+ohd('소리 및 진동')+
+ ocard(`<div class="omode three"><span class="on">🔔<br>소리</span><span>📳<br>진동</span><span>🔕<br>무음</span></div>`)+
+ ocard(orow('x1','','','벨소리','Over the Horizon'),orow('x2','','','알림 소리','Spaceline'))+
+ ocard(orow('vol','','','음량','벨소리, 미디어, 알림, 시스템 음량을 바꿔요'),orow('x3','','','진동 세기',''))+`</div>`},
+vol:{g:{},h:()=>`<div class="ou">`+ohd('음량')+ocard(...[['벨소리','🔔',60],['알림','💬',50],['시스템','📱',40]].map(([t,ic,p])=>`<div class="orow"><span class="ot">${t}</span></div><div class="oslide"><span class="oend">${ic}</span><span class="otrack"><i style="width:${p}%"></i><b style="left:${p}%"></b></span><span class="oend"></span></div>`),
+ `<div class="orow"><span class="ot">미디어 <b class="ovol">${dev.vol}</b></span></div>`+oslide('🔈','🔊',dev.vol*10,'vdn','vup'))+`</div>`},
+conn:{g:{wifi:'wifi'},h:()=>`<div class="ou">`+ohd('연결')+
+ ocard(`<div class="orow"><button class="ot olink" data-id="wifi">Wi-Fi<small>${dev.wifi?'우리집_WiFi':'연결 안 됨'}</small></button>${osw(1)}</div>`,`<div class="orow"><span class="ot">블루투스</span>${osw(0)}</div>`)+
+ ocard(`<div class="orow"><span class="ot">NFC 및 비접촉 결제</span>${osw(1)}</div>`,`<div class="orow"><span class="ot">비행기 탑승 모드</span>${osw(0)}</div>`)+
+ ocard(orow('x1','','','SIM 관리자',''),orow('x2','','','모바일 네트워크',''),orow('x3','','','데이터 사용',''))+`</div>`},
+wifi:{g:{mynet:'wpw'},h:()=>`<div class="ou">${owifi()}</div>`},
+wpw:{g:{wconn:'conn'},h:()=>`<div class="ou orel">${owifi()}<div class="odim"></div><div class="osheet"><b>우리집_WiFi</b><small>공유기 뒷면이나 옆에 적힌 비밀번호를 써 주세요 (연습이니 아무 글자나 괜찮아요)</small><input class="ofield box" data-id="wpw" placeholder="비밀번호"><div class="ochk">☑ 자동 재연결</div><button class="oblue" data-id="wconn">연결</button></div></div>`},
+/* 앱 설치: Play 스토어 */
+store:{g:{},h:()=>`<div class="ou wh">${osb()}<div class="osearch play">🔍 앱 및 게임 검색 <span>🎙️</span></div><div class="ochips"><span class="on">추천</span><span>인기 차트</span><span>어린이</span><span>카테고리</span></div><div class="osub">시니어에게 인기 있는 앱</div>`+
+ [['install','💪','#16a34a','건강 도우미','건강 · ⭐ 4.8 · 100만+'],['x1','📰','#2563eb','쉬운 뉴스','뉴스 · ⭐ 4.6 · 50만+'],['x2','🧘','#a855f7','오늘의 체조','건강 · ⭐ 4.7 · 10만+']].map(([id,ic,c,n,s])=>`<div class="oplay"><span class="oappic" style="background:${c}">${ic}</span><span class="ot"><b>${n}</b><small>${s}</small></span><button class="ogreen" data-id="${id}">${id=='install'&&dev.installed?'열기':'설치'}</button></div>`).join('')+
+ `<div class="otab play"><span class="on">🎮<br>게임</span><span>▦<br>앱</span><span>🔍<br>검색</span><span>📚<br>도서</span></div></div>`},
+/* 앱 삭제: 설정 → 애플리케이션 → 앱 → 삭제 → 확인 */
+apps:{g:{puzzle:'appinfo'},h:()=>`<div class="ou">`+ohd('애플리케이션','<button data-id="x9" aria-label="검색">🔍</button>')+ocard(orow('x8','','','기본 앱','기본으로 쓸 앱 고르기'))+`<div class="osub">내 앱 (${APPS().length}개)</div>`+ocard(...APPS().map(([id,ic,c,n,s])=>`<button class="orow" data-id="${id}"><span class="oappic small" style="background:${c}">${ic}</span><span class="ot">${n}<small>${s}</small></span></button>`))+`</div>`},
+appinfo:{g:{udel:'uconf'},h:()=>`<div class="ou">${oinfo()}</div>`},
+uconf:{g:{uok:'apps'},h:()=>`<div class="ou orel">${oinfo()}${odlg('연습용 퍼즐','이 앱을 삭제할까요?',[['back','취소'],['uok','확인']])}</div>`},
+/* 연락처 */
+con:{g:{add:'add',cmore:'cmenu'},h:()=>`<div class="ou">${ocon()}</div>`},
+cmenu:{g:{del:'con'},h:()=>`<div class="ou orel">${ocon()}<div class="odim clear"></div><div class="omenu"><button data-id="x7">공유</button><button data-id="x8">편집</button><button data-id="del">삭제</button><button data-id="x9">설정</button></div></div>`},
+add:{g:{save:'con'},h:()=>`<div class="ou">${osb()}<div class="osub" style="text-align:center">저장 위치: 휴대전화</div><div class="oprof"><span class="oav big" style="background:#cbd5e1">👤</span></div>`+ocard(`<div class="orow"><input class="ofield line" data-id="name" placeholder="이름"></div>`,`<div class="orow"><input class="ofield line" placeholder="전화번호"></div>`)+obar(['back','취소'],['save','저장'])+`</div>`},
 };
+function owifi(){return ohd('Wi-Fi','<button data-id="x9" aria-label="더보기">⋮</button>')+`<div class="oonbar">사용 중 ${osw(1)}</div>`+
+ (dev.wifi?`<div class="osub">현재 네트워크</div>`+ocard(`<div class="orow"><span class="oic" style="background:#3e91ff">📶</span><span class="ot">우리집_WiFi<small>연결됨</small></span></div>`):'')+
+ `<div class="osub">사용 가능한 네트워크</div>`+ocard(...[['mynet','우리집_WiFi','🔒'],['x1','카페_무료','열린 네트워크 (조심)'],['x2','이웃집 5G','🔒']].filter(n=>!(dev.wifi&&n[0]=='mynet')).map(([id,n,s])=>orow(id,'📶','#cbd5e1',n,s)),orow('x3','＋','#e2e8f0','네트워크 추가'))}
+function oinfo(){return ohd('애플리케이션 정보')+`<div class="oprof"><span class="oappic" style="background:#f59e0b">🧩</span><b>연습용 퍼즐</b><small>버전 1.0</small></div>`+ocard(orow('x1','','','알림','허용 안 함'),orow('x2','','','권한','요청한 권한 없음'),orow('x3','','','저장공간','12.0MB'))+obar(['x4','열기'],['udel','삭제'],['x5','강제 중지'])}
+function ocon(){return obig('연락처',`연락처 ${PEOPLE.length}개`,'<button data-id="add" aria-label="연락처 추가">＋</button><button data-id="x9" aria-label="검색">🔍</button><button data-id="cmore" aria-label="더보기">⋮</button>')+
+ ocard(`<div class="orow"><span class="oav" style="background:#64748b">나</span><span class="ot">내 프로필</span></div>`)+ocard(...PEOPLE.map(([n,c],i)=>`<button class="orow" data-id="x${i+1}">${oav(n,c)}<span class="ot">${n}<small>010-****-${1000+i*111}</small></span></button>`))}
 const val=id=>(($('#dev [data-id="'+id+'"]')||{}).value||'').trim();
 const G={
-photo:()=>({n:'사진 보내기',real:'photo',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat','attach','왼쪽 아래 "＋" 버튼을 눌러 주세요.'],['attach','gallery','"앨범"을 눌러 주세요.'],['gallery','pic','보낼 사진을 눌러 주세요.'],['confirm','send','"보내기"를 눌러 주세요.']]}),
-font:b=>({n:'글자 크기',real:b?'font_up':'font_down',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','font','"디스플레이"를 눌러 주세요. 글자 크기가 여기 있어요.'],['font',b?'big':'small',b?'오른쪽 큰 "가"를 눌러 주세요.':'왼쪽 작은 "가"를 눌러 주세요.']]}),
-sound:u=>({n:'음량 조절',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','sound','"소리 및 진동"을 눌러 주세요.'],['sound',u?'vup':'vdn',u?'오른쪽 "＋"를 눌러 주세요.':'왼쪽 "－"를 눌러 주세요.']]}),
-inst:()=>({n:'앱 설치',real:'install',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','install','"건강 도우미" 옆 "설치"를 눌러 주세요. 공식 스토어 앱만 설치해요.']]}),
-uninst:()=>({n:'앱 삭제',real:'uninstall',st:[['home','store','앱 스토어(🛍️)를 눌러 주세요.'],['store','uninstall','"퍼즐 게임" 옆 "삭제"를 눌러 주세요.']]}),
-addc:()=>({n:'연락처 추가',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','add','오른쪽 위 "＋ 추가"를 눌러 주세요.'],['add',()=>val('name')?'save':'name',id=>id=='name'?'저장할 분의 이름을 써 주세요.':'"저장"을 눌러 주세요.']]}),
-delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','del','오른쪽 위 "🗑 삭제"를 눌러 주세요.']]}),
-call:()=>({n:'전화 걸기',real:'call',st:[['home','phone','전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 "통화" 버튼을 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
-text:()=>({n:'메시지 보내기',real:'text',st:[['home','msg','메신저(💬)를 눌러 주세요.'],['msg','chat','김영희 님을 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 "전송"을 눌러 주세요.']]}),
-alarm:()=>({n:'알람 맞추기',real:'alarm',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 "저장"을 눌러 주세요.']]}),
-wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi"를 눌러 주세요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'비밀번호 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]})
+photo:()=>({n:'사진 보내기',real:'photo',st:[['home','msg','아래쪽 메시지(💬)를 눌러 주세요.'],['msg','chat','김영희 님 대화를 눌러 주세요.'],['chat','attach','입력 칸 왼쪽의 "＋"를 눌러 주세요.'],['attach','gallery','"갤러리"를 눌러 주세요.'],['gallery','pic','보낼 사진을 눌러 주세요.'],['confirm','send','사진이 들어갔어요. 오른쪽 보내기(➤)를 눌러 주세요.']]}),
+font:b=>({n:'글자 크기',real:b?'font_up':'font_down',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','disp','"디스플레이"를 눌러 주세요.'],['disp','fontsty','"글자 크기와 스타일"을 눌러 주세요.'],['font',b?'big':'small',b?'"글자 크기" 오른쪽 큰 "가"를 눌러 주세요.':'"글자 크기" 왼쪽 작은 "가"를 눌러 주세요.']]}),
+sound:u=>({n:'음량 조절',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','sound','"소리 및 진동"을 눌러 주세요.'],['sound','vol','"음량"을 눌러 주세요.'],['vol',u?'vup':'vdn',u?'"미디어" 오른쪽 🔊를 눌러 주세요.':'"미디어" 왼쪽 🔈를 눌러 주세요.']]}),
+inst:()=>({n:'앱 설치',real:'install',st:[['home','store','Play 스토어(▶️)를 눌러 주세요.'],['store','install','"건강 도우미" 옆 초록색 "설치"를 눌러 주세요. 공식 스토어 앱만 설치해요.']]}),
+uninst:()=>({n:'앱 삭제',real:'uninstall',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','apps','"애플리케이션"을 눌러 주세요. 아래쪽에 있어요.'],['apps','puzzle','"연습용 퍼즐"을 눌러 주세요.'],['appinfo','udel','아래 "삭제"를 눌러 주세요.'],['uconf','uok','정말 지울지 물어봐요. "확인"을 눌러 주세요.']]}),
+addc:()=>({n:'연락처 추가',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','add','오른쪽 위 "＋"를 눌러 주세요.'],['add',()=>val('name')?'save':'name',id=>id=='name'?'"이름" 칸을 눌러 저장할 분의 이름을 써 주세요.':'아래 "저장"을 눌러 주세요.']]}),
+delc:()=>({n:'연락처 삭제',st:[['home','con','연락처(👤)를 눌러 주세요.'],['con','cmore','오른쪽 위 "⋮"(더보기)를 눌러 주세요.'],['cmenu','del','"삭제"를 눌러 주세요. 그다음 지울 분을 고르면 돼요.']]}),
+call:()=>({n:'전화 걸기',real:'call',st:[['home','phone','아래쪽 전화(📞)를 눌러 주세요.'],['phone','ptab','아래 "연락처"를 눌러 주세요.'],['pcon','pyh','김영희 님을 눌러 주세요.'],['pcard','pcall','초록색 전화기 모양 "통화"를 눌러 주세요. 끊을 때는 빨간 버튼을 눌러요.']]}),
+text:()=>({n:'메시지 보내기',real:'text',st:[['home','msg','아래쪽 메시지(💬)를 눌러 주세요.'],['msg','chat','김영희 님 대화를 눌러 주세요.'],['chat',()=>val('mtext')?'msend':'mtext',id=>id=='mtext'?'아래 "메시지 입력" 칸을 눌러 보낼 말을 써 주세요.':'오른쪽 보내기(➤)를 눌러 주세요.']]}),
+alarm:()=>({n:'알람 맞추기',real:'alarm',st:[['home','clock','시계(⏰)를 눌러 주세요.'],['clock','addal','오른쪽 위 "＋"를 눌러 주세요.'],['alset','asave','시간이 오전 7시인지 확인하고 아래 "저장"을 눌러 주세요.']]}),
+wifi:()=>({n:'와이파이 연결',real:'wifi',st:[['home','set','설정(⚙️)을 눌러 주세요.'],['set','conn','"연결"을 눌러 주세요. 와이파이가 여기 있어요.'],['conn','wifi','"Wi-Fi" 글자를 눌러 주세요. 스위치가 아니라 글자예요.'],['wifi','mynet','우리 집 와이파이 이름 "우리집_WiFi"를 눌러 주세요.'],['wpw',()=>val('wpw')?'wconn':'wpw',id=>id=='wpw'?'"비밀번호" 칸을 눌러 비밀번호를 써 주세요.':'"연결"을 눌러 주세요.']]})
 };
 function parse(t){const h=r=>r.test(t);
  if(h(/연락처|전화번호/))return h(/삭제|지우|지워/)?G.delc():G.addc();
@@ -362,11 +520,14 @@ function devClick(id){const st=curStep(),hit=sharing&&goal&&st&&tgt(st)==id,last
  if(id=='asave'){dev.alarm=true;toast('⏰ 내일 오전 7시에 알람이 울려요')}
  if(id=='wconn'){dev.wifi=true;toast('📶 우리집_WiFi에 연결되었어요')}
  if(id=='pcall')toast('📞 김영희 님께 전화를 거는 중이에요 (연습)');
- if(id=='back'){dev.scr=dev.stack.pop()}else if(nx){dev.stack.push(dev.scr);dev.scr=nx}
+ if(id=='uok'){dev.puzzleGone=true;toast('🗑️ 연습용 퍼즐을 삭제했어요')}
+ if(id=='install'){dev.installed=true;toast('📥 건강 도우미를 설치하고 있어요 (연습)')}
+ if(id=='del')toast('(연습) 이제 지울 분을 고르면 돼요');
+ if(id=='back'){if(!dev.stack.length)return;dev.scr=dev.stack.pop()}else if(nx){dev.stack.push(dev.scr);dev.scr=nx}
  else if(id=='big'||id=='small'){dev.scale=id=='big'?1.3:.85;toast('글자 크기가 바뀌었어요')}
  else if(id=='vup'||id=='vdn'){dev.vol=Math.max(0,Math.min(10,dev.vol+(id=='vup'?1:-1)));toast('🔊 음량 '+dev.vol+' / 10')}
- else if(id=='unk')toast('⛔ 차단: 공식 스토어가 아닌 앱은 설치할 수 없어요');
- else if(id!='name')toast('(연습) 이 버튼은 연습에서 쓰지 않아요');
+ else if(id=='install'){}
+ else if(id!='name'&&id!='mtext'&&id!='wpw')toast('(연습) 이 버튼은 연습에서 쓰지 않아요');
  devRender();
  if(hit&&last)setTimeout(finish,600);else guide()}
 function finish(){clearHl();sharing=false;badge();const n=goal.n;goal=null;bub(`🎉 "${n}"${josa(n)} 끝까지 해 내셨어요! 잘 하셨어요. 화면 보기도 끝냈어요.`)}
@@ -377,8 +538,11 @@ let lastKey='';
 function guide(force){const hl=$('#hl');if(!hl||!sharing||!goal){return}
  const st=curStep();let id,msg;
  if(st){id=tgt(st);msg=typeof st[2]=='function'?st[2](id):st[2]}
- else if(dev.stack.length){id='back';msg='잘못 들어왔어요. 왼쪽 위 "뒤로"를 눌러 주세요.'}else return;
+ else if(dev.stack.length){id='back';msg='잘못 들어왔어요. 노란 테두리를 눌러 이전 화면으로 돌아가 주세요.'}else return;
  const el=$(`#dev [data-id="${id}"]`);if(!el)return;
+ /* 눌러야 할 곳이 화면 밖이면 가상 휴대폰 화면을 그쪽으로 굴린다 (굴린 뒤 onscroll 이 다시 맞춘다) */
+ const dv=$('#dev'),dr=dv.getBoundingClientRect(),er=el.getBoundingClientRect();
+ if(er.top<dr.top||er.bottom>dr.bottom){dv.scrollTop+=er.top-dr.top-(dr.height-er.height)/2;return}
  const w=$('#devwrap').getBoundingClientRect(),r=el.getBoundingClientRect();
  Object.assign(hl.style,{display:'block',left:r.left-w.left-5+'px',top:r.top-w.top-5+'px',width:r.width+10+'px',height:r.height+10+'px'});
  const a=$('#arr'),up=r.top-w.top>60;a.textContent=up?'👇':'👆';Object.assign(a.style,{display:'block',left:r.left-w.left+r.width/2-17+'px',top:(up?r.top-w.top-46:r.bottom-w.top+4)+'px'});
