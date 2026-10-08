@@ -42,6 +42,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
     private lateinit var block: LinkBlockOverlay
     private lateinit var installBlock: InstallBlockOverlay
     private lateinit var riskPopup: RiskPopupOverlay
+    private lateinit var cautionBanner: CautionBannerOverlay
     private var installPending = false
     private val installTask = Runnable { installPending = false; checkInstall() }
     /** 마지막으로 검사한 주소 (같은 주소를 계속 검사하지 않는다) */
@@ -93,6 +94,11 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             // 브라우저가 가만히 있으면 새 신호가 오지 않아 그대로 지나치기 때문이다.
             lastUrl = ""
             handler.postDelayed({ if (instance === this) checkBrowser() }, 400)
+        })
+        cautionBanner = CautionBannerOverlay(this, wm, onDetail = { id ->
+            startActivity(android.content.Intent(this, com.smarthelper.app.guard.WarningActivity::class.java)
+                .putExtra(com.smarthelper.app.guard.WarningActivity.EXTRA_ID, id)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
         })
         tts = TextToSpeech(this, this)
         // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.
@@ -332,6 +338,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         // 링크·설치 차단 화면이 떠 있으면 그 위에 겹치지 않는다 (그쪽이 더 급하다)
         if (block.showing || installBlock.showing) return false
         try {
+            cautionBanner.hide()
             riskPopup.show(id, sender, what, reason, hasLink)
         } catch (e: Exception) {
             android.util.Log.w("SmartHelper", "위험 문자 팝업을 띄우지 못함", e)
@@ -339,6 +346,24 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         }
         android.util.Log.i("SmartHelper", "위험 문자 팝업: $what")
         say("방금 온 ${what}가 위험해요! ${if (hasLink) "링크를 누르지 마세요." else "답장하지 마세요."} $reason")
+        return true
+    }
+
+    /**
+     * ⚠️ 주의 단계 메시지: 위험 팝업보다 가볍게, 화면 아래쪽에 작은 노란 카드를 잠시 띄우고 한 문장만 읽어 준다.
+     * 화면을 덮지 않고 카드 밖은 그대로 누를 수 있다. 다른 경고 화면이 떠 있으면 띄우지 않는다 (알림은 따로 간다).
+     */
+    fun showCautionPopup(id: Long, sender: String, what: String, reason: String, hasLink: Boolean): Boolean {
+        if (!::cautionBanner.isInitialized) return false
+        if (block.showing || installBlock.showing || riskPopup.showing) return false
+        try {
+            cautionBanner.show(id, sender, what, reason)
+        } catch (e: Exception) {
+            android.util.Log.w("SmartHelper", "주의 카드를 띄우지 못함", e)
+            return false
+        }
+        android.util.Log.i("SmartHelper", "주의 카드: $what")
+        say("조심해야 할 ${what}가 왔어요. ${if (hasLink) "링크를 누르기 전에" else "시키는 대로 하기 전에"} 가족에게 먼저 물어보세요.")
         return true
     }
 
@@ -464,6 +489,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         if (::block.isInitialized) block.hide()
         if (::installBlock.isInitialized) installBlock.hide()
         if (::riskPopup.isInitialized) riskPopup.hide()
+        if (::cautionBanner.isInitialized) cautionBanner.hide()
         if (instance === this) instance = null
         tts?.shutdown()
         return super.onUnbind(intent)

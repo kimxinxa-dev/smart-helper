@@ -2,6 +2,7 @@
 # 실행: 같은 폴더의 "위험도별_문자_시연.bat" 을 두 번 누르세요.
 #  - 메뉴 없이 저절로 다음 문자로 넘어가요. Enter: 바로 다음 / P: 잠깐 멈춤 / Q: 그만
 #  - 🚨 위험 문자는 휴대폰에 팝업이 뜨면, 발표자가 [알겠어요] 를 누를 때까지 기다렸다가 다음으로 넘어가요.
+#  - ⚠️ 주의 문자는 휴대폰 아래쪽에 노란 카드가 떴다가 저절로 사라지면 넘어가요.
 # -Auto : 기다리지 않고 모든 문자의 판정만 점검 (팝업은 기다리지 않음)
 param([switch]$Auto)
 
@@ -81,6 +82,30 @@ function Wait-Next($sec, $msg = "다음 문자") {
     Write-Host ""
 }
 
+# ⚠️ 주의 문자: 휴대폰 아래쪽에 노란 카드가 떴다가 10초 뒤 저절로 사라지면 넘어간다
+function Wait-Card {
+    if ($Auto -or $script:quit) { return }
+    Write-Host "  ⏳ 휴대폰에 문자 수신 알림이 오고, 곧 아래쪽에 ⚠️ 노란 카드가 떠요..." -ForegroundColor Magenta
+    $shown = $false
+    for ($i = 0; $i -lt 25; $i++) {
+        if (Test-Overlay) { $shown = $true; break }
+        Start-Sleep -Milliseconds 800
+        if ((Read-Key) -eq 'Enter') { return }
+    }
+    if (-not $shown) {
+        Write-Host "  (카드를 찾지 못했어요. 스마트 헬퍼의 '위험 링크 차단'이 켜져 있는지 확인하세요)" -ForegroundColor DarkYellow
+        return
+    }
+    Write-Host "  👉 위험 팝업보다 가볍게, 화면을 가리지 않고 잠깐 떴다가 저절로 사라져요. (Enter: 기다리지 않기)" -ForegroundColor Magenta
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Milliseconds 800
+        if (-not (Test-Overlay)) { Write-Host "  ✔ 카드가 사라졌어요." -ForegroundColor DarkGray; return }
+        $k = Read-Key
+        if ($k -eq 'Enter') { return }
+        if ($k -eq 'Q') { $script:quit = $true; return }
+    }
+}
+
 # 🚨 위험 문자: 팝업이 뜨기를 기다렸다가, 발표자가 [알겠어요] 로 닫으면 넘어간다
 function Wait-Popup {
     if ($Auto -or $script:quit) { return }
@@ -138,7 +163,7 @@ function Send-One($chapter, $no, $total, $m) {
     if ($m.Note) { Write-Host "  💡 $($m.Note)" -ForegroundColor DarkCyan }
     [void]$script:results.Add([pscustomobject]@{ 분류 = $m.Cat; 기대 = $LEVEL[$m.Expect]; 판정 = $LEVEL[$v.level]; 결과 = $(if ($ok) { "✔" } else { "✘" }) })
     if ($v.level -eq "HIGH") { Wait-Popup; Wait-Next 3 }
-    elseif ($v.level -eq "MID") { Wait-Next 8 }
+    elseif ($v.level -eq "MID") { Wait-Card; Wait-Next 3 }
     else { Wait-Next 5 }
 }
 

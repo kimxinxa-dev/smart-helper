@@ -80,13 +80,15 @@ object GuardAlert {
         val id = GuardStore.add(ctx, sender, body, v, source)
         val alert = if (alertOnlyHigh) v.level == Level.HIGH else v.level == Level.MID || v.level == Level.HIGH
         if (!alert && v.level != Level.HIGH) return
-        val warn = {
+        val warn: () -> Unit = {
             if (alert) notify(ctx, id, sender, v, source)
             // 🚨 위험이면 알림과 함께 지금 화면 위에 팝업도 띄운다 (위험 링크 차단을 켜 둔 경우. 꺼져 있으면 알림만)
-            if (v.level == Level.HIGH) {
-                val what = if (source == "문자") "문자" else "$source 메시지"
-                com.smarthelper.app.guide.GuideService.instance?.showRiskPopup(id, sender, what, v.reasons.firstOrNull().orEmpty(), v.urls.isNotEmpty())
-            }
+            // ⚠️ 주의면 그보다 가볍게, 화면 아래쪽에 잠시 사라지는 작은 카드
+            val what = if (source == "문자") "문자" else "$source 메시지"
+            val reason = v.reasons.firstOrNull().orEmpty()
+            val service = com.smarthelper.app.guide.GuideService.instance
+            if (v.level == Level.HIGH) service?.showRiskPopup(id, sender, what, reason, v.urls.isNotEmpty())
+            else if (alert && v.level == Level.MID) service?.showCautionPopup(id, sender, what, reason, v.urls.isNotEmpty())
         }
         // 문자는 문자 앱의 수신 알림이 먼저 보이게 기다린다. 메신저는 이미 메신저 알림을 보고 검사한 것이라 잠깐만 기다린다
         if (source == "문자") afterSmsNotice(warn) else main.postDelayed(warn, AFTER_SMS_NOTICE_MS)
