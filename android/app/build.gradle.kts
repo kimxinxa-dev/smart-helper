@@ -16,6 +16,9 @@ android {
 }
 
 dependencies {
+    // QR 코드 읽기: 구글 플레이 서비스가 카메라 화면·인식을 맡고 앱은 QR 글자만 받는다 → 카메라 권한이 필요 없다
+    // (외부 라이브러리를 쓰지 않는 원칙의 예외. 카메라 권한 없이 QR 을 읽는 방법이 이것뿐이라서)
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     testImplementation("junit:junit:4.13.2")
 }
 

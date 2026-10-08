@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 인터넷 권한 없음: 문자·화면·QR 내용이 휴대폰 밖으로 나갈 수 없다.
+         QR 스캐너 라이브러리(play-services-code-scanner)가 끼워 넣는 권한을 지운다.
+         QR 인식은 구글 플레이 서비스가 따로 하고 이 앱은 결과 글자만 받으므로 필요 없다. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <!-- 새 문자 감지 (받은 문자함 전체를 읽는 READ_SMS 는 쓰지 않는다) -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
@@ -27,6 +34,8 @@
         android:label="스마트 헬퍼"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:enableOnBackInvokedCallback="true">
+        <!-- QR 스캐너 모듈을 앱 설치 때 미리 받아 두게 한다 (구글 플레이 서비스가 받음. 이 앱은 인터넷을 쓰지 않는다) -->
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -67,6 +67,11 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         tts = TextToSpeech(this, this)
         // 앱이 열려 있을 때 새 문자가 검사되면 화면을 바로 새로 그린다
         GuardStore.onChange = { guardChanged() }
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            val filter = android.content.IntentFilter(FAKE_QR)
+            if (Build.VERSION.SDK_INT >= 33) registerReceiver(fakeQr, filter, RECEIVER_EXPORTED)
+            else @Suppress("UnspecifiedRegisterReceiverFlag") registerReceiver(fakeQr, filter)
+        }
 
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
@@ -155,6 +160,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     override fun onDestroy() {
         GuardStore.onChange = null
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) unregisterReceiver(fakeQr)
         tts?.shutdown()
         web.destroy()
         super.onDestroy()
@@ -278,6 +284,68 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         fun openWarning(id: String) = runOnUiThread {
             startActivity(Intent(this@MainActivity, WarningActivity::class.java).putExtra(WarningActivity.EXTRA_ID, id.toLong()))
         }
+
+        /**
+         * 큐싱 검사: QR 코드를 찍어 담긴 주소를 열기 전에 먼저 살펴본다. 결과는 onQr() 로.
+         * 구글 플레이 서비스의 코드 스캐너가 카메라 화면을 맡고 이 앱은 QR 글자만 받는다 (카메라 권한 없음).
+         */
+        @JavascriptInterface
+        fun scanQr() = runOnUiThread {
+            val options = com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE)
+                .build()
+            com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(this@MainActivity, options).startScan()
+                .addOnSuccessListener { code -> onQrText(code.rawValue.orEmpty()) }
+                .addOnCanceledListener { js("window.onQrErr&&onQrErr('cancel')") }
+                .addOnFailureListener { e ->
+                    android.util.Log.w("SmartHelper", "QR 스캐너를 열지 못함", e)
+                    js("window.onQrErr&&onQrErr('fail')")
+                }
+        }
+
+        /** QR 결과 화면의 "열기": 휴대폰의 기본 브라우저로 넘긴다 */
+        @JavascriptInterface
+        fun openUrl(url: String, confirmed: Boolean) = runOnUiThread {
+            // 주의 단계 주소를 사용자가 경고를 보고 직접 열기로 했으면 브라우저에서 다시 막지 않는다.
+            // 위험 단계 주소는 그대로 두어, 열리면 위험 링크 차단 화면이 한 번 더 막는다 (두 겹 방어)
+            if (confirmed) com.smarthelper.app.guard.LinkGuard.host(url)?.let { com.smarthelper.app.guard.LinkGuard.allow(it) }
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE))
+            } catch (e: ActivityNotFoundException) {
+                js("window.onQrErr&&onQrErr('nobrowser')")
+            }
+        }
+    }
+
+    /**
+     * QR 글자를 검사해 웹 화면에 보낸다.
+     * 주의 이상이면 문자처럼 기록에 남긴다 → 그 주소는 위험 링크 차단 목록에 들어가고(기본 카메라로 찍어 열어도 막힘),
+     * 30분 동안 앱 설치도 한 번 더 묻는다 (InstallGate).
+     */
+    private fun onQrText(raw: String) {
+        val r = com.smarthelper.app.guard.QrCheck.inspect(raw)
+        var id = 0L
+        if (r.url != null && r.level >= com.smarthelper.app.guard.Level.MID) {
+            id = GuardStore.add(this, r.host ?: "QR 코드", r.url,
+                com.smarthelper.app.guard.Verdict(r.level, r.score, r.reasons, listOf(r.url)), "QR 코드")
+        }
+        val o = JSONObject()
+            .put("kind", r.kind.name)
+            .put("level", r.level.name)
+            .put("url", r.url ?: JSONObject.NULL)
+            .put("host", r.host ?: JSONObject.NULL)
+            .put("reasons", JSONArray(r.reasons))
+            .put("shown", r.shown)
+            .put("id", id)
+        js("window.onQr&&onQr($o)")
+    }
+
+    /** 개발용(디버그 앱에서만): 카메라 없는 에뮬레이터에서 QR 을 찍은 것처럼 시험한다.
+     *  adb shell am broadcast -a com.smarthelper.app.FAKE_QR --es text "http://parking-pay.xyz/p" */
+    private val fakeQr = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: android.content.Context, i: Intent) {
+            i.getStringExtra("text")?.let { onQrText(it) }
+        }
     }
 
     companion object {
@@ -285,5 +353,6 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         private const val REQ_VOICE = 2
         private const val REQ_PERM = 3
         private const val REQ_FAMILY = 4
+        private const val FAKE_QR = "com.smarthelper.app.FAKE_QR"
     }
 }

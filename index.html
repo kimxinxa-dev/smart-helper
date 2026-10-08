@@ -394,7 +394,9 @@ function parse(t){const h=r=>r.test(t);
  if(h(/메신저|보내/))return G.photo();return null}
 /* ---------- 공통 ---------- */
 function say(t){lastMsg=t;if(window.Android){Android.speak(t.replace(/[👉🎉🔒⚠️]/g,''));return}if(window.speechSynthesis){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[👉🎉🔒⚠️]/g,''));u.lang='ko-KR';u.rate=.85;speechSynthesis.speak(u)}}
-function consent(msg,ok,no){$('#mbox').innerHTML=`<h2>🔒 허락해 주세요</h2><p style="font-size:.85em;line-height:1.5">${msg}</p><button class="btn" id="mok">허용할게요</button><button class="btn g" id="mno">안 할래요</button>`;
+/* o: 제목·버튼 이름을 바꿀 때 {title, ok, no, safeFirst} — safeFirst 면 '안 하기'를 크게, 앞에 둔다 (위험한 일을 고를 때) */
+function consent(msg,ok,no,o={}){const yes=`<button class="btn${o.safeFirst?' g':''}" id="mok">${o.ok||'허용할게요'}</button>`,nope=`<button class="btn${o.safeFirst?'':' g'}" id="mno">${o.no||'안 할래요'}</button>`;
+ $('#mbox').innerHTML=`<h2>${o.title||'🔒 허락해 주세요'}</h2><p style="font-size:.95em;line-height:1.5">${msg}</p>${o.safeFirst?nope+yes:yes+nope}`;
  $('#modal').style.display='flex';say(msg.replace(/<[^>]+>/g,''));
  $('#mok').onclick=()=>{$('#modal').style.display='none';ok()};$('#mno').onclick=()=>{$('#modal').style.display='none';no&&no()}}
 function stopSession(){sharing=false;goal=null;live&&live.stop&&live.stop()}
@@ -416,7 +418,7 @@ function render(){
  <button class="card mn" data-v="ask" style="--ac:#1d4ed8"><span class="big">🎤</span><b>말로 물어보기</b><span>말씀하시면 눌러야 할 곳을 알려 드려요</span></button>
  ${window.Android?'':'<button class="card mn" data-v="scam" style="--ac:#b91c1c"><span class="big">🕵️</span><b>수상한 문자 확인</b><span>받은 문자가 사기인지 살펴봐 드려요</span></button>'}
  <button class="card mn" data-v="kiosk" style="--ac:#d97706"><span class="big">🍽️</span><b>키오스크 연습</b><span>실수해도 괜찮은 연습용 주문기예요</span></button>
- ${window.Android?'<button class="card mn" data-v="guard" style="--ac:#15803d"><span class="big">🛡️</span><b>문자 지킴이</b><span>사기 문자를 알아서 살펴보고 알려 드려요</span></button>':''}`;
+ ${window.Android?'<button class="card mn" data-v="guard" style="--ac:#15803d"><span class="big">🛡️</span><b>문자 지킴이</b><span>사기 문자와 QR 코드를 살펴보고 알려 드려요</span></button>':''}`;
   main.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{b.dataset.v=='ask'&&(dev={scr:'home',stack:[],scale:1,vol:5});go(b.dataset.v)});lastMsg='스마트 헬퍼입니다. 하고 싶은 것을 눌러 주세요.'}
  else if(view=='ask')askRender();else if(view=='scam')scamRender();else if(view=='kiosk')kioskRender();else if(view=='guard')guardRender();else playRender()}
 /* ---------- 4. 문자 지킴이 (안드로이드 앱 전용: 수신 문자 자동 검사 + 직접 검사하기) ----------
@@ -434,6 +436,35 @@ function verdictView(r){const link=r.links>0,lv={
 <b style="font-size:.95em">왜 그런가요?</b><ul>${r.reasons.map(w=>`<li>${esc(w)}</li>`).join('')||'<li>눈에 띄는 위험 신호는 없어요.</li>'}</ul>
 ${lv[0]=='lo'?'':`<b style="font-size:.95em">이렇게 하세요</b><ul><li>${link?'링크는 누르지 않기':'가족이나 기관이라고 해도, 알고 있는 번호로 직접 전화해서 확인하기'}</li><li>답장하지 말고 문자는 지우거나 신고하기</li><li>이미 돈을 보냈다면 바로 112, 불안하면 118(인터넷 상담)이나 1332(금융감독원)</li></ul>`}</div>`,
  lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]+' '+(r.reasons[0]||'')]}
+/* ---------- 큐싱(QR 코드) 검사: QR 을 찍으면 바로 열지 않고, 어디로 가는지 먼저 보여 주고 고르게 한다 ----------
+   판정은 안드로이드의 QrCheck (문자 검사와 같은 공식 사이트 목록·주소 모양 규칙). 의심스러울수록 '열기'를 작게, 뒤에 둔다. */
+let qRes='',qUrl='',qLevel='';
+function qrView(r){
+ if(r.kind!='URL')return [`<div class="res lo"><h3>${r.kind=='WIFI'?'📶 와이파이 QR 코드예요':'📄 인터넷 주소가 아닌 QR 코드예요'}</h3>
+<div style="font-size:1.05em;word-break:break-all;margin:6px 0">${esc(r.shown)}</div><div class="desc">${esc(r.reasons[0]||'')}</div>
+<button class="btn g" data-q="close" style="margin-top:10px">닫기</button></div>`,(r.kind=='WIFI'?'와이파이 연결용 QR 코드예요.':'인터넷 주소가 아닌 QR 코드예요.')+' 열 수 있는 사이트는 없어요.'];
+ const lv={HIGH:['hi','🚨 위험한 QR 코드예요','열지 마세요. 가짜 사이트일 가능성이 높아요.'],
+  MID:['mid','⚠️ 확인이 필요한 QR 코드예요','어디로 가는지 확실하지 않아요. 모르는 곳이면 열지 마세요.'],
+  LOW:['lo','✅ 위험 신호가 없어요','그래도 사이트에서 비밀번호나 카드번호를 묻으면 넣지 마세요.']}[r.level]||[];
+ const btns=r.level=='LOW'?'<button class="btn" data-q="open">🌐 열기</button><button class="btn g" data-q="close">닫기</button>'
+  :`<button class="btn" data-q="close">🛡️ ${r.level=='HIGH'?'열지 않기':'닫기'}</button><button class="btn g" data-q="open">${r.level=='HIGH'?'그래도 열기':'열기'}</button>`;
+ return [`<div class="res ${lv[0]}"><h3>${lv[1]}</h3><b>${lv[2]}</b>
+<div class="desc" style="margin-top:10px">연결되는 곳</div><div style="font-size:1.3em;font-weight:800;word-break:break-all">${esc(r.host)}</div>
+<div class="desc" style="word-break:break-all">전체 주소: ${esc(r.url)}</div>
+<b style="display:block;margin-top:10px">왜 그런가요?</b><ul>${r.reasons.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+${r.level=='LOW'?'':`<b>이렇게 하세요</b><ul><li>QR 코드 위에 다른 스티커가 덧붙어 있지 않은지 살펴보기</li><li>모르면 열지 말고 가게 직원이나 가족에게 물어보기</li>${r.level=='HIGH'?'<li>이 주소는 열려도 브라우저에서 한 번 더 막고, 30분 동안 앱 설치도 다시 물어봐요</li>':''}</ul>`}
+${btns}</div>`,lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]]}
+window.onQr=r=>{const v=qrView(r);qRes=v[0];qUrl=r.url||'';qLevel=r.level;say(v[1]);
+ if(view!='guard')return;$('#qres').innerHTML=qRes;$('#qres').scrollIntoView({behavior:'smooth',block:'start'})};
+window.onQrErr=e=>{if(e=='cancel')return;
+ const m=e=='nobrowser'?'열 수 있는 인터넷 앱이 없어요.':'QR 코드를 찍는 화면을 열지 못했어요. 구글 플레이 서비스가 필요하고, 처음 한 번은 인터넷이 연결돼 있어야 해요.';
+ qRes=`<div class="res mid"><b>${m}</b></div>`;say(m);if(view=='guard')$('#qres').innerHTML=qRes};
+function qrClick(e){const b=e.target.closest('[data-q]');if(!b)return;
+ if(b.dataset.q=='close'){qRes='';$('#qres').innerHTML='';say('닫았어요.');return}
+ if(qLevel=='LOW'){Android.openUrl(qUrl,true);return}
+ consent(qLevel=='HIGH'?'<b>정말 여시겠어요?</b><br>가짜 사이트일 가능성이 높아요. 열리면 비밀번호·카드번호·인증번호를 절대 넣지 마세요.':'확인이 필요한 주소예요. 아는 곳이 맞으면 열어 주세요. 비밀번호나 카드번호를 묻으면 넣지 마세요.',
+  ()=>Android.openUrl(qUrl,qLevel!='HIGH'),()=>say('잘 하셨어요. 열지 않았어요.'),
+  {title:qLevel=='HIGH'?'⚠️ 한 번 더 확인할게요':'🔍 열기 전에 확인해요',ok:qLevel=='HIGH'?'그래도 열기':'열기',no:'🛡️ 열지 않기',safeFirst:true})}
 window.onGuardChanged=()=>{if(view=='guard')guardRender();
  else if(view=='ask'){const p=$('#cperm');if(p&&JSON.parse(Android.guardStatus()).contacts){p.remove();bub('허락해 주셔서 고마워요. 이제 "내 휴대폰으로 해 보기"를 다시 해 볼게요.',0);Android.realGuide(lastAsk,lastReal)}}};
 function guardRender(){const st=JSON.parse(Android.guardStatus()),h=JSON.parse(Android.guardHistory()),on=st.sms,fam=JSON.parse(Android.familyGet());
@@ -443,6 +474,9 @@ ${on&&!st.notif?'<div style="font-size:.9em;color:var(--bad);margin-top:6px">알
 ${on&&!st.contacts?'<div style="font-size:.9em;color:var(--mut);margin-top:6px">연락처 권한이 없어서 저장된 번호도 검사해요.</div>':''}</div>
 ${!on||!st.notif?`<button class="btn" id="gon" style="margin-top:10px">${on?'🔔 알림 켜기':'🛡️ 문자 지킴이 켜기'}</button>`:''}
 ${guardAsked&&(!on||!st.notif)?'<button class="btn g" id="gset">⚙️ 설정에서 직접 켜기</button>':''}
+<h2 style="margin-top:16px">📷 QR 코드 검사하기</h2>
+<div class="desc" style="margin-bottom:8px">식당 메뉴판·주차장·전단지의 QR 코드를 찍으면, <b>열기 전에</b> 어디로 가는지 먼저 살펴봐요. 카메라 권한이 필요 없고, 저장하지 않아요.</div>
+<button class="btn" id="qscan">📷 QR 코드 찍기</button><div id="qres">${qRes}</div>
 <h2 style="margin-top:16px">🛡️ 더 지키기</h2>
 <div class="res ${st.msg?'lo':'mid'}" style="margin-top:0"><b>💬 카카오톡 지킴이</b> ${stt(st.msg)}<div style="font-size:.9em;line-height:1.5;margin-top:4px">카카오톡·라인·텔레그램으로 온 메시지도 살펴봐요. 밖으로 보내지 않아요.</div>
 ${st.msg?'':'<button class="btn" id="gmsg" style="margin-top:8px">💬 카카오톡 지킴이 켜기</button>'}</div>
@@ -455,7 +489,7 @@ ${st.link?'':'<button class="btn" id="glink" style="margin-top:8px">🔗 위험 
 <textarea id="gtx" placeholder="여기에 문자 내용을 붙여 넣으세요">${esc(gText)}</textarea>
 <button class="chip" id="gex">📋 예시 문자 넣기</button>
 <button class="btn" id="gchk" style="margin-top:8px">🔍 검사하기</button><div id="gres">${gRes}</div>
-<h2 style="margin-top:16px">최근 받은 문자</h2>
+<h2 style="margin-top:16px">최근 검사한 문자·QR</h2>
 ${h.length?h.map(x=>{const l=GLV[x.level]||GLV.LOW,t=new Date(x.time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
  return `<button class="card" data-g="${x.id}" style="border-color:${l[0]}"><b>${l[1]} · ${esc(x.sender)}${x.source&&x.source!='문자'?` <small style="font-weight:400">(${esc(x.source)})</small>`:''}</b><span>${t}<br>${esc(x.text.slice(0,50))}${x.text.length>50?'…':''}</span></button>`}).join(''):'<div class="sub">아직 검사한 문자가 없어요.</div>'}
 ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':''}`;
@@ -470,7 +504,8 @@ ${h.length?'<button class="btn g" id="gclr">🗑️ 기록 지우기</button>':'
  $('#gex').onclick=()=>{gEx=(gEx+1)%SHOTS.length;gText=$('#gtx').value=SHOTS[gEx][2]};
  $('#gchk').onclick=()=>{const t=gText.trim();if(!t){say('문자 내용을 먼저 붙여 넣어 주세요.');return}
   const v=verdictView(JSON.parse(Android.checkText(t)));gRes=v[0];$('#gres').innerHTML=gRes;say(v[1]);$('#gres').scrollIntoView({behavior:'smooth',block:'start'})};
- main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g))}
+ main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>Android.openWarning(b.dataset.g));
+ $('#qscan').onclick=()=>{say('QR 코드를 네모 칸 안에 맞춰 주세요.');Android.scanQr()};$('#qres').onclick=qrClick}
 /* ---------- 1. 말로 물어보기 ---------- */
 const EX=['영희한테 사진 보내고 싶어요','영희한테 전화 거는 법 알려 주세요','영희한테 메시지 보내고 싶어요','아침 7시에 알람 맞추고 싶어요','와이파이 연결하고 싶어요','글자를 키우고 싶어요','소리를 줄이고 싶어요','앱을 설치하고 싶어요','연습용 퍼즐 앱을 지우고 싶어요','연락처를 추가하고 싶어요'];
 function askRender(){dev=dev||{scr:'home',stack:[],scale:1,vol:5};main.innerHTML=`<h2>🎤 말로 물어보기</h2><span class="badge" id="sh"></span>
