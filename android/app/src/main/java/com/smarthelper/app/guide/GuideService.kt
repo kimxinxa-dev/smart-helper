@@ -76,6 +76,8 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         block = LinkBlockOverlay(this, wm, onExit = ::leaveRiskySite, onStay = { host ->
             com.smarthelper.app.guard.LinkGuard.allow(host)
             say("알겠어요. 개인정보나 돈을 요구하면 바로 나가세요.")
+        }, onConfirmAsk = {
+            say("정말 들어가시겠어요? 한 번 더 위험할 수 있어요. 모르겠으면 아니요, 나갈게요를 눌러 주세요.")
         })
         installBlock = InstallBlockOverlay(this, wm, onQuit = ::quitInstall, onFamily = ::callFamily, onProceed = {
             com.smarthelper.app.guard.GuardStore.snoozeInstall(this, com.smarthelper.app.guard.InstallGate.snoozeUntil(System.currentTimeMillis()))
@@ -85,6 +87,12 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
             startActivity(android.content.Intent(this, com.smarthelper.app.guard.WarningActivity::class.java)
                 .putExtra(com.smarthelper.app.guard.WarningActivity.EXTRA_ID, id)
                 .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+        }, onClosed = {
+            // 팝업이 화면 전체를 덮는 동안에는 뒤에 열린 브라우저 창을 읽을 수 없다 (안드로이드가 가려진 창을 알려 주지 않음).
+            // 그 사이 알림의 [링크 열기]로 위험한 주소가 열렸을 수 있으니, 닫히면 바로 주소창을 다시 본다.
+            // 브라우저가 가만히 있으면 새 신호가 오지 않아 그대로 지나치기 때문이다.
+            lastUrl = ""
+            handler.postDelayed({ if (instance === this) checkBrowser() }, 400)
         })
         tts = TextToSpeech(this, this)
         // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.

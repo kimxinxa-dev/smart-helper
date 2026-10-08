@@ -11,22 +11,29 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.smarthelper.app.guard.LinkGuard
 
-/** 위험한 주소가 브라우저에서 열리면 화면 전체를 가리는 경고. "안전하게 나가기"를 크게, "그래도 볼래요"는 작게. */
+/**
+ * 위험한 주소가 브라우저에서 열리면 화면 전체를 가리는 경고. "안전하게 나가기"를 크게, "그래도 볼래요"는 작게.
+ * "그래도 볼래요"를 누르면 바로 열어 주지 않고 확인 창으로 한 번 더 묻는다 (실수로 누르는 일을 막는다).
+ */
 class LinkBlockOverlay(
     private val ctx: Context,
     private val wm: WindowManager,
     private val onExit: () -> Unit,
     private val onStay: (String) -> Unit,
+    /** 확인 창을 띄울 때 (음성으로 한 번 더 알려 준다) */
+    private val onConfirmAsk: () -> Unit = {},
 ) {
     private var view: View? = null
     val showing get() = view != null
 
     fun show(d: LinkGuard.Danger) {
         hide()
+        val root = FrameLayout(ctx)
         val col = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -34,6 +41,7 @@ class LinkBlockOverlay(
             setBackgroundColor(0xF27F1D1D.toInt())
             isClickable = true // 뒤의 웹 페이지가 눌리지 않게 막는다
         }
+        root.addView(col, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         col.addView(text("🚨", 64f, false))
         col.addView(text("위험한 사이트예요", 32f, true), lp(top = 8))
         col.addView(text(d.host, 20f, false).apply {
@@ -59,7 +67,7 @@ class LinkBlockOverlay(
             gravity = Gravity.CENTER
             paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
             setPadding(dp(8), dp(20), dp(8), dp(8))
-            setOnClickListener { hide(); onStay(d.host) }
+            setOnClickListener { root.addView(confirm(d, root), FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)); onConfirmAsk() }
         }, lp(top = 8))
         val p = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
@@ -67,8 +75,51 @@ class LinkBlockOverlay(
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT,
         ).apply { if (Build.VERSION.SDK_INT >= 30) layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS }
-        wm.addView(col, p)
-        view = col
+        wm.addView(root, p)
+        view = root
+    }
+
+    /** "그래도 볼래요" 확인 창: 어두운 배경 위 흰 카드. 안전한 쪽(나가기)을 크게, 들어가기는 작게 */
+    private fun confirm(d: LinkGuard.Danger, root: FrameLayout): View {
+        val back = FrameLayout(ctx).apply {
+            setBackgroundColor(0xCC000000.toInt())
+            isClickable = true
+        }
+        val card = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(24), dp(24), dp(24), dp(16))
+            background = GradientDrawable().apply { setColor(Color.WHITE); cornerRadius = dp(28).toFloat() }
+        }
+        card.addView(text("⚠️", 52f, false))
+        card.addView(text("정말 들어가시겠어요?", 28f, true).apply { setTextColor(0xFFB91C1C.toInt()) }, lp(top = 4))
+        card.addView(text("한 번 더 위험할 수 있어요.\n사기 사이트라면 카드번호·비밀번호를 빼앗기거나 나쁜 앱이 설치될 수 있어요.", 20f, false).apply {
+            setTextColor(0xFF111827.toInt())
+        }, lp(top = 14))
+        card.addView(text("모르겠으면 가족에게 먼저 물어보세요.", 19f, true).apply { setTextColor(0xFF374151.toInt()) }, lp(top = 12))
+        card.addView(Button(ctx).apply {
+            text = "🛡️ 아니요, 나갈게요"
+            isAllCaps = false
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply { setColor(0xFFB91C1C.toInt()); cornerRadius = dp(20).toFloat() }
+            minHeight = dp(72)
+            setOnClickListener { hide(); onExit() }
+        }, lp(top = 24))
+        card.addView(Button(ctx).apply {
+            text = "네, 그래도 볼게요"
+            isAllCaps = false
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTextColor(0xFF374151.toInt())
+            background = GradientDrawable().apply { setColor(0xFFE5E7EB.toInt()); cornerRadius = dp(16).toFloat() }
+            minHeight = dp(56)
+            setOnClickListener { hide(); onStay(d.host) }
+        }, lp(top = 12))
+        back.addView(card, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
+            leftMargin = dp(20); rightMargin = dp(20)
+        })
+        return back
     }
 
     fun hide() {

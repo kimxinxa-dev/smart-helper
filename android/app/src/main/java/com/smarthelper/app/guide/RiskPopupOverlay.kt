@@ -23,6 +23,8 @@ class RiskPopupOverlay(
     private val ctx: Context,
     private val wm: WindowManager,
     private val onDetail: (Long) -> Unit,
+    /** 사용자가 팝업을 닫은 뒤 (팝업이 화면을 덮는 동안 뒤의 앱 화면은 읽을 수 없어서, 닫히면 다시 살펴본다) */
+    private val onClosed: () -> Unit = {},
 ) {
     private var view: View? = null
     val showing get() = view != null
@@ -49,7 +51,7 @@ class RiskPopupOverlay(
         card.addView(text(reason, 21f, true, 0xFF111827.toInt()), lp(top = 16))
         card.addView(text(if (hasLink) "링크를 누르지 마세요. 답장하지 마세요." else "답장하지 마세요. 돈·인증번호를 보내지 마세요.", 19f, false, 0xFF374151.toInt()), lp(top = 10))
         card.addView(button("🔍 왜 위험한지 보기", 22f, Color.WHITE, 0xFFB91C1C.toInt()) { hide(); onDetail(id) }, lp(top = 24))
-        card.addView(button("알겠어요", 20f, 0xFF111827.toInt(), 0xFFE5E7EB.toInt()) { hide() }, lp(top = 10))
+        card.addView(button("알겠어요", 20f, 0xFF111827.toInt(), 0xFFE5E7EB.toInt()) { hide(); onClosed() }, lp(top = 10))
         back.addView(card, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
             leftMargin = dp(20); rightMargin = dp(20)
         })
