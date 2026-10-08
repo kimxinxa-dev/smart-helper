@@ -33,6 +33,11 @@ object GuardAlert {
         val id = GuardStore.add(ctx, sender, body, v, source)
         val alert = if (alertOnlyHigh) v.level == Level.HIGH else v.level == Level.MID || v.level == Level.HIGH
         if (alert) notify(ctx, id, sender, v, source)
+        // 🚨 위험이면 알림과 함께 지금 화면 위에 팝업도 띄운다 (위험 링크 차단을 켜 둔 경우. 꺼져 있으면 알림만)
+        if (v.level == Level.HIGH) {
+            val what = if (source == "문자") "문자" else "$source 메시지"
+            com.smarthelper.app.guide.GuideService.instance?.showRiskPopup(id, sender, what, v.reasons.firstOrNull().orEmpty(), v.urls.isNotEmpty())
+        }
     }
 
     /** 연락처에 이 번호가 있는지 (권한이 없으면 없는 것으로 보고 검사한다) */

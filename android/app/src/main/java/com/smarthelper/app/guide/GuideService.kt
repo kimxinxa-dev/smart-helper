@@ -41,6 +41,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
 
     private lateinit var block: LinkBlockOverlay
     private lateinit var installBlock: InstallBlockOverlay
+    private lateinit var riskPopup: RiskPopupOverlay
     private var installPending = false
     private val installTask = Runnable { installPending = false; checkInstall() }
     /** 마지막으로 검사한 주소 (같은 주소를 계속 검사하지 않는다) */
@@ -79,6 +80,11 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         installBlock = InstallBlockOverlay(this, wm, onQuit = ::quitInstall, onFamily = ::callFamily, onProceed = {
             com.smarthelper.app.guard.GuardStore.snoozeInstall(this, com.smarthelper.app.guard.InstallGate.snoozeUntil(System.currentTimeMillis()))
             say("알겠어요. 5분 동안은 다시 묻지 않을게요. 개인정보나 돈을 요구하는 앱이면 바로 그만두세요.")
+        })
+        riskPopup = RiskPopupOverlay(this, wm, onDetail = { id ->
+            startActivity(android.content.Intent(this, com.smarthelper.app.guard.WarningActivity::class.java)
+                .putExtra(com.smarthelper.app.guard.WarningActivity.EXTRA_ID, id)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
         })
         tts = TextToSpeech(this, this)
         // 개발용(디버그 앱에서만): PC 에서 신호를 보내면 지금 화면의 요소 목록을 기록한다.
@@ -307,6 +313,26 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         }
     }
 
+    /**
+     * 🚨 위험한 문자·메시지를 받는 순간 지금 화면 위에 팝업을 띄우고 읽어 준다 (알림은 따로 함께 간다).
+     * 문자를 받으면 앱이 스스로 화면을 띄울 수 없어서(안드로이드 10부터), 접근성 서비스의 겹쳐 그리기 창을 쓴다.
+     * 띄우지 못하면 false (알림만 남는다).
+     */
+    fun showRiskPopup(id: Long, sender: String, what: String, reason: String, hasLink: Boolean): Boolean {
+        if (!::riskPopup.isInitialized) return false
+        // 링크·설치 차단 화면이 떠 있으면 그 위에 겹치지 않는다 (그쪽이 더 급하다)
+        if (block.showing || installBlock.showing) return false
+        try {
+            riskPopup.show(id, sender, what, reason, hasLink)
+        } catch (e: Exception) {
+            android.util.Log.w("SmartHelper", "위험 문자 팝업을 띄우지 못함", e)
+            return false
+        }
+        android.util.Log.i("SmartHelper", "위험 문자 팝업: $what")
+        say("방금 온 ${what}가 위험해요! ${if (hasLink) "링크를 누르지 마세요." else "답장하지 마세요."} $reason")
+        return true
+    }
+
     /** "안전하게 그만두기": 설치 화면을 닫고 홈 화면으로 */
     private fun quitInstall() {
         performGlobalAction(GLOBAL_ACTION_BACK)
@@ -428,6 +454,7 @@ class GuideService : AccessibilityService(), TextToSpeech.OnInitListener {
         if (guide != null) stop(null)
         if (::block.isInitialized) block.hide()
         if (::installBlock.isInitialized) installBlock.hide()
+        if (::riskPopup.isInitialized) riskPopup.hide()
         if (instance === this) instance = null
         tts?.shutdown()
         return super.onUnbind(intent)
