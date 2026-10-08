@@ -20,6 +20,9 @@ class MessengerListener : NotificationListenerService() {
             "com.facebook.orca" to "페이스북 메신저",
             "com.whatsapp" to "왓츠앱",
         )
+        /** 알림 읽기가 연결되어 있는지 (꺼져 있으면 문자 앱 알림을 기다리지 않는다) */
+        @Volatile var connected = false
+            private set
         /** 개발용: 디버그 앱에서는 `adb shell cmd notification post` 로 올린 시험 알림도 메신저로 본다 */
         private const val SHELL = "com.android.shell"
     }
@@ -29,7 +32,17 @@ class MessengerListener : NotificationListenerService() {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Boolean>?) = size > 100
     }
 
+    override fun onListenerConnected() { connected = true }
+    override fun onListenerDisconnected() { connected = false }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        // 기본 문자 앱이 새 문자 알림을 띄우면, 미뤄 둔 위험 경고를 그 뒤에 띄운다 (문자 내용은 읽지 않는다).
+        // 문자 앱은 백그라운드 작업 알림(category=service)도 띄우므로 '메시지' 분류 알림만 본다
+        if (sbn.packageName == android.provider.Telephony.Sms.getDefaultSmsPackage(this)) {
+            val n = sbn.notification
+            if (n.category == Notification.CATEGORY_MESSAGE && n.flags and Notification.FLAG_GROUP_SUMMARY == 0) GuardAlert.onSmsAppNotice()
+            return
+        }
         val debug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         val app = APPS[sbn.packageName] ?: if (debug && sbn.packageName == SHELL) "시험용 메신저" else return
         val n = sbn.notification

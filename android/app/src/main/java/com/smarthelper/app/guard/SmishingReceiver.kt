@@ -17,6 +17,8 @@ class SmishingReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+        // 경고를 문자 앱 알림 뒤로 미루므로(GuardAlert.afterSmsNotice) 그동안 앱이 꺼지지 않게 붙잡아 둔다
+        val pending = goAsync()
         // 긴 문자는 여러 조각으로 오므로 보낸 사람별로 합쳐서 검사한다
         Telephony.Sms.Intents.getMessagesFromIntent(intent)
             .groupBy { it.originatingAddress ?: "알 수 없음" }
@@ -24,5 +26,6 @@ class SmishingReceiver : BroadcastReceiver() {
                 val body = parts.joinToString("") { it.messageBody ?: "" }
                 GuardAlert.handle(context, sender, body, "문자", GuardAlert.savedNumber(context, sender))
             }
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ pending.finish() }, 9000) // 방송 처리 제한(10초) 안에서. 그 뒤로는 켜져 있는 접근성·알림 읽기 서비스가 앱을 살려 둔다
     }
 }

@@ -17,6 +17,53 @@ object GuardAlert {
     const val CHANNEL = "smishing"
 
     /**
+     * 경고 순서: 문자 앱의 수신 알림 → (AFTER_SMS_NOTICE_MS 뒤) 경고 알림 + 🚨 팝업.
+     * 문자 앱이 알림을 띄우는 속도는 휴대폰마다 달라서(에뮬레이터의 구글 메시지는 6~7초), 알림 읽기 권한으로
+     * 문자 앱 알림이 실제로 뜬 것을 보고 띄운다. 권한이 없거나 알림을 못 보면 FALLBACK_MS 뒤에 띄운다.
+     */
+    const val AFTER_SMS_NOTICE_MS = 2000L
+    /** 알림 읽기 권한이 켜져 있으면 문자 앱 알림을 이만큼까지 기다린다 */
+    const val FALLBACK_MS = 10000L
+    /** 알림 읽기 권한이 꺼져 있어 문자 앱 알림을 볼 수 없으면 이만큼만 기다린다 */
+    const val NO_LISTENER_DELAY_MS = 3000L
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+
+    /** 문자 앱 알림을 기다리는 경고들 */
+    private class Pending(val run: () -> Unit) {
+        var done = false
+        val fallback = Runnable { fire(this) }
+    }
+    private val waiting = mutableListOf<Pending>()
+    /** 문자 앱이 마지막으로 알림을 띄운 시각 (경고보다 알림이 먼저 뜬 경우 대비) */
+    private var lastSmsNotice = 0L
+
+    private fun fire(p: Pending) {
+        if (p.done) return
+        p.done = true
+        main.removeCallbacks(p.fallback)
+        waiting.remove(p)
+        p.run()
+    }
+
+    /** 문자 경고를 문자 앱 알림 뒤로 미룬다 */
+    private fun afterSmsNotice(run: () -> Unit) {
+        val p = Pending(run)
+        val since = System.currentTimeMillis() - lastSmsNotice
+        if (since in 0..3000) { main.postDelayed({ fire(p) }, (AFTER_SMS_NOTICE_MS - since).coerceAtLeast(300)); return }
+        waiting += p
+        main.postDelayed(p.fallback, if (MessengerListener.connected) FALLBACK_MS else NO_LISTENER_DELAY_MS)
+    }
+
+    /** MessengerListener 가 기본 문자 앱의 새 메시지 알림을 보면 부른다 */
+    fun onSmsAppNotice() {
+        lastSmsNotice = System.currentTimeMillis()
+        waiting.toList().forEach { p ->
+            main.removeCallbacks(p.fallback)
+            main.postDelayed({ fire(p) }, AFTER_SMS_NOTICE_MS)
+        }
+    }
+
+    /**
      * savedContact: 연락처에 저장된 상대인지.
      * alertOnlyHigh: 메신저처럼 이름만으로 저장 여부를 짐작한 경우, 확실히 위험할 때만 알린다.
      */
@@ -32,12 +79,17 @@ object GuardAlert {
         }
         val id = GuardStore.add(ctx, sender, body, v, source)
         val alert = if (alertOnlyHigh) v.level == Level.HIGH else v.level == Level.MID || v.level == Level.HIGH
-        if (alert) notify(ctx, id, sender, v, source)
-        // 🚨 위험이면 알림과 함께 지금 화면 위에 팝업도 띄운다 (위험 링크 차단을 켜 둔 경우. 꺼져 있으면 알림만)
-        if (v.level == Level.HIGH) {
-            val what = if (source == "문자") "문자" else "$source 메시지"
-            com.smarthelper.app.guide.GuideService.instance?.showRiskPopup(id, sender, what, v.reasons.firstOrNull().orEmpty(), v.urls.isNotEmpty())
+        if (!alert && v.level != Level.HIGH) return
+        val warn = {
+            if (alert) notify(ctx, id, sender, v, source)
+            // 🚨 위험이면 알림과 함께 지금 화면 위에 팝업도 띄운다 (위험 링크 차단을 켜 둔 경우. 꺼져 있으면 알림만)
+            if (v.level == Level.HIGH) {
+                val what = if (source == "문자") "문자" else "$source 메시지"
+                com.smarthelper.app.guide.GuideService.instance?.showRiskPopup(id, sender, what, v.reasons.firstOrNull().orEmpty(), v.urls.isNotEmpty())
+            }
         }
+        // 문자는 문자 앱의 수신 알림이 먼저 보이게 기다린다. 메신저는 이미 메신저 알림을 보고 검사한 것이라 잠깐만 기다린다
+        if (source == "문자") afterSmsNotice(warn) else main.postDelayed(warn, AFTER_SMS_NOTICE_MS)
     }
 
     /** 연락처에 이 번호가 있는지 (권한이 없으면 없는 것으로 보고 검사한다) */

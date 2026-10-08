@@ -33,6 +33,8 @@ Write-Host "  이번 시연에서 사기꾼 번호: $from"
 
 # 위험 링크 차단·화면 안내(접근성 서비스)가 꺼져 있으면 다시 켠다 (앱을 다시 설치하면 꺼진다)
 & $adb shell settings put secure enabled_accessibility_services "$app/$app.guide.GuideService"
+# 문자 앱의 수신 알림이 뜬 것을 보고 그 뒤에 경고·팝업을 띄우려면 알림 읽기(카카오톡 지킴이)도 켜져 있어야 한다
+& $adb shell cmd notification allow_listener "$app/$app.guard.MessengerListener"
 & $adb shell am start -n "$app/.MainActivity" | Out-Null
 Start-Sleep 2
 & $adb shell input keyevent HOME

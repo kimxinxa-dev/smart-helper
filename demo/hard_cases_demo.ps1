@@ -51,7 +51,8 @@ function Send-And-Show($from, $text, $expect) {
     $color = switch ($v.level) { "HIGH" { "Red" } "MID" { "Yellow" } default { "Green" } }
     Write-Host "  → 스마트 헬퍼 판정: $($LEVEL[$v.level])  $mark" -ForegroundColor $color
     foreach ($r in $v.reasons) { Write-Host "       · $r" }
-    if ($v.level -eq "HIGH") { Write-Host "  👉 휴대폰 화면에 🚨 팝업이 떠요. [알겠어요] 를 눌러 닫으세요." -ForegroundColor Magenta }
+    if ($v.level -eq "HIGH") { Write-Host "  👉 휴대폰에 문자 수신 알림이 먼저 오고, 약 2초 뒤 🚨 팝업과 경고 알림이 떠요. [알겠어요] 로 닫으세요." -ForegroundColor Magenta
+        Write-Host "     (에뮬레이터의 문자 앱은 수신 알림이 6~8초 늦게 와요. 실제 휴대폰은 더 빨라요)" -ForegroundColor DarkGray }
 }
 
 # 위험 문자 속 링크를 실수로 누른 상황
@@ -108,13 +109,22 @@ function Scenario-Prosecutor {
 
 function Scenario-Normal {
     Write-Host ""
-    Write-Host "■ 5. 비교: 정상 문자와 정상 사이트는 막지 않아요" -ForegroundColor White
-    Pause-Step "병원 예약 문자 보내기"
-    Send-And-Show "15887788" "[한마음병원] 내일 오전 10시 내과 진료 예약이 확인되었습니다. 변경은 병원으로 연락 바랍니다." "LOW"
-    Write-Host "  👉 경고 알림도 팝업도 뜨지 않아요." -ForegroundColor Green
-    Pause-Step "진짜 택배사 문자 (공식 주소 cjlogistics.com) 보내기"
-    Send-And-Show (New-Number) "[CJ대한통운] 고객님의 상품이 오늘 배송 완료되었습니다. 배송 조회 https://www.cjlogistics.com" "LOW"
-    Write-Host "  💡 링크가 있어도 공식 사이트 주소라서 '모르는 링크'로 보지 않아요. (2번의 coupang-delivery.com 같은 흉내 주소와 비교)" -ForegroundColor DarkCyan
+    Write-Host "■ 5. 정상 문자 수신: 평소 받는 문자는 경고 없이 그대로 와요" -ForegroundColor White
+    Write-Host "   병원·카드·은행·인증번호·구청·아파트·택배 문자가 차례로 와요. 문자 앱 알림만 뜨고, 스마트 헬퍼 경고와 팝업은 뜨지 않아요."
+    $normal = @(
+        @("15881234", "[한마음병원] 내일 오전 10시 내과 진료 예약이 확인되었습니다. 변경은 병원으로 연락 바랍니다."),
+        @("15881688", "[KB국민카드] 김순자님 32,500원 승인 이마트 일시불"),
+        @("15882100", "[농협] 입금 300,000원 잔액 1,240,500원 김순자"),
+        @("15993333", "[카카오] 인증번호 [482910]를 입력해 주세요. 타인에게 절대 알려주지 마세요."),
+        @("0233322114", "[마포구청] 내일 한파주의보 발효. 외출을 자제하고 따뜻한 옷차림 하세요."),
+        @("0233225577", "[햇살아파트] 관리사무소입니다. 내일 오전 9시부터 12시까지 단수 예정이니 물을 받아 두세요."),
+        @("15880011", "[CJ대한통운] 고객님의 상품이 오늘 배송 완료되었습니다. 배송 조회 https://www.cjlogistics.com")
+    )
+    foreach ($m in $normal) {
+        Pause-Step "정상 문자 보내기"
+        Send-And-Show $m[0] $m[1] "LOW"
+    }
+    Write-Host "  💡 마지막 CJ 문자는 링크가 있어도 공식 사이트 주소라서 경고하지 않아요. (2번의 coupang-delivery.com 같은 흉내 주소와 비교)" -ForegroundColor DarkCyan
     if (-not $Auto) {
         $a = Read-Host "  진짜 CJ대한통운 사이트를 크롬에서 열어 보려면 Y, 건너뛰려면 Enter"
         if ($a -match '^[Yy]') {
@@ -132,6 +142,8 @@ if (-not (& $adb devices | Select-String "emulator-\d+\s+device")) { Write-Host 
 if (-not (& $adb shell pm list packages $app)) { Write-Host "가상 휴대폰에 스마트 헬퍼가 설치되어 있지 않아요." -ForegroundColor Red; exit 1 }
 # 팝업·링크 차단은 접근성 서비스가 켜져 있어야 동작한다 (앱을 다시 설치하면 꺼진다)
 & $adb shell settings put secure enabled_accessibility_services "$app/$app.guide.GuideService"
+# 문자 앱의 수신 알림이 뜬 것을 보고 그 뒤에 경고·팝업을 띄우려면 알림 읽기(카카오톡 지킴이)도 켜져 있어야 한다
+& $adb shell cmd notification allow_listener "$app/$app.guard.MessengerListener"
 & $adb shell am start -n "$app/.MainActivity" 2>$null | Out-Null
 Start-Sleep 2
 & $adb shell input keyevent HOME
@@ -150,7 +162,7 @@ while ($true) {
     Write-Host "   2. 진짜 쇼핑몰 같은 배송 문자 → 팝업 → 링크 차단"
     Write-Host "   3. 모바일 청첩장 → 팝업 → 링크 차단"
     Write-Host "   4. 링크 없는 검찰 사칭 → 팝업"
-    Write-Host "   5. 비교: 정상 문자·진짜 택배사 문자와 사이트는 그대로"
+    Write-Host "   5. 정상 문자 수신 (병원·카드·은행·인증번호·구청·아파트·택배) → 경고 없음"
     Write-Host "   A. 1~5 차례로 모두"
     Write-Host "   Q. 끝내기"
     $c = Read-Host "  번호를 입력하세요"
