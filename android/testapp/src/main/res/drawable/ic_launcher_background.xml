@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 연습용 퍼즐 아이콘 바탕: 초록 (스마트 헬퍼의 파랑과 한눈에 구별되게) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="#FF22C55E" android:endColor="#FF15803D" />
+</shape>

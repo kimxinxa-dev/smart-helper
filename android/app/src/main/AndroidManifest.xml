@@ -32,6 +32,8 @@
 
     <application
         android:label="스마트 헬퍼"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:enableOnBackInvokedCallback="true">
         <!-- QR 스캐너 모듈을 앱 설치 때 미리 받아 두게 한다 (구글 플레이 서비스가 받음. 이 앱은 인터넷을 쓰지 않는다) -->

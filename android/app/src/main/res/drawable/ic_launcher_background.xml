@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 스마트 헬퍼 아이콘 바탕: 앱 화면의 기본 파랑 (index.html 의 pri 색) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="#FF2563EB" android:endColor="#FF1D4ED8" />
+</shape>

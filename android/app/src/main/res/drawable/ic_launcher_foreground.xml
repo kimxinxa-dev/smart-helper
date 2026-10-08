@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 스마트 헬퍼 아이콘: 지켜 주는 흰 방패 + 돌봐 주는 주황 하트 (index.html 의 hl 색).
+     108×108 중 가운데 66×66(21~87) 안에만 그려서 원형·둥근 사각형 어떤 모양으로 잘려도 보인다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M54,25 L78,33 L78,52 C78,68 67,79 54,84 C41,79 30,68 30,52 L30,33 Z" />
+    <path android:fillColor="#FFF59E0B"
+        android:pathData="M54,65 C54,65 41,57 41,48.5 C41,44.3 44.2,41.5 47.8,41.5 C50.6,41.5 52.7,43 54,45.1 C55.3,43 57.4,41.5 60.2,41.5 C63.8,41.5 67,44.3 67,48.5 C67,57 54,65 54,65 Z" />
+</vector>
