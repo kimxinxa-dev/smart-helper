@@ -26,6 +26,9 @@ class SmishingReceiver : BroadcastReceiver() {
                 val body = parts.joinToString("") { it.messageBody ?: "" }
                 GuardAlert.handle(context, sender, body, "문자", GuardAlert.savedNumber(context, sender))
             }
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ pending.finish() }, 9000) // 방송 처리 제한(10초) 안에서. 그 뒤로는 켜져 있는 접근성·알림 읽기 서비스가 앱을 살려 둔다
+        // 방송 처리 제한은 10초지만 느린 휴대폰에서는 앱이 켜지는 시간까지 포함돼 9초만 붙잡아도 '응답 없음'으로 강제 종료됐다.
+        // 붙잡아 둘 필요가 있는 건 알림 읽기가 꺼져 있을 때의 경고 대기(GuardAlert.NO_LISTENER_DELAY_MS, 3초)뿐이다.
+        // 알림 읽기·접근성 서비스가 켜져 있으면 그 서비스들이 앱을 살려 두므로 더 오래 기다려도 경고가 뜬다.
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ pending.finish() }, GuardAlert.NO_LISTENER_DELAY_MS + 1000)
     }
 }
