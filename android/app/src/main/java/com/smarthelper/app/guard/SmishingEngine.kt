@@ -55,11 +55,15 @@ object SmishingEngine {
 object RuleDetector : Detector {
     private val URL = Regex("https?://\\S+|(?:[a-z0-9-]+\\.)+[a-z]{2,}(?:/\\S*)?", RegexOption.IGNORE_CASE)
 
-    /** unless: 이 말이 있으면 규칙을 적용하지 않는다 (진짜 기관·회사의 주의 안내) */
-    private class Rule(val re: Regex, val score: Int, val why: String, val unless: Regex? = null)
+    /**
+     * unless: 이 말이 있으면 규칙을 적용하지 않는다 (진짜 기관·회사의 주의 안내).
+     * notIfOfficial: 문자 속 링크가 모두 공식 사이트(OfficialSites)이면 적용하지 않는다.
+     */
+    private class Rule(val re: Regex, val score: Int, val why: String, val unless: Regex? = null, val notIfOfficial: Boolean = false)
 
     private val RULES = listOf(
-        Rule(Regex("https?://|bit\\.ly|me2\\.do|\\.xyz|\\.top", RegexOption.IGNORE_CASE), 3, "모르는 인터넷 주소(링크)가 들어 있어요. 누르면 가짜 사이트로 갈 수 있어요."),
+        // 진짜 택배사·은행 문자의 공식 주소(cjlogistics.com 등)는 '모르는 링크'가 아니다
+        Rule(Regex("https?://|bit\\.ly|me2\\.do|\\.xyz|\\.top", RegexOption.IGNORE_CASE), 3, "모르는 인터넷 주소(링크)가 들어 있어요. 누르면 가짜 사이트로 갈 수 있어요.", notIfOfficial = true),
         Rule(Regex("택배|배송|반송|주소 ?불명"), 2, "택배 문자를 흉내 낸 사기가 아주 많아요."),
         // 경찰청·금감원의 "기관은 돈을 요구하지 않습니다" 같은 예방 안내는 사칭이 아니다
         Rule(Regex("검찰|경찰|금융감독원|수사|체포|안전계좌"), 4, "공공기관을 사칭하고 있어요. 진짜 기관은 문자로 돈을 요구하지 않아요.",
@@ -99,12 +103,17 @@ object RuleDetector : Detector {
     override fun inspect(body: String): Finding {
         val reasons = mutableListOf<String>()
         var score = 0
-        for (r in RULES) if (r.re.containsMatchIn(body) && r.unless?.containsMatchIn(body) != true) { score += r.score; reasons += r.why }
+        val urls = urls(body)
+        // 링크가 하나라도 있고 모두 공식 사이트이면 링크 점수·위험 단어 점수를 주지 않는다 (사칭 링크가 섞이면 그대로 본다)
+        val allOfficial = urls.isNotEmpty() && urls.all(OfficialSites::isOfficial)
+        for (r in RULES) {
+            if (r.notIfOfficial && allOfficial) continue
+            if (r.re.containsMatchIn(body) && r.unless?.containsMatchIn(body) != true) { score += r.score; reasons += r.why }
+        }
 
         // 자동 감시 3단계 중 3단계: 링크가 있을 때만 링크 모양과 위험 단어를 본다
-        val urls = urls(body)
         var flag = false
-        if (urls.isNotEmpty()) {
+        if (urls.isNotEmpty() && !allOfficial) {
             for (u in urls) linkWarnings(u).let { if (it.isNotEmpty()) { flag = true; reasons += it } }
             val hits = KEYWORDS.filter { body.contains(it) }
             if (hits.size >= 2) { flag = true; reasons += "위험 단어가 ${hits.size}개 있어요: ${hits.joinToString(", ")}" }

@@ -28,7 +28,7 @@ object GuardStore {
             .put("links", v.urls.size)
             .put("reasons", JSONArray(v.reasons))
             // 위험한 메시지의 링크 주소만 남겨, 나중에 브라우저에서 열릴 때 막는다 (LinkGuard)
-            .put("hosts", JSONArray(if (risky) v.urls.mapNotNull(LinkGuard::host).distinct() else emptyList()))
+            .put("hosts", JSONArray(if (risky) v.urls.filterNot(OfficialSites::isOfficial).mapNotNull(LinkGuard::host).distinct() else emptyList()))
         val old = all(ctx)
         val arr = JSONArray().put(item)
         for (i in 0 until minOf(old.length(), MAX - 1)) arr.put(old.get(i))

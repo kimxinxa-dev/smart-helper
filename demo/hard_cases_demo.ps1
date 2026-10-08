@@ -112,11 +112,14 @@ function Scenario-Normal {
     Pause-Step "병원 예약 문자 보내기"
     Send-And-Show "15887788" "[한마음병원] 내일 오전 10시 내과 진료 예약이 확인되었습니다. 변경은 병원으로 연락 바랍니다." "LOW"
     Write-Host "  👉 경고 알림도 팝업도 뜨지 않아요." -ForegroundColor Green
+    Pause-Step "진짜 택배사 문자 (공식 주소 cjlogistics.com) 보내기"
+    Send-And-Show (New-Number) "[CJ대한통운] 고객님의 상품이 오늘 배송 완료되었습니다. 배송 조회 https://www.cjlogistics.com" "LOW"
+    Write-Host "  💡 링크가 있어도 공식 사이트 주소라서 '모르는 링크'로 보지 않아요. (2번의 coupang-delivery.com 같은 흉내 주소와 비교)" -ForegroundColor DarkCyan
     if (-not $Auto) {
-        $a = Read-Host "  정상 사이트(네이버)를 크롬에서 열어 보려면 Y, 건너뛰려면 Enter"
+        $a = Read-Host "  진짜 CJ대한통운 사이트를 크롬에서 열어 보려면 Y, 건너뛰려면 Enter"
         if ($a -match '^[Yy]') {
-            & $adb shell am start -a android.intent.action.VIEW -d "https://m.naver.com" -p com.android.chrome | Out-Null
-            Write-Host "  네이버가 경고 없이 그대로 열려요." -ForegroundColor Green
+            & $adb shell am start -a android.intent.action.VIEW -d "https://www.cjlogistics.com" -p com.android.chrome | Out-Null
+            Write-Host "  경고 없이 그대로 열려요." -ForegroundColor Green
         }
     }
 }
@@ -147,7 +150,7 @@ while ($true) {
     Write-Host "   2. 진짜 쇼핑몰 같은 배송 문자 → 팝업 → 링크 차단"
     Write-Host "   3. 모바일 청첩장 → 팝업 → 링크 차단"
     Write-Host "   4. 링크 없는 검찰 사칭 → 팝업"
-    Write-Host "   5. 비교: 정상 문자·정상 사이트는 그대로"
+    Write-Host "   5. 비교: 정상 문자·진짜 택배사 문자와 사이트는 그대로"
     Write-Host "   A. 1~5 차례로 모두"
     Write-Host "   Q. 끝내기"
     $c = Read-Host "  번호를 입력하세요"

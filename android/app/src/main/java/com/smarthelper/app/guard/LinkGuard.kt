@@ -27,6 +27,8 @@ object LinkGuard {
     fun check(ctx: Context, url: String): Danger? {
         val h = host(url) ?: return null
         if (h in allowed) return null
+        // 공식 사이트(진짜 택배사·은행 등)는 의심 문자에 들어 있었더라도 막지 않는다
+        if (OfficialSites.isOfficial(url)) return null
         GuardStore.riskyHosts(ctx)[h]?.let { return Danger(h, "사기로 의심된 문자·메시지에 있던 주소예요.", it) }
         RuleDetector.linkWarnings(url).firstOrNull()?.let { return Danger(h, it, null) }
         return null

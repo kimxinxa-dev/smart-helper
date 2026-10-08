@@ -572,6 +572,10 @@ function scamRender(){main.innerHTML=`<h2>🕵️ 수상한 문자 확인</h2><p
 /* 자동 감시 3단계 (업로드된 Kotlin SmishingReceiver 로직을 JS로 옮김) */
 const KW=['배송','택배','주소지','미수령','관세','검찰','금감원','형사','구속','명의도용','지원금','저금리','대환대출','모바일청첩장'];
 const URLRE=/https?:\/\/[^\s]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/gi;
+// 공식 사이트(진짜 택배사·은행·관공서). 앱의 OfficialSites.kt 와 같은 목록 — 주소 끝이 정확히 같아야 공식
+const OFFICIAL=['cjlogistics.com','epost.go.kr','hanjin.com','lotteglogis.com','ilogen.com','kdexp.com','coupang.com','gmarket.co.kr','11st.co.kr','ssg.com','auction.co.kr','naver.com','naver.me','kakao.com','kakaocorp.com','daum.net','google.com','youtube.com','kbstar.com','shinhan.com','wooribank.com','hanabank.com','nonghyup.com','ibk.co.kr','kakaobank.com','toss.im','kbcard.com','shinhancard.com','samsungcard.com','hyundaicard.com','lottecard.co.kr','wooricard.com','hanacard.co.kr','bccard.com','nhcard.co.kr','go.kr','nhis.or.kr','nps.or.kr','kisa.or.kr','fss.or.kr','korail.com','tworld.co.kr','kt.com','lguplus.com'];
+function isOfficial(u){const h=u.trim().replace(/^[a-z]+:\/\//i,'').split(/[\/?#]/)[0].replace(/^.*@/,'').split(':')[0].toLowerCase().replace(/^www\./,'');return !!h&&OFFICIAL.some(d=>h===d||h.endsWith('.'+d))}
+function allOfficial(t){const u=t.match(URLRE)||[];return u.length>0&&u.every(isOfficial)}
 function smish(body,saved){
  if(saved)return{stop:1};
  const urls=body.match(URLRE)||[];
@@ -582,7 +586,8 @@ function smish(body,saved){
   if(/\.apk($|\?)/i.test(u))why.push('앱(APK) 파일을 바로 내려받는 링크예요: '+esc(u));
   if(/\.(top|xyz|site|club|work|kim|space|online)(?![a-z0-9-])/i.test(u))why.push('수상한 주소 끝자리(.top, .xyz 등)예요: '+esc(u))});
  const hit=KW.filter(w=>body.includes(w));
- return{urls,why,hit,sus:why.length>0||hit.length>=2}}
+ // 링크가 모두 공식 사이트이면 위험 단어만으로는 수상하다고 보지 않는다
+ return{urls,why,hit,sus:why.length>0||(hit.length>=2&&!allOfficial(body))}}
 function pipe(t){const f=smish(t,$('#sv')&&$('#sv').checked),l=[];
  l.push(`<li>1단계 연락처: ${f.stop==1?'저장된 번호 → <b>통과</b>':'저장 안 된 번호 → 계속'}</li>`);
  if(f.stop!=1)l.push(`<li>2단계 링크: ${f.stop==2?'링크 없음 → <b>통과</b> (사적 대화로 봐요)':'링크 '+f.urls.length+'개 발견 → 계속'}</li>`);
@@ -590,7 +595,7 @@ function pipe(t){const f=smish(t,$('#sv')&&$('#sv').checked),l=[];
  if(f.sus)setTimeout(alertPop,600);
  return `<div class="res" style="border-color:var(--bd)"><b>🛡️ 자동 감시 3단계 검사</b><ol style="padding-left:20px;font-size:.8em;margin:6px 0">${l.join('')}</ol>${f.stop==2?'<div style="font-size:.75em;color:var(--mut)">※ 링크 없는 문자는 자동 감시가 통과시켜요. 아래 "직접 확인"은 말투와 요구 내용도 함께 봐요.</div>':''}</div>`}
 function alertPop(){say('위험한 문자가 도착했어요. 링크를 누르지 마세요.');$('#mbox').innerHTML='<h2>🚨 위험한 문자예요</h2><p style="font-size:.85em;line-height:1.5">방금 온 문자에 수상한 링크가 있어요. <b>링크를 누르지 마세요.</b></p><button class="btn" id="mok">알겠어요</button>';$('#modal').style.display='flex';$('#mok').onclick=()=>$('#modal').style.display='none'}
-function analyze(t){const f=smish(t,$('#sv')&&$('#sv').checked);if(f.stop==1){$('#res').innerHTML=pipe(t);say('연락처에 저장된 번호라서 검사하지 않았어요.');return}let sc=0,why=[];RULES.forEach(r=>{if(r[0].test(t)&&!(r[3]&&r[3].test(t))){sc+=r[1];why.push(r[2])}});
+function analyze(t){const f=smish(t,$('#sv')&&$('#sv').checked);if(f.stop==1){$('#res').innerHTML=pipe(t);say('연락처에 저장된 번호라서 검사하지 않았어요.');return}let sc=0,why=[];const offi=allOfficial(t);RULES.forEach((r,i)=>{if(i===0&&offi)return;if(r[0].test(t)&&!(r[3]&&r[3].test(t))){sc+=r[1];why.push(r[2])}});
  const lv=sc>=6?['hi','🚨 매우 위험해요','답장하거나 링크를 누르지 마세요. 사기일 가능성이 높아요.']:sc>=3?['mid','⚠️ 조심하세요','수상한 점이 있어요. 링크를 누르기 전에 가족에게 먼저 물어보세요.']:['lo','✅ 위험이 낮아 보여요','그래도 모르는 링크는 누르지 마세요.'];
  const safe=t.replace(/\d{6,}/g,'●●●●●●').slice(0,120);
  $('#res').innerHTML=pipe(t)+`<div class="res ${lv[0]}"><h3>${lv[1]}</h3><b>${lv[2]}</b><div style="font-size:.7em;color:var(--mut);margin:6px 0">가린 문자: ${esc(safe)}</div><b style="font-size:.85em">왜 그런가요?</b><ul>${why.map(w=>`<li>${w}</li>`).join('')||'<li>눈에 띄는 위험 신호는 없어요.</li>'}</ul><b style="font-size:.85em">이렇게 하세요</b><ul><li>링크는 누르지 않기</li><li>문자는 지우거나 신고하기</li><li>이미 돈을 보냈다면 바로 112, 불안하면 118(인터넷 상담)이나 1332(금융감독원)</li></ul></div>`;

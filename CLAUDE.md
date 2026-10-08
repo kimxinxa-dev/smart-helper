@@ -1,4 +1,4 @@
-# 스마트 헬퍼 (Smart Helper) — 프로젝트 브리프
+﻿# 스마트 헬퍼 (Smart Helper) — 프로젝트 브리프
 
 > AI 코딩 도구(Claude Code, Cursor 등)가 매번 먼저 읽도록 프로젝트 루트에 두는 파일입니다.
 
@@ -64,6 +64,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `TextModel` 글자 n-gram 로지스틱 회귀(64KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. 🚨 HIGH 면 알림과 함께 `GuideService.showRiskPopup` → `RiskPopupOverlay`(접근성 겹쳐 그리기 창, 화면 가운데 카드: 왜 위험한지 보기 → WarningActivity / 알겠어요, 음성 안내). 접근성 서비스가 꺼져 있거나 링크·설치 차단 화면이 떠 있으면 알림만. 안드로이드 10+ 는 문자 수신 때 앱이 직접 화면을 못 띄워서 이 방식을 씀. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄
+  - `OfficialSites` 공식 사이트 목록(택배·은행·카드·`.go.kr` 등, 주소 끝 정확히 일치, `OfficialSitesTest`): 문자 속 링크가 모두 공식이면 링크 규칙(+3)·위험 단어 flag 를 주지 않고, `GuardStore` 'hosts' 에도 넣지 않으며, `LinkGuard` 는 공식 주소를 막지 않음. `index.html` 의 `OFFICIAL`/`isOfficial`/`allOfficial` 과 같은 목록으로 맞출 것
   - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요)
   - 카카오톡(`GuideService.IN_APP`): 채팅방 말풍선·미리보기 카드를 누르는 순간(TYPE_VIEW_CLICKED) 글자에서 링크를 찾아 막고, 앱 안 WebView 가 있으면 WebView 바깥(제목 줄) 글자만 봄(`InAppLink`, 순수 Kotlin, `InAppLinkTest`). 나가기는 웹 화면이 열려 있을 때만 뒤로 가기. 디버그 앱은 testapp(패키지 `com.smarthelper.practicepuzzle`)의 가짜 카카오톡도 봄: `adb shell am start -n com.smarthelper.practicepuzzle/com.smarthelper.testapp.FakeChatActivity --es msg "'택배 확인 http://cj-logis.xyz/a'"` → 말풍선(540,330) 누르기. 실제 카카오톡 제목 줄에 주소가 보이는지는 실기기 확인 필요
   - `InstallGate` 설치 차단(순수 Kotlin, 테스트 19개): 주의 이상 메시지 후 30분 위험 시간대, 설치 앱+설치 글자 / 설정+'알 수 없는 앱 설치' 판단, '그래도 진행' 5분 유예. `GuideService.checkInstall` → `InstallBlockOverlay`(그만두기 · 가족 전화 ACTION_DIAL, 없으면 118 · 그래도 진행). 가족 연락처는 `GuardStore`(연락처 선택 창으로 고름, 권한 불필요)
@@ -74,7 +75,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)
   - `RealGuide` 말로 물어보기에서 고른 안내를 시작. 사진·문자는 **받는 사람 확인 후에만 안내**(번호 전체 비교)
 - `testapp/` **연습용 퍼즐**: 지워도 되는 빈 앱. 앱 삭제 안내를 안전하게 시험·시연할 때 설치해 둔다 (`gradle :testapp:assembleDebug`)
-- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19, `InAppLinkTest` 9
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19, `InAppLinkTest` 9, `OfficialSitesTest` 8
 
 ## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
 - SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`
