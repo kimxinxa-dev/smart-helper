@@ -104,7 +104,8 @@ $beforeId = if ($before) { $before.id } else { 0 }
 Write-Host "  📩 $from 님이 보낸 문자" -ForegroundColor Cyan
 Write-Host "     [Web발신] 고객님 휴대폰에서 악성 앱이 발견되었습니다. 보안 앱을 바로 설치하세요 $scamUrl"
 $v = $null
-for ($i = 0; $i -lt 20; $i++) { Start-Sleep -Milliseconds 700; $v = Get-Latest; if ($v -and $v.id -ne $beforeId) { break }; $v = $null }
+# 휴대폰을 막 켠 직후에는 첫 판정이 늦을 수 있어 최대 28초까지 기다린다 (보통은 몇 초 안에 끝남)
+for ($i = 0; $i -lt 40; $i++) { Start-Sleep -Milliseconds 700; $v = Get-Latest; if ($v -and $v.id -ne $beforeId) { break }; $v = $null }
 if ($v) {
     $ok = $v.level -eq "HIGH"; if (-not $ok) { $script:fail++ }
     Write-Host ("  → 스마트 헬퍼 판정: {0}  {1}" -f $(if ($ok) { "🚨 위험" } else { $v.level }), $(if ($ok) { "✔ 기대대로" } else { "✘ 기대: 🚨 위험" })) -ForegroundColor $(if ($ok) { "Red" } else { "Yellow" })

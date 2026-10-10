@@ -145,7 +145,7 @@ function Send-One($chapter, $no, $total, $m) {
     Write-Host "  📩 $from 님이 보낸 문자" -ForegroundColor Cyan
     Write-Host "     $($m.Text)"
     $v = $null
-    for ($i = 0; $i -lt 20; $i++) {
+    for ($i = 0; $i -lt 40; $i++) { # 막 켠 휴대폰은 첫 판정이 늦을 수 있어 최대 28초
         Start-Sleep -Milliseconds 700
         $v = Get-Latest
         if ($v -and $v.id -ne $beforeId) { break }
