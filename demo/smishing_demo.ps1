@@ -4,6 +4,8 @@
 param([switch]$Auto)
 
 $adb = "C:\Android\Sdk\platform-tools\adb.exe"
+# adb 가 보내는 글자(UTF-8)를 그대로 읽는다. .bat 으로 연 창은 한글을 CP949 로 읽어서, 판정 기록 속 한글이 깨져 읽기에 실패했다
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
 $app = "com.smarthelper.app"
 
 function Wait-Next($msg) {
