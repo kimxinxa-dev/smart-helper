@@ -117,12 +117,18 @@ if ($v) {
 } else { Write-Host "  (판정 결과를 읽지 못했어요. 휴대폰 화면을 확인하세요)" -ForegroundColor DarkYellow; $script:fail++ }
 Write-Host "  💡 이 순간부터 30분 동안이 '위험 시간대'예요. 이 동안 앱을 설치하려 하면 한 번 더 물어봐요." -ForegroundColor DarkCyan
 
-Write-Host "  ⏳ 휴대폰에 문자 수신 알림이 오고, 곧 🚨 팝업이 떠요..." -ForegroundColor Magenta
-if (Wait-Overlay $true 25) {
-    if ($Auto) { & $adb shell input tap 540 2010 }
-    else { Write-Host "  👉 휴대폰에서 팝업을 보여 준 뒤 [알겠어요] 를 눌러 주세요." -ForegroundColor Magenta }
-    if (Wait-Overlay $false 120) { Write-Host "  ✔ 팝업을 닫았어요." -ForegroundColor DarkGray }
-} else { Write-Host "  (팝업을 찾지 못했어요. 스마트 헬퍼의 '위험 링크 차단'이 켜져 있는지 확인하세요)" -ForegroundColor DarkYellow }
+if ($Auto) {
+    # 점검: 팝업이 뜨는지 확인하고 닫는다
+    Write-Host "  ⏳ 휴대폰에 문자 수신 알림이 오고, 곧 🚨 팝업이 떠요..." -ForegroundColor Magenta
+    if (Wait-Overlay $true 25) {
+        & $adb shell input tap 540 2010
+        if (Wait-Overlay $false 120) { Write-Host "  ✔ 팝업을 닫았어요." -ForegroundColor DarkGray }
+    } else { Write-Host "  (팝업을 찾지 못했어요. 스마트 헬퍼의 '위험 링크 차단'이 켜져 있는지 확인하세요)" -ForegroundColor DarkYellow }
+} else {
+    # 발표: 팝업을 기다리지 않고 바로 다음 단계를 묻는다 (시간 절약).
+    # 팝업이 닫히기 전에 링크를 열어도 괜찮다 — 팝업을 닫는 순간 앱이 브라우저 주소를 다시 검사해 막는다
+    Write-Host "  👉 휴대폰: 문자 알림 뒤 몇 초 안에 🚨 팝업이 떠요. 보여 준 뒤 [알겠어요] 를 눌러 주세요." -ForegroundColor Magenta
+}
 
 # ── ② (선택) 링크 열기
 if (-not $Auto) {
