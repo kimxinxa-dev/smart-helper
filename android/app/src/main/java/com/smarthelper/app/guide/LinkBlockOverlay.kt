@@ -1,19 +1,20 @@
 package com.smarthelper.app.guide
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.TextView
+import com.smarthelper.app.Look
+import com.smarthelper.app.Look.Companion.AMBER
+import com.smarthelper.app.Look.Companion.INK
+import com.smarthelper.app.Look.Companion.LINE
+import com.smarthelper.app.Look.Companion.MUTED
+import com.smarthelper.app.Look.Companion.RED
+import com.smarthelper.app.Look.Companion.RED_DARK
 import com.smarthelper.app.guard.LinkGuard
 
 /**
@@ -30,6 +31,7 @@ class LinkBlockOverlay(
 ) {
     private var view: View? = null
     val showing get() = view != null
+    private val ui = Look(ctx)
 
     fun show(d: LinkGuard.Danger) {
         hide()
@@ -37,38 +39,21 @@ class LinkBlockOverlay(
         val col = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(dp(24), dp(24), dp(24), dp(24))
-            setBackgroundColor(0xF27F1D1D.toInt())
+            setPadding(ui.dp(28), ui.dp(24), ui.dp(28), ui.dp(24))
+            background = ui.backdrop(0xFAB91C1C.toInt(), 0xFA450A0A.toInt())
             isClickable = true // 뒤의 웹 페이지가 눌리지 않게 막는다
         }
         root.addView(col, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
-        col.addView(text("🚨", 64f, false))
-        col.addView(text("위험한 사이트예요", 32f, true), lp(top = 8))
-        col.addView(text(d.host, 20f, false).apply {
-            setPadding(dp(16), dp(8), dp(16), dp(8))
-            background = GradientDrawable().apply { setColor(0x55000000); cornerRadius = dp(12).toFloat() }
-        }, lp(top = 12))
-        col.addView(text(d.reason, 22f, true), lp(top = 20))
-        col.addView(text("카드번호·비밀번호·인증번호를 넣지 마세요.\n앱을 설치하라고 하면 절대 설치하지 마세요.", 19f, false), lp(top = 12))
-        col.addView(Button(ctx).apply {
-            text = "🛡️ 안전하게 나가기"
-            isAllCaps = false
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(0xFF7F1D1D.toInt())
-            background = GradientDrawable().apply { setColor(Color.WHITE); cornerRadius = dp(20).toFloat() }
-            minHeight = dp(72)
-            setOnClickListener { hide(); onExit() }
-        }, lp(top = 32))
-        col.addView(TextView(ctx).apply {
-            text = "그래도 볼래요 (위험할 수 있어요)"
-            setTextColor(0xCCFFFFFF.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-            gravity = Gravity.CENTER
-            paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
-            setPadding(dp(8), dp(20), dp(8), dp(8))
-            setOnClickListener { root.addView(confirm(d, root), FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)); onConfirmAsk() }
-        }, lp(top = 8))
+        col.addView(ui.badge("!", WHITE, RED_DARK, sizeDp = 96, ring = 0x33FFFFFF))
+        col.addView(ui.text("위험한 사이트예요", 32f, true, WHITE), ui.lp(top = 20))
+        col.addView(ui.pill(d.host, 20f, 0x26FFFFFF, WHITE), ui.lp(top = 14, w = LinearLayout.LayoutParams.WRAP_CONTENT).apply { gravity = Gravity.CENTER_HORIZONTAL })
+        col.addView(ui.text(d.reason, 21f, true, WHITE), ui.lp(top = 22))
+        col.addView(ui.text("카드번호·비밀번호·인증번호를 넣지 마세요.\n앱을 설치하라고 하면 절대 설치하지 마세요.", 19f, false, 0xE6FFFFFF.toInt()), ui.lp(top = 10))
+        col.addView(ui.primary("🛡️ 안전하게 나가기", WHITE, 0xFFF1F5F9.toInt(), fg = RED_DARK, sp = 24f, minDp = 72) { hide(); onExit() }, ui.lp(top = 34))
+        col.addView(ui.quietLink("그래도 볼래요 (위험할 수 있어요)", 0xCCFFFFFF.toInt()) {
+            root.addView(confirm(d), FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+            onConfirmAsk()
+        }, ui.lp(top = 6))
         val p = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -79,64 +64,31 @@ class LinkBlockOverlay(
         view = root
     }
 
-    /** "그래도 볼래요" 확인 창: 어두운 배경 위 흰 카드. 안전한 쪽(나가기)을 크게, 들어가기는 작게 */
-    private fun confirm(d: LinkGuard.Danger, root: FrameLayout): View {
-        val back = FrameLayout(ctx).apply {
-            setBackgroundColor(0xCC000000.toInt())
-            isClickable = true
-        }
-        val card = LinearLayout(ctx).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(24), dp(24), dp(24), dp(16))
-            background = GradientDrawable().apply { setColor(Color.WHITE); cornerRadius = dp(28).toFloat() }
-        }
-        card.addView(text("⚠️", 52f, false))
-        card.addView(text("정말 들어가시겠어요?", 28f, true).apply { setTextColor(0xFFB91C1C.toInt()) }, lp(top = 4))
-        card.addView(text("한 번 더 위험할 수 있어요.\n사기 사이트라면 카드번호·비밀번호를 빼앗기거나 나쁜 앱이 설치될 수 있어요.", 20f, false).apply {
-            setTextColor(0xFF111827.toInt())
-        }, lp(top = 14))
-        card.addView(text("모르겠으면 가족에게 먼저 물어보세요.", 19f, true).apply { setTextColor(0xFF374151.toInt()) }, lp(top = 12))
-        card.addView(Button(ctx).apply {
-            text = "🛡️ 아니요, 나갈게요"
-            isAllCaps = false
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.WHITE)
-            background = GradientDrawable().apply { setColor(0xFFB91C1C.toInt()); cornerRadius = dp(20).toFloat() }
-            minHeight = dp(72)
-            setOnClickListener { hide(); onExit() }
-        }, lp(top = 24))
-        card.addView(Button(ctx).apply {
-            text = "네, 그래도 볼게요"
-            isAllCaps = false
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-            setTextColor(0xFF374151.toInt())
-            background = GradientDrawable().apply { setColor(0xFFE5E7EB.toInt()); cornerRadius = dp(16).toFloat() }
-            minHeight = dp(56)
-            setOnClickListener { hide(); onStay(d.host) }
-        }, lp(top = 12))
-        back.addView(card, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
-            leftMargin = dp(20); rightMargin = dp(20)
-        })
-        return back
-    }
-
     fun hide() {
         view?.let { wm.removeView(it) }
         view = null
     }
 
-    private fun text(s: String, sp: Float, bold: Boolean) = TextView(ctx).apply {
-        text = s
-        setTextColor(Color.WHITE)
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
-        gravity = Gravity.CENTER
-        setLineSpacing(0f, 1.2f)
-        if (bold) typeface = Typeface.DEFAULT_BOLD
+    /** "그래도 볼래요" 확인 창: 어두운 배경 위 흰 카드. 안전한 쪽(나가기)을 크게, 들어가기는 작게 */
+    private fun confirm(d: LinkGuard.Danger): View {
+        val back = FrameLayout(ctx).apply {
+            setBackgroundColor(0xCC0F172A.toInt())
+            isClickable = true
+        }
+        val card = ui.card()
+        card.addView(ui.badge("?", AMBER, WHITE, sizeDp = 76, ring = 0xFFFEF3C7.toInt()))
+        card.addView(ui.text("정말 들어가시겠어요?", 27f, true, RED_DARK), ui.lp(top = 14))
+        card.addView(ui.text("한 번 더 위험할 수 있어요.\n사기 사이트라면 카드번호·비밀번호를 빼앗기거나 나쁜 앱이 설치될 수 있어요.", 19f, false, INK), ui.lp(top = 12))
+        card.addView(ui.text("모르겠으면 가족에게 먼저 물어보세요.", 18f, true, MUTED), ui.lp(top = 10))
+        card.addView(ui.primary("🛡️ 아니요, 나갈게요", RED, RED_DARK, sp = 23f, minDp = 68) { hide(); onExit() }, ui.lp(top = 22))
+        card.addView(ui.secondary("네, 그래도 볼게요", WHITE, MUTED, LINE, sp = 18f, minDp = 54) { hide(); onStay(d.host) }, ui.lp(top = 10))
+        back.addView(card, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
+            leftMargin = ui.dp(20); rightMargin = ui.dp(20)
+        })
+        return back
     }
 
-    private fun lp(top: Int) = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(top) }
-
-    private fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).toInt()
+    private companion object {
+        const val WHITE = 0xFFFFFFFF.toInt()
+    }
 }
