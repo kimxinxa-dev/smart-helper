@@ -140,13 +140,17 @@ Write-Host "■ 3. 그래도 사기꾼 말대로 앱 파일을 내려받아 설�
 Write-Host "   (사기 주소는 가짜라 실제로 내려받을 수 없어서, 아무 기능 없는 '연습용 퍼즐' 앱을 '$fileName' 이라는 이름으로 다운로드 폴더에 넣어요)" -ForegroundColor DarkGray
 Pause-Step "앱 파일을 내려받고 설치 화면 열기"
 & $adb shell input keyevent HOME
+# 지난 시연에서 지운 파일의 기록이 미디어 목록에 남아 있을 수 있다. 그 기록을 열면 파일이 없어 엉뚱한 앱(크롬)이 열리므로,
+# 넣기 전의 가장 큰 번호를 기억해 두고 그보다 새로 생긴 기록만 쓴다.
+function Get-FileIds { & $adb shell content query --uri content://media/external/file --projection _id:_data | Where-Object { $_ -match [regex]::Escape($fileName) } | ForEach-Object { [int64][regex]::Match($_, '_id=(\d+)').Groups[1].Value } }
+foreach ($old in @(Get-FileIds)) { & $adb shell content delete --uri "content://media/external/file/$old" 2>&1 | Out-Null }
+$oldMax = (@(Get-FileIds) + 0 | Measure-Object -Maximum).Maximum
 & $adb push $apk "/sdcard/Download/$fileName" 2>&1 | Out-Null
 & $adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file:///sdcard/Download/$fileName" | Out-Null
 $id = $null
-for ($i = 0; $i -lt 10 -and -not $id; $i++) {
+for ($i = 0; $i -lt 15 -and -not $id; $i++) {
     Start-Sleep -Milliseconds 700
-    $row = & $adb shell content query --uri content://media/external/file --projection _id:_data | Where-Object { $_ -match [regex]::Escape($fileName) } | Select-Object -Last 1
-    if ($row) { $id = [regex]::Match($row, '_id=(\d+)').Groups[1].Value }
+    $id = @(Get-FileIds) | Where-Object { $_ -gt $oldMax } | Sort-Object | Select-Object -Last 1
 }
 if (-not $id) { Write-Host "  (내려받은 파일을 찾지 못했어요)" -ForegroundColor Red; $script:fail++ }
 else {
@@ -163,7 +167,7 @@ else {
         Write-Host "       '잠깐만요! 방금 받은 문자 때문에 설치하시는 건가요?' + 받은 시각·보낸 사람 ($from)"
         Write-Host "  👉 버튼: [🛡️ 안전하게 그만두기] 설치 화면을 닫고 홈으로 / [📞 가족에게 전화하기] 번호만 띄움(가족이 없으면 118) / [그래도 진행] 5분 동안 다시 묻지 않음" -ForegroundColor Magenta
         Write-Host "  💡 평소에는 아무것도 하지 않아요. 의심 문자를 받은 뒤 30분 동안만 설치 화면을 봐요." -ForegroundColor DarkCyan
-        if ($Auto) { Start-Sleep 2; & $adb shell input tap 540 1602 }
+        if ($Auto) { Start-Sleep 2; & $adb shell input tap 540 1680 }
         if (Wait-Overlay $false 180) {
             Start-Sleep 2
             if (Installed $puzzle) { Write-Host "  ('그래도 진행' 뒤 설치까지 했어요. 연습용 퍼즐이라 안전해요)" -ForegroundColor DarkGray }
