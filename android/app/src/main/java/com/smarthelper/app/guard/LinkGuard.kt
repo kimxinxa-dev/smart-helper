@@ -9,8 +9,13 @@ import android.net.Uri
  * 주소는 저장하지 않고 그 자리에서만 본다.
  */
 object LinkGuard {
-    /** 사용자가 "그래도 볼래요"를 고른 주소 (앱을 다시 켜기 전까지만 기억) */
-    private val allowed = HashSet<String>()
+    /**
+     * 사용자가 "그래도 볼게요"를 고른 주소 → 허용이 끝나는 시각.
+     * 계속 허용하면 같은 사기꾼이 나중에 같은 주소를 또 보내도 막지 못하므로 잠깐만(ALLOW_MS) 허용하고,
+     * 같은 주소가 든 위험 메시지가 새로 오면 바로 취소한다 (revoke).
+     */
+    private val allowed = HashMap<String, Long>()
+    const val ALLOW_MS = 5 * 60 * 1000L
 
     class Danger(val host: String, val reason: String, val messageId: Long?)
 
@@ -26,7 +31,7 @@ object LinkGuard {
 
     fun check(ctx: Context, url: String): Danger? {
         val h = host(url) ?: return null
-        if (h in allowed) return null
+        allowed[h]?.let { until -> if (System.currentTimeMillis() < until) return null else allowed.remove(h) }
         // 공식 사이트(진짜 택배사·은행 등)는 의심 문자에 들어 있었더라도 막지 않는다
         if (OfficialSites.isOfficial(url)) return null
         GuardStore.riskyHosts(ctx)[h]?.let { return Danger(h, "사기로 의심된 문자·메시지나 QR 코드에 있던 주소예요.", it) }
@@ -35,6 +40,11 @@ object LinkGuard {
     }
 
     fun allow(host: String) {
-        allowed += host
+        allowed[host] = System.currentTimeMillis() + ALLOW_MS
+    }
+
+    /** 같은 주소가 든 위험 메시지가 새로 오면 "그래도 볼게요" 허용을 취소한다 */
+    fun revoke(hosts: Collection<String>) {
+        hosts.forEach { allowed.remove(it) }
     }
 }

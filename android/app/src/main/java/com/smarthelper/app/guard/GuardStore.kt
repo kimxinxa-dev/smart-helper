@@ -17,6 +17,9 @@ object GuardStore {
     fun add(ctx: Context, sender: String, body: String, v: Verdict, source: String = "문자"): Long {
         val id = System.currentTimeMillis()
         val risky = v.level == Level.MID || v.level == Level.HIGH
+        val hosts = if (risky) v.urls.filterNot(OfficialSites::isOfficial).mapNotNull(LinkGuard::host).distinct() else emptyList()
+        // 전에 "그래도 볼게요"로 허용한 주소라도, 그 주소가 든 위험 메시지가 또 오면 다시 막는다
+        LinkGuard.revoke(hosts)
         val item = JSONObject()
             .put("id", id)
             .put("time", id)
@@ -28,7 +31,7 @@ object GuardStore {
             .put("links", v.urls.size)
             .put("reasons", JSONArray(v.reasons))
             // 위험한 메시지의 링크 주소만 남겨, 나중에 브라우저에서 열릴 때 막는다 (LinkGuard)
-            .put("hosts", JSONArray(if (risky) v.urls.filterNot(OfficialSites::isOfficial).mapNotNull(LinkGuard::host).distinct() else emptyList()))
+            .put("hosts", JSONArray(hosts))
         val old = all(ctx)
         val arr = JSONArray().put(item)
         for (i in 0 until minOf(old.length(), MAX - 1)) arr.put(old.get(i))
