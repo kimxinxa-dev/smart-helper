@@ -15,14 +15,18 @@ $apk = Join-Path $PSScriptRoot "..\android\testapp\build\outputs\apk\debug\testa
 $fileName = "SecurityUpdate.apk"   # 사기꾼이 보낸 '보안 업데이트' 파일인 척
 $scamUrl = "http://safe-guard.site/v3.apk"
 $script:fail = 0
+$stayed = $false   # ② 에서 위험 사이트를 그래도 보기로 했는지
 
 function New-Number { "010" + (Get-Random -Minimum 20000000 -Maximum 99999999) }
 
 function Pause-Step($msg) {
     if ($Auto) { Start-Sleep 2; return }
     Write-Host ""
-    Read-Host "  ▶ $msg [Enter]" | Out-Null
+    Read-Host "  ▶ $msg — 이 PC 창에서 [Enter] 를 누르세요" | Out-Null
 }
+
+# 지금 휴대폰 맨 앞 화면이 이 앱인지 (예: 크롬)
+function Test-Top($pkg) { [bool]((& $adb shell dumpsys activity activities | Select-String 'topResumedActivity' | Select-Object -First 1) -match [regex]::Escape($pkg)) }
 
 # 스마트 헬퍼가 남긴 가장 최근 판정 (디버그 앱에서만 읽을 수 있음)
 function Get-Latest {
@@ -129,8 +133,15 @@ if (-not $Auto) {
         & $adb shell am start -a android.intent.action.VIEW -d $scamUrl -p com.android.chrome | Out-Null
         Write-Host "  크롬으로 열었어요. 화면 전체가 빨간 경고로 가려져요 (에뮬레이터는 10초쯤 걸릴 수 있어요)." -ForegroundColor Cyan
         if (Wait-Overlay $true 25) {
-            Write-Host "  👉 [안전하게 나가기] 를 눌러 주세요. ('그래도 볼래요'를 누르면 '정말 들어가시겠어요?' 하고 한 번 더 물어요)" -ForegroundColor Magenta
-            Wait-Overlay $false 120 | Out-Null
+            Write-Host "  👉 휴대폰에서 고르세요:" -ForegroundColor Magenta
+            Write-Host "     · [안전하게 나가기] → 잘 나온 것을 보여 주고, 다음 단계로" -ForegroundColor Magenta
+            Write-Host "     · [그래도 볼래요] → '정말 들어가시겠어요?' → [네, 그래도 볼게요] → 사기 사이트가 앱을 내려받게 한 것처럼 바로 설치 화면으로" -ForegroundColor Magenta
+            Wait-Overlay $false 180 | Out-Null
+            Start-Sleep 2
+            # 그래도 보기로 했으면 크롬이 앞에 남아 있다 (나가기를 고르면 뒤로 가거나 홈으로 간다)
+            $stayed = Test-Top "com.android.chrome"
+            if ($stayed) { Write-Host "  → 사이트를 그대로 열었어요. 사기 사이트는 이때 '보안 앱'을 내려받게 해요." -ForegroundColor Yellow }
+            else { Write-Host "  ✔ 안전하게 나왔어요. 잘 하셨어요." -ForegroundColor Green }
         }
     }
 }
@@ -139,8 +150,14 @@ if (-not $Auto) {
 Write-Host ""
 Write-Host "■ 3. 그래도 사기꾼 말대로 앱 파일을 내려받아 설치하려 한 상황" -ForegroundColor White
 Write-Host "   (사기 주소는 가짜라 실제로 내려받을 수 없어서, 아무 기능 없는 '연습용 퍼즐' 앱을 '$fileName' 이라는 이름으로 다운로드 폴더에 넣어요)" -ForegroundColor DarkGray
-Pause-Step "앱 파일을 내려받고 설치 화면 열기"
-& $adb shell input keyevent HOME
+if ($stayed) {
+    # 사이트를 그대로 본 경우: 사이트가 앱 파일을 내려받게 한 것처럼 Enter 없이 바로 이어 간다
+    Write-Host "  ⏬ 사기 사이트가 '$fileName' 을 내려받게 했어요. 받은 파일을 열면 설치 화면이 나와요..." -ForegroundColor Cyan
+    Start-Sleep 2
+} else {
+    Pause-Step "앱 파일을 내려받고 설치 화면 열기"
+    & $adb shell input keyevent HOME
+}
 # 지난 시연에서 지운 파일의 기록이 미디어 목록에 남아 있을 수 있다. 그 기록을 열면 파일이 없어 엉뚱한 앱(크롬)이 열리므로,
 # 넣기 전의 가장 큰 번호를 기억해 두고 그보다 새로 생긴 기록만 쓴다.
 function Get-FileIds { & $adb shell content query --uri content://media/external/file --projection _id:_data | Where-Object { $_ -match [regex]::Escape($fileName) } | ForEach-Object { [int64][regex]::Match($_, '_id=(\d+)').Groups[1].Value } }
@@ -171,7 +188,27 @@ else {
         if ($Auto) { Start-Sleep 2; & $adb shell input tap 540 1680 }
         if (Wait-Overlay $false 180) {
             Start-Sleep 2
-            if (Installed $puzzle) { Write-Host "  ('그래도 진행' 뒤 설치까지 했어요. 연습용 퍼즐이라 안전해요)" -ForegroundColor DarkGray }
+            if (Test-Top "packageinstaller") {
+                # '그래도 진행'을 고르면 원래 설치 창이 다시 보인다. [설치]를 누르면 안드로이드 기본 검사(구글 Play 프로텍트)가
+                # 낯선 앱 파일을 한 번 더 막을 수 있다 → 두 겹 방어로 보여 준다
+                Write-Host "  → '그래도 진행'을 골랐어요. 설치 창에서 [설치] 를 눌러 보세요." -ForegroundColor Yellow
+                $outcome = ""
+                for ($i = 0; $i -lt 90 -and -not $outcome; $i++) {
+                    Start-Sleep 1
+                    if (Installed $puzzle) { $outcome = "installed" }
+                    elseif ((& $adb logcat -d) -match "INSTALL_FAILED_VERIFICATION_FAILURE") { $outcome = "protect" }
+                    elseif (-not (Test-Top "packageinstaller")) { $outcome = "closed" }
+                }
+                switch ($outcome) {
+                    "protect" {
+                        Write-Host "  🛡️ 구글 Play 프로텍트가 한 번 더 막았어요 (설치 실패)." -ForegroundColor Green
+                        Write-Host "  💡 두 겹 방어: 스마트 헬퍼가 먼저 멈춰 세우고, 그래도 진행하면 안드로이드 기본 검사가 낯선 앱을 한 번 더 막아요." -ForegroundColor DarkCyan
+                    }
+                    "installed" { Write-Host "  ('그래도 진행' 뒤 설치까지 했어요. 연습용 퍼즐이라 안전해요)" -ForegroundColor DarkGray }
+                    default { Write-Host "  ✔ 설치하지 않았어요." -ForegroundColor DarkGray }
+                }
+            }
+            elseif (Installed $puzzle) { Write-Host "  ('그래도 진행' 뒤 설치까지 했어요. 연습용 퍼즐이라 안전해요)" -ForegroundColor DarkGray }
             else { Write-Host "  ✔ 설치하지 않았어요." -ForegroundColor DarkGray }
         }
     } else {
