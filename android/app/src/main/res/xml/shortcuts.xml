@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 앱 아이콘을 길게 누르면 나오는 바로가기: 메뉴를 찾지 않고 QR 코드 검사로 바로 간다 (스미싱 가드에서 가져옴) -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_qr"
+        android:shortcutId="scan_qr"
+        android:shortcutShortLabel="@string/qr_shortcut_label">
+        <intent
+            android:action="com.smarthelper.app.SCAN_QR"
+            android:targetClass="com.smarthelper.app.MainActivity"
+            android:targetPackage="com.smarthelper.app" />
+    </shortcut>
+</shortcuts>

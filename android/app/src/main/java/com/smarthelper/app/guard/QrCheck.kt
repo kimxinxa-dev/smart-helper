@@ -9,6 +9,9 @@ package com.smarthelper.app.guard
  *
  * 점수: .apk +4, IP 주소 +3, 단축 주소 +2, 수상한 주소 끝자리(.xyz 등) +2, 흉내 내는 글자·@ 속임수 +2, 공식 목록에 없음 +1
  *       5점 이상 위험, 3점 이상 주의 (공식 사이트는 0점)
+ *
+ * 단축 주소 목록 보강·모양으로 알아보기·QR 용 끝자리 목록은 팀원 @승민의 「스미싱 가드」(SmishingDetector.kt)에서 가져왔다.
+ * QR 용 끝자리 목록(.shop 등)은 정상 쇼핑몰도 쓰므로 "확인 필요"에만 쓰고, 브라우저 차단(LinkGuard)에는 쓰지 않는다.
  */
 object QrCheck {
     enum class Kind { URL, WIFI, TEXT }
@@ -31,6 +34,17 @@ object QrCheck {
         "bit.ly", "abit.ly", "me2.do", "han.gl", "vo.la", "url.kr", "buly.kr", "c11.kr", "lrl.kr", "zrr.kr", "muz.so",
         "tinyurl.com", "t.co", "goo.gl", "is.gd", "v.gd", "ow.ly", "rb.gy", "cutt.ly", "shorturl.at", "t.ly",
         "tiny.cc", "rebrand.ly", "s.id", "qrco.de", "qr.net", "bl.ink", "short.io", "buff.ly", "lnkd.in",
+        // 스미싱 가드에서 더한 것
+        "x.gd", "tuney.kr", "asq.kr", "na.to", "clck.ru",
+    )
+
+    /** 목록에 없는 단축 주소: 아주 짧은 주소 이름(6자 이하, 점 하나) + 숫자나 대소문자가 섞인 4~10자 코드 (스미싱 가드) */
+    private const val SHORT_HOST_MAX = 6
+    private val SHORT_CODE = Regex("^[A-Za-z0-9]{4,10}$")
+
+    /** QR 에서 "확인 필요"로 볼 끝자리. 문자 검사의 수상한 끝자리(RuleDetector) 밖의 것만 (스미싱 가드) */
+    private val QR_TLDS = setOf(
+        "icu", "vip", "cc", "tk", "ml", "ga", "cf", "gq", "buzz", "cyou", "sbs", "lol", "click", "link", "live", "shop",
     )
     private val WEB = Regex("^(https?://)?(www\\.)?[^\\s/:?#@]+\\.[^\\s/?#]{2,}(/\\S*)?$", RegexOption.IGNORE_CASE)
     private val SCHEME = Regex("^[a-z][a-z0-9+.-]*:", RegexOption.IGNORE_CASE)
@@ -53,7 +67,8 @@ object QrCheck {
             w.contains("IP") -> add(3, w)
             else -> add(2, w)
         }
-        if (host in SHORTENERS) add(2, "단축 주소예요. 실제로 어디로 가는지 숨기고 있어요.")
+        if (host in SHORTENERS || looksShort(host, url)) add(2, "단축 주소예요. 실제로 어디로 가는지 숨기고 있어요.")
+        if (host.substringAfterLast('.') in QR_TLDS) add(2, "사기 문자에 자주 쓰이는 주소 끝자리(.${host.substringAfterLast('.')})예요.")
         if (lookalike(url, host)) add(2, "다른 사이트를 흉내 낼 수 있는 글자가 섞인 주소예요.")
         add(1, "공식 사이트 목록에 없는 주소예요.")
         val level = when {
@@ -70,6 +85,17 @@ object QrCheck {
         if (text.startsWith("http://", true) || text.startsWith("https://", true)) return text
         if (SCHEME.containsMatchIn(text)) return null // tel:, mailto:, sms: 등은 주소로 열지 않는다
         return if (WEB.matches(text)) "http://$text" else null
+    }
+
+    /**
+     * 목록에 없는 단축 주소를 모양으로 알아본다 (새 단축 서비스가 계속 생기므로).
+     * "ab.kr/menu" 같은 평범한 경로는 걸리지 않게, 숫자나 대소문자가 섞인 코드만 본다.
+     */
+    private fun looksShort(host: String, url: String): Boolean {
+        if (host.length > SHORT_HOST_MAX || host.count { it == '.' } != 1) return false
+        val code = url.substringAfter("://").substringAfter('/', "").substringBefore('?').substringBefore('#').trimEnd('/')
+        if (!SHORT_CODE.matches(code)) return false
+        return code.any { it.isDigit() } || (code.any { it.isUpperCase() } && code.any { it.isLowerCase() })
     }
 
     /** 퓨니코드(xn--)·영문 아닌 글자로 된 주소, 또는 "진짜주소@가짜주소" 처럼 @ 앞을 보여 주는 속임수 */

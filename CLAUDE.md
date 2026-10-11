@@ -1,4 +1,4 @@
-﻿# 스마트 헬퍼 (Smart Helper) — 프로젝트 브리프
+# 스마트 헬퍼 (Smart Helper) — 프로젝트 브리프
 
 > AI 코딩 도구(Claude Code, Cursor 등)가 매번 먼저 읽도록 프로젝트 루트에 두는 파일입니다.
 
@@ -10,6 +10,7 @@
 
 ## 화면 구성
 - 홈(웹 브라우저): **말로 물어보기 / 수상한 문자 확인 / 키오스크 연습**
+- QR 검사 여는 곳: 문자 지킴이 버튼 · 앱 아이콘 길게 누르기 바로가기(`res/xml/shortcuts.xml`, action `com.smarthelper.app.SCAN_QR`) · 빠른 설정 `QrTileService`. `MainActivity.handleScanIntent` 가 웹이 다 뜬 뒤(`onPageFinished`) `startQrScan()` 호출. 확인 필요·위험이면 0.8초 진동(VIBRATE). 이 셋과 단축 주소 모양 판별·QR 용 끝자리·'확인 필요' 안내는 팀원 @승민의 「스미싱 가드」(받은 코드: 카카오톡 받은 파일\스미싱가드-코드)에서 옮김. 스미싱 가드의 `AiClassifier`(온라인 API)는 '인터넷 권한 없음' 원칙과 맞지 않아 가져오지 않음
 - 홈(안드로이드 앱): **말로 물어보기 / 키오스크 연습 / 문자 지킴이** (문자 지킴이 안: 자동 감시 · 📷 QR 코드 검사 · 더 지키기[💬 카카오톡 지킴이, 🔗 위험 링크 차단] · 직접 검사 · 기록)
   - '말로 시키기'(AI가 대신 실행)는 빅스비와 겹쳐 제거. 이 앱은 **대신 해 주지 않고 스스로 하도록 가르치는 AI**
   - 앱에서는 '수상한 문자 확인'을 '문자 지킴이' 안의 **✍️ 직접 검사하기**로 합침(카톡 등 다른 경로로 받은 글, 권한 없을 때 대비)
@@ -64,7 +65,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `TextModel` 글자 n-gram 로지스틱 회귀(64KB, `assets/smishing_model.txt`), `WarningActivity` 큰 글씨 경고, `GuardStore` 기록(긴 숫자 가림)
   - `Guard.init()` 엔진 준비(링크 인식기 + 모델) — 자동 검사와 직접 검사(`Bridge.checkText`, 기록 안 남김)가 같은 엔진 사용
   - `GuardAlert` 문자·메신저 공통 검사→기록→알림. 경고 순서: 문자 앱 수신 알림 → 2초 뒤 경고 알림 + 팝업(`GuardAlert.afterSmsNotice`. `MessengerListener` 가 기본 문자 앱의 category=msg 알림을 보면 `onSmsAppNotice`, 알림 읽기가 꺼져 있으면 3초·켜져 있는데 못 보면 10초 뒤. 에뮬레이터 구글 메시지는 수신 알림이 6~8초 늦고 그 전에 category=service 알림을 띄움). 🚨 HIGH 면 알림과 함께 `GuideService.showRiskPopup` → `RiskPopupOverlay`(접근성 겹쳐 그리기 창, 화면 가운데 카드: 왜 위험한지 보기 → WarningActivity / 알겠어요, 음성 안내). ⚠️ MID 면 `GuideService.showCautionPopup` → `CautionBannerOverlay`(화면 아래쪽 작은 노란 카드, FLAG_NOT_TOUCH_MODAL 로 카드 밖 터치는 뒤 앱으로, 10초 뒤 자동으로 사라짐, 자세히 → WarningActivity / 닫기, 한 문장 음성). 접근성 서비스가 꺼져 있거나 링크·설치 차단 화면(주의 카드는 위험 팝업도)이 떠 있으면 알림만. `SmishingReceiver` 는 goAsync 를 4초만 붙잡는다(9초는 느린 기기에서 방송 10초 제한을 넘겨 ANR로 앱이 죽었음). 안드로이드 10+ 는 문자 수신 때 앱이 직접 화면을 못 띄워서 이 방식을 씀. `MessengerListener`(알림 읽기 권한) 카카오톡·라인·텔레그램·페메·왓츠앱 새 메시지 검사. 이름이 연락처와 같으면 HIGH 일 때만 알림(사칭 대비). 디버그 앱은 `adb shell cmd notification post` 시험 알림도 메신저로 봄
-  - `QrCheck` 큐싱(QR) 검사(순수 Kotlin, `QrCheckTest` 8): 팀원 @승민의 「큐싱 스캔」 설계 기반. 내용 전체가 주소 하나일 때만 URL(와이파이 QR 은 이름만, 비밀번호 숨김 / 그 밖의 글자는 열지 않음). 점수 .apk +4, IP +3, 단축 주소·수상한 끝자리·흉내 글자(xn--·영문 외·@) 각 +2, 공식 목록 밖 +1 → 5 위험 / 3 주의, 공식 사이트 0. `Bridge.scanQr` → 구글 코드 스캐너(`play-services-code-scanner`, 카메라 권한 없음) → `MainActivity.onQrText` → 주의 이상이면 `GuardStore.add(source="QR 코드")` 로 기록 → 위험 링크 차단 목록 + 30분 설치 차단에 연결(두 겹 방어) → `onQr()`. 웹 `qrView`: 위험·주의는 "열지 않기"를 크게, 열기는 `consent(..., {safeFirst:true})` 확인 뒤 `Bridge.openUrl(url, confirmed)` (주의 단계는 `LinkGuard.allow` 로 다시 막지 않음, 위험은 브라우저에서 한 번 더 막음). 라이브러리가 끼워 넣는 INTERNET·ACCESS_NETWORK_STATE 는 매니페스트에서 `tools:node="remove"` (빌드 뒤 `aapt2 dump permissions` 로 확인). 디버그 앱 시험: `adb shell am broadcast -a com.smarthelper.app.FAKE_QR --es text "http://..."` (결과가 오면 웹이 문자 지킴이 화면으로 옮겨 보여 주고, 판정을 로그 "QR 검사: 등급 종류 주소" 로 남김. 시연: `demo/QR_코드_시연.bat`) (와이파이처럼 ; 가 있으면 `adb shell "am broadcast ... --es text 'WIFI:...;;'"`). 에뮬레이터 스캐너는 열리기까지 10초쯤
+  - `QrCheck` 큐싱(QR) 검사(순수 Kotlin, `QrCheckTest` 10): 팀원 @승민의 「큐싱 스캔」 설계 기반. 내용 전체가 주소 하나일 때만 URL(와이파이 QR 은 이름만, 비밀번호 숨김 / 그 밖의 글자는 열지 않음). 점수 .apk +4, IP +3, 단축 주소·수상한 끝자리·흉내 글자(xn--·영문 외·@) 각 +2, 공식 목록 밖 +1 → 5 위험 / 3 주의, 공식 사이트 0. `Bridge.scanQr` → 구글 코드 스캐너(`play-services-code-scanner`, 카메라 권한 없음) → `MainActivity.onQrText` → 주의 이상이면 `GuardStore.add(source="QR 코드")` 로 기록 → 위험 링크 차단 목록 + 30분 설치 차단에 연결(두 겹 방어) → `onQr()`. 웹 `qrView`: 위험·주의는 "열지 않기"를 크게, 열기는 `consent(..., {safeFirst:true})` 확인 뒤 `Bridge.openUrl(url, confirmed)` (주의 단계는 `LinkGuard.allow` 로 다시 막지 않음, 위험은 브라우저에서 한 번 더 막음). 라이브러리가 끼워 넣는 INTERNET·ACCESS_NETWORK_STATE 는 매니페스트에서 `tools:node="remove"` (빌드 뒤 `aapt2 dump permissions` 로 확인). 디버그 앱 시험: `adb shell am broadcast -a com.smarthelper.app.FAKE_QR --es text "http://..."` (결과가 오면 웹이 문자 지킴이 화면으로 옮겨 보여 주고, 판정을 로그 "QR 검사: 등급 종류 주소" 로 남김. 시연: `demo/QR_코드_시연.bat`) (와이파이처럼 ; 가 있으면 `adb shell "am broadcast ... --es text 'WIFI:...;;'"`). 에뮬레이터 스캐너는 열리기까지 10초쯤
   - `OfficialSites` 공식 사이트 목록(택배·은행·카드·`.go.kr` 등, 주소 끝 정확히 일치, `OfficialSitesTest`): 문자 속 링크가 모두 공식이면 링크 규칙(+3)·위험 단어 flag 를 주지 않고, `GuardStore` 'hosts' 에도 넣지 않으며, `LinkGuard` 는 공식 주소를 막지 않음. `index.html` 의 `OFFICIAL`/`isOfficial`/`allOfficial` 과 같은 목록으로 맞출 것
   - `LinkGuard` 위험 링크: 위험 판정 메시지의 링크 주소(`GuardStore` 'hosts') + 주소 모양(IP·.apk·.xyz 등). `GuideService` 가 브라우저 주소창만(id 로 바로 찾음, 0.7초 간격) 보고 `LinkBlockOverlay` 전체 화면 경고(안전하게 나가기 / 그래도 볼래요 → "정말 들어가시겠어요?" 확인 창에서 한 번 더 물음. "그래도 볼게요" 허용은 `LinkGuard.ALLOW_MS` 5분만, 같은 주소가 든 위험 메시지가 새로 오면 `GuardStore.add` 에서 `LinkGuard.revoke` 로 바로 취소). 위험 팝업(`RiskPopupOverlay`)이 화면을 덮는 동안은 안드로이드가 가려진 브라우저 창을 알려 주지 않으므로, 팝업을 닫을 때(`onClosed`) 주소창을 다시 검사
   - 카카오톡(`GuideService.IN_APP`): 채팅방 말풍선·미리보기 카드를 누르는 순간(TYPE_VIEW_CLICKED) 글자에서 링크를 찾아 막고, 앱 안 WebView 가 있으면 WebView 바깥(제목 줄) 글자만 봄(`InAppLink`, 순수 Kotlin, `InAppLinkTest`). 나가기는 웹 화면이 열려 있을 때만 뒤로 가기. 디버그 앱은 testapp(패키지 `com.smarthelper.practicepuzzle`)의 가짜 카카오톡도 봄: `adb shell am start -n com.smarthelper.practicepuzzle/com.smarthelper.testapp.FakeChatActivity --es msg "'택배 확인 http://cj-logis.xyz/a'"` → 말풍선(540,330) 누르기. 실제 카카오톡 제목 줄에 주소가 보이는지는 실기기 확인 필요
@@ -76,7 +77,7 @@ A안(직접 학습한 소형 분류 모델) + C안(휴대폰 안 소형 언어�
   - `Guide`(단계·완료 판단·길 잃음 안내·받는 사람·직접 완료 확인) / `Guides.photo·text·font·wifi·install·uninstall` — 구글 기본 앱 기준, 삼성 메뉴 이름도 함께 찾음(실기기 확인 필요)
   - `RealGuide` 말로 물어보기에서 고른 안내를 시작. 사진·문자는 **받는 사람 확인 후에만 안내**(번호 전체 비교)
 - `testapp/` **연습용 퍼즐**: 지워도 되는 빈 앱. 앱 삭제 안내를 안전하게 시험·시연할 때 설치해 둔다 (`gradle :testapp:assembleDebug`)
-- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19, `InAppLinkTest` 9, `OfficialSitesTest` 8, `QrCheckTest` 8
+- 테스트(PC): `CommandParserTest` 32, `SmishingEngineTest` 27, `ModelDetectorTest` 6, `InstallGateTest` 19, `LinklessModelTest` 6, `SenderSignalsTest` 19, `InAppLinkTest` 9, `OfficialSitesTest` 8, `QrCheckTest` 10
 
 ## 개발 환경·명령 (Windows, 사용자 이름이 한글이라 경로를 영어로 분리함)
 - SDK `C:\Android\Sdk`, Gradle 홈 `C:\Android\gradle`(GRADLE_USER_HOME), Gradle 배포본 `C:\Android\gradle-dist\gradle-9.8.0`

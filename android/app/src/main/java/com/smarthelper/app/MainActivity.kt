@@ -35,6 +35,9 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private val real by lazy { RealGuide(this) }
     /** 확인("네")을 기다리는 실제 휴대폰 안내 */
     private var pendingPlan: RealGuide.Plan? = null
+    /** 웹 화면이 다 떴는지, 다 뜨면 QR 스캐너를 열어야 하는지 (바로가기·빠른 설정 버튼) */
+    private var pageReady = false
+    private var pendingScan = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +65,15 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
                 }
             }
         }
+        // 바로가기·빠른 설정 버튼으로 열렸으면 화면(웹)이 다 뜬 뒤에 QR 스캐너를 연다
+        web.webViewClient = object : android.webkit.WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                pageReady = true
+                if (pendingScan) startQrScan()
+            }
+        }
         web.loadUrl("file:///android_asset/index.html")
+        if (savedInstanceState == null) handleScanIntent(intent)
 
         tts = TextToSpeech(this, this)
         // 앱이 열려 있을 때 새 문자가 검사되면 화면을 바로 새로 그린다
@@ -78,6 +89,24 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT
             ) { handleBack() }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleScanIntent(intent)
+    }
+
+    /** 앱 아이콘 길게 누르기 바로가기·빠른 설정 "QR 검사" 버튼 (ACTION_SCAN_QR) → 문자 지킴이 화면에서 QR 스캐너를 연다 */
+    private fun handleScanIntent(i: Intent?) {
+        if (i?.action != ACTION_SCAN_QR) return
+        i.action = null // 화면을 돌리거나 다시 열 때 또 열리지 않게
+        pendingScan = true
+        if (pageReady) startQrScan()
+    }
+
+    private fun startQrScan() {
+        pendingScan = false
+        js("window.startQrScan&&startQrScan()")
     }
 
     @Deprecated("API 33 미만용")
@@ -303,6 +332,29 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
                 }
         }
 
+        /** 빠른 설정 패널에 "QR 검사" 버튼을 넣을 수 있는지 (안드로이드 13 이상만 앱에서 바로 넣기를 물을 수 있다) */
+        @JavascriptInterface
+        fun canAddQrTile(): Boolean = Build.VERSION.SDK_INT >= 33
+
+        /** 빠른 설정 패널에 "QR 검사" 버튼을 넣어 달라고 휴대폰에 묻는다. 결과는 onQrTile('added'|'already'|'no') 로 */
+        @JavascriptInterface
+        fun addQrTile() = runOnUiThread {
+            if (Build.VERSION.SDK_INT < 33) return@runOnUiThread
+            getSystemService(android.app.StatusBarManager::class.java).requestAddTileService(
+                android.content.ComponentName(this@MainActivity, QrTileService::class.java),
+                getString(R.string.qr_tile_label),
+                android.graphics.drawable.Icon.createWithResource(this@MainActivity, R.drawable.ic_qr_tile),
+                mainExecutor,
+            ) { result ->
+                val s = when (result) {
+                    android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED -> "added"
+                    android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> "already"
+                    else -> "no"
+                }
+                js("window.onQrTile&&onQrTile('$s')")
+            }
+        }
+
         /** QR 결과 화면의 "열기": 휴대폰의 기본 브라우저로 넘긴다 */
         @JavascriptInterface
         fun openUrl(url: String, confirmed: Boolean) = runOnUiThread {
@@ -338,6 +390,11 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             .put("shown", r.shown)
             .put("id", id)
         android.util.Log.i("SmartHelper", "QR 검사: ${r.level} ${r.kind} ${r.host ?: ""}")
+        // 확인 필요·위험이면 길게 한 번 진동한다 (소리를 못 들어도 손으로 알 수 있게, 스미싱 가드에서 가져옴)
+        if (r.url != null && r.level >= com.smarthelper.app.guard.Level.MID) {
+            getSystemService(android.os.Vibrator::class.java)
+                ?.vibrate(android.os.VibrationEffect.createOneShot(QR_VIBRATE_MS, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+        }
         js("window.onQr&&onQr($o)")
     }
 
@@ -355,5 +412,8 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         private const val REQ_PERM = 3
         private const val REQ_FAMILY = 4
         private const val FAKE_QR = "com.smarthelper.app.FAKE_QR"
+        /** 바로가기·빠른 설정 버튼이 보내는 "QR 스캐너 열기" (res/xml/shortcuts.xml 과 같은 값) */
+        const val ACTION_SCAN_QR = "com.smarthelper.app.SCAN_QR"
+        private const val QR_VIBRATE_MS = 800L
     }
 }

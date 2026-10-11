@@ -31,6 +31,18 @@ class QrCheckTest {
         assertEquals(Level.MID, level("me2.do/abc")) // http 가 없어도 주소로 본다
     }
 
+    @Test fun 목록에_없는_단축_주소도_모양으로_주의() {
+        assertEquals(Level.MID, level("https://ab.kr/Xy12k"))      // 짧은 주소 이름 + 대소문자·숫자 섞인 코드
+        assertEquals(Level.MID, level("https://x.gd/1o6EU"))       // 스미싱 가드 목록에서 더한 단축 서비스
+        assertEquals(Level.LOW, level("https://ab.kr/menu"))       // 뜻 있는 평범한 경로는 단축 주소가 아님
+        assertEquals(Level.LOW, level("https://cafe-menu.com/A7")) // 주소 이름이 길면 단축 주소로 보지 않음
+    }
+
+    @Test fun QR_에서만_보는_끝자리는_주의() {
+        assertEquals(Level.MID, level("https://sale-event.shop/gift"))
+        assertEquals(Level.MID, level("https://win-prize.icu/a"))
+    }
+
     @Test fun IP_주소와_수상한_끝자리는_주의() {
         assertEquals(Level.MID, level("http://211.45.12.9/login"))
         assertEquals(Level.MID, level("http://parking-pay.xyz/p"))

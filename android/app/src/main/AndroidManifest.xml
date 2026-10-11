@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- 위험 문자 경고 알림 (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- QR 판정이 확인 필요·위험일 때 진동으로도 알린다 (설치할 때 묻지 않는 권한) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- 문자 기능이 없는 기기(태블릿)에도 설치할 수 있게 -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
@@ -46,7 +48,21 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 앱 아이콘을 길게 누르면 나오는 "QR 코드 검사" 바로가기 -->
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- 빠른 설정 패널의 "QR 검사" 버튼 (사용자가 패널에 직접 추가해야 보인다) -->
+        <service
+            android:name=".QrTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_qr_tile"
+            android:label="@string/qr_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".guard.WarningActivity"
