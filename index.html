@@ -479,7 +479,9 @@ function qrView(r){
 ${r.level=='LOW'?'':`<b>이렇게 하세요</b><ul><li>QR 코드 위에 다른 스티커가 덧붙어 있지 않은지 살펴보기</li><li>모르면 열지 말고 가게 직원이나 가족에게 물어보기</li>${r.level=='HIGH'?'<li>이 주소는 열려도 브라우저에서 한 번 더 막고, 30분 동안 앱 설치도 다시 물어봐요</li>':''}</ul>`}
 ${btns}</div>`,lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]]}
 window.onQr=r=>{const v=qrView(r);qRes=v[0];qUrl=r.url||'';qLevel=r.level;say(v[1]);
- if(view!='guard')return;$('#qres').innerHTML=qRes;$('#qres').scrollIntoView({behavior:'smooth',block:'start'})};
+ if(view!='guard')return;$('#qres').innerHTML=qRes;
+ /* 결과 제목이 화면 맨 위에 오게 한다. QR 기록이 저장되면서 화면이 한 번 다시 그려지므로, 그다음에 맞춘다 */
+ setTimeout(()=>{const q=$('#qres');if(q)main.scrollTop=q.offsetTop-12},150)};
 window.onQrErr=e=>{if(e=='cancel')return;
  const m=e=='nobrowser'?'열 수 있는 인터넷 앱이 없어요.':'QR 코드를 찍는 화면을 열지 못했어요. 구글 플레이 서비스가 필요하고, 처음 한 번은 인터넷이 연결돼 있어야 해요.';
  qRes=`<div class="res mid"><b>${m}</b></div>`;say(m);if(view=='guard')$('#qres').innerHTML=qRes};
