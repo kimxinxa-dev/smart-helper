@@ -99,6 +99,11 @@ if ($wait -gt 0) {
     Write-Host "  ⚠️ 조금 전에 '그래도 진행'을 눌러서 $wait 초 동안은 설치 차단이 다시 묻지 않아요. 그 뒤에 시연해 주세요." -ForegroundColor DarkYellow
 }
 
+# 점검: 앞선 시연이 남긴 위험 팝업이 있으면 새 팝업으로 착각하므로 먼저 닫는다 ([알겠어요] 자리)
+if ($Auto) {
+    for ($i = 0; $i -lt 3 -and (Test-Overlay); $i++) { & $adb shell input tap 540 2010; Start-Sleep 1 }
+}
+
 # ── ① 사기 문자
 Write-Host ""
 Write-Host "■ 1. 사기 문자 도착: '휴대폰에 악성 앱이 있으니 보안 앱을 설치하라'" -ForegroundColor White
