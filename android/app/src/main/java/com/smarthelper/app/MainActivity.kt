@@ -337,6 +337,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             .put("reasons", JSONArray(r.reasons))
             .put("shown", r.shown)
             .put("id", id)
+        android.util.Log.i("SmartHelper", "QR 검사: ${r.level} ${r.kind} ${r.host ?: ""}")
         js("window.onQr&&onQr($o)")
     }
 

@@ -479,7 +479,8 @@ function qrView(r){
 ${r.level=='LOW'?'':`<b>이렇게 하세요</b><ul><li>QR 코드 위에 다른 스티커가 덧붙어 있지 않은지 살펴보기</li><li>모르면 열지 말고 가게 직원이나 가족에게 물어보기</li>${r.level=='HIGH'?'<li>이 주소는 열려도 브라우저에서 한 번 더 막고, 30분 동안 앱 설치도 다시 물어봐요</li>':''}</ul>`}
 ${btns}</div>`,lv[1].replace(/[^가-힣 ]/g,'')+'. '+lv[2]]}
 window.onQr=r=>{const v=qrView(r);qRes=v[0];qUrl=r.url||'';qLevel=r.level;say(v[1]);
- if(view!='guard')return;$('#qres').innerHTML=qRes;
+ /* 다른 화면에 있었으면 문자 지킴이 화면으로 옮겨 결과를 보여 준다 (그 화면이 qRes 를 그린다) */
+ if(view!='guard')go('guard');else $('#qres').innerHTML=qRes;
  /* 결과 제목이 화면 맨 위에 오게 한다. QR 기록이 저장되면서 화면이 한 번 다시 그려지므로, 그다음에 맞춘다 */
  setTimeout(()=>{const q=$('#qres');if(q)main.scrollTop=q.offsetTop-12},150)};
 window.onQrErr=e=>{if(e=='cancel')return;
